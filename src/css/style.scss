@@ -1,0 +1,128 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=fallback");
+
+@tailwind base;
+
+a {
+  @apply text-blue-600 underline;
+}
+
+@tailwind components;
+
+// Additional styles
+@import "additional-styles/utility-patterns.scss";
+@import "additional-styles/range-slider.scss";
+@import "additional-styles/toggle-switch.scss";
+@import "additional-styles/flatpickr.scss";
+@import "additional-styles/theme.scss";
+@import "additional-styles/datepicker.scss";
+
+@tailwind utilities;
+
+.table-wrapper {
+  @apply w-9/12;
+  height: 40vw;
+}
+
+.big-table {
+  &table,
+  th,
+  td {
+    border: 2px solid #f6ebeb;
+    font-size: 14px;
+    background: #ffffff;
+    font-family: inherit;
+  }
+
+  tr {
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 9;
+
+      &:first-child {
+        left: 0;
+        z-index: 11;
+      }
+    }
+
+    td:first-child {
+      position: sticky;
+      z-index: 10;
+      left: 0;
+    }
+  }
+
+  .primary {
+    background-color: #de3b33;
+  }
+
+  td {
+    padding: 10px 5px;
+  }
+
+  .min-100 {
+    min-width: 100px;
+  }
+
+  .tablee div {
+    border: 1px solid black;
+  }
+
+  th.vertical {
+    height: 166px;
+    vertical-align: bottom;
+    padding: 10px;
+  }
+
+  .wrapper {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+
+    &.no-icon {
+      justify-content: end;
+    }
+  }
+
+  .vertical span {
+    display: flex;
+    transform: rotate(-180deg);
+    -ms-writing-mode: tb-rl;
+    writing-mode: vertical-rl;
+    text-transform: uppercase;
+    min-width: 80px;
+    max-width: 120px;
+    order: 1;
+    align-items: center;
+  }
+
+  .vertical svg {
+    order: -1;
+  }
+}
+
+.my-node-enter {
+  opacity: 0;
+}
+.my-node-enter-active {
+  opacity: 1;
+  transition: opacity 200ms;
+}
+.my-node-exit {
+  opacity: 1;
+}
+.my-node-exit-active {
+  opacity: 0;
+  transition: opacity 200ms;
+}
+
+.chakra-input:focus,
+.chakra-input[data-focus],
+input:focus,
+textarea:focus {
+  box-shadow: 0 0 0 1px #de3b33 !important;
+  border-color: #de3b33 !important;
+}
