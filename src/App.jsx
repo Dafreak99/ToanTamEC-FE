@@ -3,8 +3,6 @@ import { Routes, Route, useLocation } from "react-router-dom";
 
 import "./css/style.scss";
 
-import "./charts/ChartjsConfig";
-
 // Import pages
 import Sidebar from "./partials/Sidebar";
 import Header from "./partials/Header";
