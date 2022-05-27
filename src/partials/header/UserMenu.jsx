@@ -2,8 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Transition from "../../utils/Transition";
 
-import UserAvatar from "../../images/user-avatar-32.png";
-
 function UserMenu() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -44,13 +42,13 @@ function UserMenu() {
         onClick={() => setDropdownOpen(!dropdownOpen)}
         aria-expanded={dropdownOpen}
       >
-        <img
+        {/* <img
           className="w-8 h-8 rounded-full"
           src={UserAvatar}
           width="32"
           height="32"
           alt="User"
-        />
+        /> */}
         <div className="flex items-center truncate">
           <span className="truncate ml-2 text-sm font-medium group-hover:text-slate-800">
             Hai Tran.
