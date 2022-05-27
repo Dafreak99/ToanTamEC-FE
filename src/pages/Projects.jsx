@@ -43,10 +43,8 @@ function Projects() {
           <Button
             className="ml-auto"
             leftIcon={<IoAdd color="#fff" />}
-            // background="primary"
-            // color="white"
-            variant="primary solid"
-            // variant="solid"
+            background="primary"
+            color="white"
           >
             Tạo dự án
           </Button>
