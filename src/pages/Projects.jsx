@@ -15,7 +15,6 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import AddProject from "../components/modals/AddProject";
-import "react-datepicker/dist/react-datepicker.css";
 import { IoAdd } from "react-icons/io5";
 
 function Projects() {

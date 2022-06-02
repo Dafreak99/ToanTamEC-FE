@@ -16,7 +16,6 @@ import {
   useDisclosure,
   Select,
 } from "@chakra-ui/react";
-import DatePicker from "react-datepicker";
 import { Controller, useForm } from "react-hook-form";
 
 /**
@@ -26,7 +25,6 @@ import { Controller, useForm } from "react-hook-form";
 
 const EmployeeModal = ({ children }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [startDate, setStartDate] = useState(new Date());
 
   const initialRef = React.useRef();
   const finalRef = React.useRef();
