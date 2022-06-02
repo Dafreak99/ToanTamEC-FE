@@ -15,8 +15,9 @@ import {
   Textarea,
   useDisclosure,
 } from "@chakra-ui/react";
-import DatePicker from "react-datepicker";
 import { Controller, useForm } from "react-hook-form";
+import Datepicker from "../../partials/actions/Datepicker";
+import ErrorMessage from "../../utils/ErrorMessage";
 
 /**
  *
@@ -37,7 +38,6 @@ const AddProject = ({ children }) => {
     formState: { errors },
   } = useForm();
 
-  console.log(children);
   const onSubmit = (data) => console.log(data);
 
   const childrenWithProps = React.Children.map(children, (child) => {
@@ -46,6 +46,12 @@ const AddProject = ({ children }) => {
     }
     return child;
   });
+
+  const renderError = (name, type = "required") => {
+    if (name in errors && errors[name].type === type) {
+      return <ErrorMessage />;
+    }
+  };
 
   return (
     <>
@@ -72,6 +78,7 @@ const AddProject = ({ children }) => {
                 placeholder="Tên dự án"
                 {...register("projectName", { required: true })}
               />
+              {renderError("projectName")}
             </FormControl>
 
             <FormControl mt={4}>
@@ -83,6 +90,7 @@ const AddProject = ({ children }) => {
                 placeholder="Địa điểm"
                 {...register("location", { required: true })}
               />
+              {renderError("location")}
             </FormControl>
 
             <FormControl mt={4}>
@@ -93,17 +101,11 @@ const AddProject = ({ children }) => {
               <Controller
                 name="startDate"
                 control={control}
+                defaultValue={new Date()}
                 rules={{
                   required: true,
                 }}
-                render={({ field }) => (
-                  <DatePicker
-                    locale="vn-VN"
-                    {...field}
-                    selected={startDate}
-                    dateFormat="dd/MM/yyyy"
-                  />
-                )}
+                render={({ field }) => <Datepicker onChange={field.onChange} />}
               />
             </FormControl>
 
@@ -115,6 +117,7 @@ const AddProject = ({ children }) => {
                 placeholder="Nhập căn cứ nghiệm thu"
                 {...register("basedAcceptance", { required: true })}
               />
+              {renderError("basedAcceptance")}
             </FormControl>
           </ModalBody>
 

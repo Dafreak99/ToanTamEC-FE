@@ -36,7 +36,7 @@ function TotalsPanel() {
       const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
       console.log("original converted JSON format", data);
 
-      formatted.headings.push(data[0]);
+      formatted.headings.push(...data[0]);
 
       let currentContent;
       for (let i = 1; i < data.length; i++) {
@@ -51,11 +51,39 @@ function TotalsPanel() {
           formatted.content[currentContent].push(data[i]);
         }
       }
+
+      // setData(formatted);
+
+      console.log("desired JSON data format", formatted);
+
+      const { headings } = formatted;
+
+      let formattedHeadings = [];
+      let isParent = false;
+      headings.forEach((heading) => {
+        if (heading.match(/^[MDCLXVI]{0,}\./)) {
+          console.log(heading);
+          formattedHeadings.push({
+            type: "parent",
+            value: heading,
+            content: [],
+          });
+          isParent = true;
+        } else if (isParent) {
+          formattedHeadings[formattedHeadings.length - 1].content.push({
+            type: "child",
+            value: heading,
+          });
+        } else {
+          formattedHeadings.push({
+            type: "child",
+            value: heading,
+          });
+        }
+      });
+      console.log(formattedHeadings);
     };
 
-    setData(formatted);
-
-    console.log("desired JSON data format", formatted);
     reader.readAsBinaryString(file);
   };
 
