@@ -1,0 +1,42 @@
+.chakra-table {
+  &__container {
+    max-height: 400px;
+    overflow-y: scroll !important;
+  }
+  th {
+    text-transform: capitalize;
+    font-size: 14px;
+    font-family: inherit;
+    text-align: center;
+    padding: 12px 0;
+    background: #4a5567;
+    color: #fff;
+    position: sticky;
+    top: 0;
+  }
+
+  td {
+    text-align: center;
+  }
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 8px;
+  border-radius: 3px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

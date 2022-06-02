@@ -53,7 +53,7 @@ function Projects() {
       <TableContainer>
         <Table size="sm" variant="striped">
           <Thead>
-            <Tr>
+            <Tr textTransform="lowercase">
               <Th>Mã dự án</Th>
               <Th>Tên dự án</Th>
               <Th>Chỉnh sửa lần cuối</Th>
@@ -77,6 +77,7 @@ function Projects() {
           </Tbody>
         </Table>
       </TableContainer>
+
       <small className="mt-4 inline-block">Tổng cộng có {TOTAL} dự án</small>
     </div>
   );

@@ -3,14 +3,9 @@ import { NavLink, useLocation } from "react-router-dom";
 import { AiOutlineUnorderedList } from "react-icons/ai";
 import { BiNotepad } from "react-icons/bi";
 
-import SidebarLinkGroup from "./SidebarLinkGroup";
-import logo from "../images/company-logo.svg";
-
 function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const location = useLocation();
   const { pathname } = location;
-
-  console.log(pathname);
 
   const trigger = useRef(null);
   const sidebar = useRef(null);
@@ -92,10 +87,6 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
               <path d="M10.7 18.7l1.4-1.4L7.8 13H20v-2H7.8l4.3-4.3-1.4-1.4L4 12z" />
             </svg>
           </button>
-          {/* Logo */}
-          <NavLink end to="/" className="block">
-            <img src={logo} alt="" className="h-18" />
-          </NavLink>
         </div>
 
         {/* Links */}

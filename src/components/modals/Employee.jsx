@@ -23,7 +23,7 @@ import { Controller, useForm } from "react-hook-form";
  * @children Pass in the button
  */
 
-const EmployeeModal = ({ children }) => {
+const EmployeeModal = ({ children, onSubmit }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const initialRef = React.useRef();
@@ -37,7 +37,11 @@ const EmployeeModal = ({ children }) => {
     reset,
   } = useForm();
 
-  const onSubmit = (data) => console.log(data);
+  const formOnSubmit = (data) => {
+    onSubmit(data);
+    reset();
+    onClose();
+  };
 
   const childrenWithProps = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
@@ -64,7 +68,7 @@ const EmployeeModal = ({ children }) => {
         onClose={onClose}
       >
         <ModalOverlay />
-        <ModalContent as="form" onSubmit={handleSubmit(onSubmit)}>
+        <ModalContent as="form" onSubmit={handleSubmit(formOnSubmit)}>
           <ModalHeader textAlign="center">Thêm thành viên</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>

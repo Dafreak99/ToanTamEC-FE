@@ -11,10 +11,11 @@ function ProjectDetail() {
     <div className="w-full bg-white shadow-lg p-4">
       <Tabs>
         <TabList>
-          {tabs.map((tab) => (
+          {tabs.map((tab, i) => (
             <Tab
               _focus={{ boxShadow: "0 0 0 0 transparent" }}
               _selected={{ borderColor: "red.500" }}
+              key={i}
             >
               <h1 className="text-lg font-semibold text-gray-700">{tab}</h1>
             </Tab>

@@ -14,22 +14,27 @@ a {
 @import "additional-styles/toggle-switch.scss";
 @import "additional-styles/flatpickr.scss";
 @import "additional-styles/theme.scss";
+@import "additional-styles/table.scss";
+@import "additional-styles/spinner.scss";
 
 @tailwind utilities;
 
 .table-wrapper {
-  @apply w-9/12;
-  height: 40vw;
+  @apply w-full;
+  max-height: 70vh;
 }
 
 .big-table {
   &table,
   th,
   td {
-    border: 2px solid #f6ebeb;
+    border: 2px solid #fff;
     font-size: 14px;
-    background: #ffffff;
     font-family: inherit;
+  }
+
+  th {
+    background: #edf2f6;
   }
 
   tr {
@@ -52,7 +57,7 @@ a {
   }
 
   .primary {
-    background-color: #de3b33;
+    background-color: #4a5567;
   }
 
   td {

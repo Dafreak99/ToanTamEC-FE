@@ -1,6 +1,6 @@
-import { extendTheme } from "@chakra-ui/react";
+import { extendTheme, theme } from "@chakra-ui/react";
 
-const theme = extendTheme({
+const customTheme = extendTheme({
   semanticTokens: {
     colors: {
       error: "red.500",
@@ -18,22 +18,23 @@ const theme = extendTheme({
   components: {
     Button: {
       variants: {
+        ...theme.components.Button.variants,
         base: {},
         primary: {
           bg: "#de3b33",
           color: "#fff",
           _hover: {
             color: "#fff",
-            bg: "red",
+            bg: "#b8261f",
           },
         },
       },
       defaultProps: {
         // Then here we set the base variant as the default
-        variant: "base",
+        // variant: "primary",
       },
     },
   },
 });
 
-export default theme;
+export default customTheme;

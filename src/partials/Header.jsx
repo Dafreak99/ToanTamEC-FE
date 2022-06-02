@@ -3,6 +3,8 @@ import SearchModal from "./header/SearchModal";
 import Notifications from "./header/Notifications";
 import Help from "./header/Help";
 import UserMenu from "./header/UserMenu";
+import { NavLink } from "react-router-dom";
+import logo from "../images/company-logo.svg";
 
 function Header({ sidebarOpen, setSidebarOpen }) {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -13,6 +15,10 @@ function Header({ sidebarOpen, setSidebarOpen }) {
         <div className="flex items-center justify-between h-16 -mb-px">
           {/* Header: Left side */}
           <div className="flex">
+            {/* Logo */}
+            <NavLink end to="/" className="block">
+              <img src={logo} alt="" className="h-10" />
+            </NavLink>
             {/* Hamburger button */}
             <button
               className="text-slate-500 hover:text-slate-600 lg:hidden"

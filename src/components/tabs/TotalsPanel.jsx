@@ -4,12 +4,16 @@ import note from "../../images/add-notes.svg";
 import { Button, useToast } from "@chakra-ui/react";
 import { IoAdd } from "react-icons/io5";
 import * as XLSX from "xlsx";
+import Spinner from "../Spinner";
 
 function TotalsPanel() {
   const [data, setData] = useState(null);
+  const [isLoading, setLoading] = useState(false);
+
   const toast = useToast();
 
   const onChange = (e) => {
+    setLoading(true);
     const [file] = e.target.files;
     const reader = new FileReader();
 
@@ -52,40 +56,56 @@ function TotalsPanel() {
         }
       }
 
-      // setData(formatted);
-
       console.log("desired JSON data format", formatted);
-
       const { headings } = formatted;
 
       let formattedHeadings = [];
+      let toggleHeadings = [];
       let isParent = false;
-      headings.forEach((heading) => {
+
+      headings.forEach((heading, index) => {
         if (heading.match(/^[MDCLXVI]{0,}\./)) {
-          console.log(heading);
           formattedHeadings.push({
             type: "parent",
             value: heading,
             content: [],
+            count: index,
           });
           isParent = true;
+          toggleHeadings.push(true);
         } else if (isParent) {
           formattedHeadings[formattedHeadings.length - 1].content.push({
             type: "child",
             value: heading,
+            count: index,
           });
+          toggleHeadings.push(false);
         } else {
           formattedHeadings.push({
             type: "child",
             value: heading,
+            count: index,
           });
+          toggleHeadings.push(false);
         }
       });
       console.log(formattedHeadings);
+      setData({ ...formatted, formattedHeadings, toggleHeadings });
+
+      setLoading(false);
     };
 
     reader.readAsBinaryString(file);
   };
+
+  if (isLoading) {
+    return (
+      <div className="py-8 flex flex-col justify-center items-center">
+        <Spinner />
+        <p>Đang xử lý dữ liệu...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="py-8 flex flex-col justify-center items-center">
@@ -93,7 +113,7 @@ function TotalsPanel() {
         <Table data={data} />
       ) : (
         <>
-          <img src={note} alt="note" className="w-5/12 h-96" />
+          <img src={note} alt="note" className="w-5/12 h-56" />
           <p className="mt-10 mb-5 text-xl font-semibold">Chưa có dữ liệu</p>
           <Button
             as="label"
@@ -103,7 +123,7 @@ function TotalsPanel() {
             color="white"
             variant="solid"
           >
-            Thêm tổng kê
+            Tải tệp .xlsx
           </Button>
           <input type="file" id="file" onChange={onChange} className="hidden" />
         </>
@@ -113,17 +133,3 @@ function TotalsPanel() {
 }
 
 export default TotalsPanel;
-
-// [
-//     ["Custom", "38", "", "1", "", "", "142.8", "1", "", ""],
-//     ["474VC/175/9/2/12", "38", "", "1", "", "", "142.8", "2", "", ""],
-//     ["474VC/175/9/2/12", "38", "", "1", "", "", "142.8", "3", "", ""],
-//     ["474VC/175/9/2/12", "38", "", "1", "", "", "142.8", "4", "", ""],
-//     ["Tổng", "135", "", "1", "", "", "142.8", "", "", ""],
-//     ["Đã thi công	", "135", "", "1", "", "", "142.8", "", "", ""],
-//     ["Còn lại", "135", "", "1", "", "", "142.8", "", "", ""],
-//     ["474VC/175/9/2/12", "38", "", "1", "", "", "142.8", "", "", ""],
-//     ["Tổng", "135", "", "1", "", "", "142.8", "", "", ""],
-//     ["Đã thi công	", "135", "", "1", "", "", "142.8", "", "", ""],
-//     ["Còn lại", "135", "", "1", "", "", "142.8", "", "", ""],
-//   ]

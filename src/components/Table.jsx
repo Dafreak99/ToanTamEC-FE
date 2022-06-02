@@ -1,117 +1,190 @@
-import { Box, Icon } from "@chakra-ui/react";
+import { Box, Flex, Icon } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { HiOutlineChevronLeft, HiOutlineChevronRight } from "react-icons/hi";
+import {
+  HiOutlineChevronLeft,
+  HiOutlineChevronRight,
+  HiOutlineChevronDown,
+  HiOutlineChevronUp,
+} from "react-icons/hi";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
-function Table() {
+function Table({ data }) {
+  console.log(data);
   const [toggleA, setToggleA] = useState(true);
   const [toggleB, setToggleB] = useState(true);
   const [toggleOne, setToggleOne] = useState(true);
   const [toggleTwo, setToggleTwo] = useState(true);
 
-  const Tr = ({ d }) => {
+  const [toggles, setToggles] = useState(() => {
+    let toggles = {};
+    for (let i = 1; i <= data.formattedHeadings.length; i++) {
+      let propName = `toggle${i}`;
+      toggles[propName] = true;
+    }
+
+    return toggles;
+  });
+
+  const [rowToggles, setRowToggles] = useState(() => {
+    let toggles = {};
+
+    for (let i = 1; i <= Object.keys(data.content).length; i++) {
+      let propName = `toggle${i}`;
+      toggles[propName] = true;
+    }
+
+    return toggles;
+  });
+
+  const Tr = ({ d, bg }) => {
     return (
-      <tr>
-        <Td>{d[0]}</Td>
-        <Td>{d[1]}</Td>
-        <Td>{d[2]}</Td>
-        {toggleOne && (
-          <>
-            <Td>{d[3]}</Td>
-            <Td>{d[4]}</Td>
-            <Td>{d[5]}</Td>
-            <Td>{d[6]}</Td>
-          </>
-        )}
-        <Td>{d[7]}</Td>
-        {toggleTwo && (
-          <>
-            <Td>{d[8]}</Td>
-            <Td>{d[9]}</Td>
-            <Td>{d[10]}</Td>
-          </>
-        )}
-      </tr>
+      <Box as="tr" bg={bg}>
+        {data.formattedHeadings.map((heading, i) => {
+          if (heading.type === "child") {
+            return (
+              <Td bg={i === 0 ? "#EDF2F6" : "#EDF2F666"}>
+                {typeof d[heading.count] === "undefined"
+                  ? ""
+                  : d[heading.count]}
+              </Td>
+            );
+          } else if (heading.type === "parent") {
+            return (
+              <>
+                <Td
+                  onClick={() =>
+                    setToggles({
+                      ...toggles,
+                      [`toggle${i + 1}`]: !toggles[`toggle${i + 1}`],
+                    })
+                  }
+                  icon={
+                    toggles[`toggle${i + 1}`]
+                      ? HiOutlineChevronLeft
+                      : HiOutlineChevronRight
+                  }
+                >
+                  {typeof d[heading.count] === "undefined"
+                    ? ""
+                    : d[heading.count]}
+                </Td>
+                {toggles[`toggle${i + 1}`] && (
+                  <>
+                    {heading.content.map((child) => {
+                      return (
+                        <Td>
+                          {typeof d[child.count] === "undefined"
+                            ? ""
+                            : d[child.count]}
+                        </Td>
+                      );
+                    })}
+                  </>
+                )}
+              </>
+            );
+          }
+        })}
+      </Box>
     );
   };
 
   return (
     <div style={{ overflowX: "auto" }} className="table-wrapper">
       {/* First Row */}
-
       <table class="big-table">
         <tr className="h-80">
-          <th className="min-w-44">Số trụ</th>
-          <RotatedTh className="text-white primary">Khoảng cách (m)</RotatedTh>
-          <RotatedTh
-            onClick={() => setToggleOne(!toggleOne)}
-            className="text-white primary"
-            icon={toggleOne ? HiOutlineChevronLeft : HiOutlineChevronRight}
-          >
-            Đường dây sử dụng mới
-          </RotatedTh>
-          {toggleOne && (
-            <>
-              <RotatedTh>Móng trụ M12-ba (BV 01)</RotatedTh>
-              <RotatedTh>Móng gia cố trụ trung thế Mac200 (14m)</RotatedTh>
-              <RotatedTh>
-                Móng gia cố trụ trung thế cập đôi trụ 12m Mac200
-              </RotatedTh>
-              <RotatedTh>Trụ BTLT 12m (BV số 07)</RotatedTh>
-            </>
-          )}
-
-          <RotatedTh
-            onClick={() => setToggleTwo(!toggleTwo)}
-            className="text-white primary"
-            icon={toggleTwo ? HiOutlineChevronLeft : HiOutlineChevronRight}
-          >
-            Dây
-          </RotatedTh>
-          {toggleTwo && (
-            <>
-              <RotatedTh>Dây trần ACKP 50mm2</RotatedTh>
-              <RotatedTh>Lorem ipsum dolor sit</RotatedTh>
-              <RotatedTh>Lorem ipsum dolor sit</RotatedTh>
-            </>
-          )}
+          {data.formattedHeadings.map((heading, index) => {
+            if (heading.type === "child") {
+              if (index === 0) {
+                return (
+                  <th className="min-w-56 text-white primary">
+                    {heading.value}
+                  </th>
+                );
+              } else {
+                return (
+                  <RotatedTh className="text-white primary">
+                    {heading.value}
+                  </RotatedTh>
+                );
+              }
+            } else if (heading.type === "parent") {
+              return (
+                <>
+                  <RotatedTh
+                    className="text-white primary"
+                    onClick={() =>
+                      setToggles({
+                        ...toggles,
+                        [`toggle${index + 1}`]: !toggles[`toggle${index + 1}`],
+                      })
+                    }
+                    icon={
+                      toggles[`toggle${index + 1}`]
+                        ? HiOutlineChevronLeft
+                        : HiOutlineChevronRight
+                    }
+                  >
+                    {heading.value}
+                  </RotatedTh>
+                  {toggles[`toggle${index + 1}`] && (
+                    <>
+                      {heading.content.map((each) => {
+                        return <RotatedTh>{each.value}</RotatedTh>;
+                      })}
+                    </>
+                  )}
+                </>
+              );
+            }
+          })}
         </tr>
-        {/* KENH A */}
-        <Box
-          as="tr"
-          className="pointer text-white "
-          onClick={() => setToggleA(!toggleA)}
-        >
-          <td className="primary">Kênh A</td>
-        </Box>
-        {toggleA && (
-          <>
-            <Tr d={data[0]} />
-            <Tr d={data[1]} />
-            <Tr d={data[2]} />
-            <Tr d={data[3]} />
-            <Tr d={data[4]} />
-            <Tr d={data[5]} />
-            <Tr d={data[6]} />
-          </>
-        )}
 
-        {/* KENH B */}
-        <Box
-          as="tr"
-          className="pointer text-white"
-          onClick={() => setToggleB(!toggleB)}
-        >
-          <td className="primary">Kênh B</td>
-        </Box>
-        {toggleB && (
-          <>
-            <Tr d={data[7]} />
-            <Tr d={data[8]} />
-            <Tr d={data[9]} />
-            <Tr d={data[10]} />
-          </>
-        )}
+        {/* KENH A */}
+        {Object.entries(data.content).map((location, index) => {
+          return (
+            <>
+              <Box
+                as="tr"
+                className="pointer text-white "
+                onClick={() =>
+                  setRowToggles({
+                    ...rowToggles,
+                    [`toggle${index + 1}`]: !rowToggles[`toggle${index + 1}`],
+                  })
+                }
+              >
+                <Flex
+                  justifyContent="space-between"
+                  alignItems="center"
+                  as="td"
+                  cursor="pointer"
+                  className="primary min-w-56"
+                >
+                  <p>{location[0]}</p>
+                  {toggles[`toggle${index + 1}`] ? (
+                    <HiOutlineChevronUp />
+                  ) : (
+                    <HiOutlineChevronDown />
+                  )}
+                </Flex>
+              </Box>
+              {rowToggles[`toggle${index + 1}`] && (
+                <>
+                  {location[1].map((value, index) => (
+                    <Tr
+                      d={value}
+                      bg={
+                        index < location[1].length - 3 ? "#EDF2F666" : "#EDF2F6"
+                      }
+                    />
+                  ))}
+                </>
+              )}
+            </>
+          );
+        })}
       </table>
     </div>
   );
@@ -128,9 +201,9 @@ const RotatedTh = ({ className, children, icon, ...rest }) => {
   );
 };
 
-const Td = ({ children }) => {
+const Td = ({ children, ...props }) => {
   return (
-    <Box as="td" className="text-center min-20">
+    <Box as="td" className="text-center min-20" {...props}>
       {children}
     </Box>
   );
