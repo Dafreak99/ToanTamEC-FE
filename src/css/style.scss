@@ -97,10 +97,12 @@ a {
     -ms-writing-mode: tb-rl;
     writing-mode: vertical-rl;
     text-transform: uppercase;
-    min-width: 80px;
-    max-width: 120px;
+    min-width: 40px;
+    max-width: 50px;
     order: 1;
     align-items: center;
+
+    height: 265px;
   }
 
   .vertical svg {
@@ -125,6 +127,8 @@ a {
 
 .chakra-input:focus,
 .chakra-input[data-focus],
+.chakra-select:focus,
+.chakra-select[data-focus],
 input:focus,
 textarea:focus {
   box-shadow: 0 0 0 1px #de3b33 !important;

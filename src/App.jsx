@@ -4,16 +4,14 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import "./css/style.scss";
 
 // Import pages
-import Sidebar from "./partials/Sidebar";
-import Header from "./partials/Header";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
 import Diary from "./pages/Diary";
 import Profile from "./pages/Profile";
+import Login from "./pages/Login";
 
 function App() {
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     document.querySelector("html").style.scrollBehavior = "auto";
@@ -23,27 +21,13 @@ function App() {
 
   return (
     <>
-      <div className="flex h-screen overflow-hidden">
-        {/* Sidebar */}
-        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-        {/* Content area */}
-        <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-          {/*  Site header */}
-          <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-          <main>
-            <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-              <Routes>
-                <Route exact path="/" element={<Projects />} />
-                <Route path="/project/:id" element={<ProjectDetail />} />
-                <Route exact path="/nhat-ky" element={<Diary />} />
-                <Route exact path="/profile" element={<Profile />} />
-              </Routes>
-            </div>
-          </main>
-        </div>
-      </div>
+      <Routes>
+        <Route exact path="/" element={<Projects />} />
+        <Route path="/du-an/:id" element={<ProjectDetail />} />
+        <Route exact path="/nhat-ky" element={<Diary />} />
+        <Route exact path="/thong-tin" element={<Profile />} />
+        <Route exact path="/dang-nhap" element={<Login />} />
+      </Routes>
     </>
   );
 }

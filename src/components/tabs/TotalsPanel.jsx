@@ -108,11 +108,11 @@ function TotalsPanel() {
   }
 
   return (
-    <div className="py-8 flex flex-col justify-center items-center">
+    <>
       {data ? (
         <Table data={data} />
       ) : (
-        <>
+        <div className="py-8 flex flex-col justify-center items-center">
           <img src={note} alt="note" className="w-5/12 h-56" />
           <p className="mt-10 mb-5 text-xl font-semibold">Chưa có dữ liệu</p>
           <Button
@@ -126,9 +126,9 @@ function TotalsPanel() {
             Tải tệp .xlsx
           </Button>
           <input type="file" id="file" onChange={onChange} className="hidden" />
-        </>
+        </div>
       )}
-    </div>
+    </>
   );
 }
 

@@ -9,12 +9,6 @@ import {
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 function Table({ data }) {
-  console.log(data);
-  const [toggleA, setToggleA] = useState(true);
-  const [toggleB, setToggleB] = useState(true);
-  const [toggleOne, setToggleOne] = useState(true);
-  const [toggleTwo, setToggleTwo] = useState(true);
-
   const [toggles, setToggles] = useState(() => {
     let toggles = {};
     for (let i = 1; i <= data.formattedHeadings.length; i++) {
@@ -52,6 +46,7 @@ function Table({ data }) {
             return (
               <>
                 <Td
+                  cursor="pointer"
                   onClick={() =>
                     setToggles({
                       ...toggles,
@@ -72,7 +67,7 @@ function Table({ data }) {
                   <>
                     {heading.content.map((child) => {
                       return (
-                        <Td>
+                        <Td cursor="pointer">
                           {typeof d[child.count] === "undefined"
                             ? ""
                             : d[child.count]}
@@ -90,103 +85,116 @@ function Table({ data }) {
   };
 
   return (
-    <div style={{ overflowX: "auto" }} className="table-wrapper">
-      {/* First Row */}
-      <table class="big-table">
-        <tr className="h-80">
-          {data.formattedHeadings.map((heading, index) => {
-            if (heading.type === "child") {
-              if (index === 0) {
+    <>
+      <p className="font-bold text-md mt-2">
+        Tổng kê Lorem ipsum dolor sit amet, consectetur adipiscing elit
+      </p>
+      <p className="text-xs mb-3">
+        Cập nhật lần cuối vào 12:05:16 ngày 12/5/2022.
+      </p>
+      <div style={{ overflowX: "auto" }} className="table-wrapper">
+        {/* First Row */}
+
+        <table class="big-table">
+          <tr className="h-80">
+            {data.formattedHeadings.map((heading, index) => {
+              if (heading.type === "child") {
+                if (index === 0) {
+                  return (
+                    <th className="min-w-56 text-white primary">
+                      {heading.value}
+                    </th>
+                  );
+                } else {
+                  return (
+                    <RotatedTh className="text-white primary">
+                      {heading.value}
+                    </RotatedTh>
+                  );
+                }
+              } else if (heading.type === "parent") {
                 return (
-                  <th className="min-w-56 text-white primary">
-                    {heading.value}
-                  </th>
-                );
-              } else {
-                return (
-                  <RotatedTh className="text-white primary">
-                    {heading.value}
-                  </RotatedTh>
+                  <>
+                    <RotatedTh
+                      className="text-white primary"
+                      cursor="pointer"
+                      onClick={() =>
+                        setToggles({
+                          ...toggles,
+                          [`toggle${index + 1}`]:
+                            !toggles[`toggle${index + 1}`],
+                        })
+                      }
+                      icon={
+                        toggles[`toggle${index + 1}`]
+                          ? HiOutlineChevronLeft
+                          : HiOutlineChevronRight
+                      }
+                    >
+                      {heading.value}
+                    </RotatedTh>
+                    {toggles[`toggle${index + 1}`] && (
+                      <>
+                        {heading.content.map((each) => {
+                          return <RotatedTh>{each.value}</RotatedTh>;
+                        })}
+                      </>
+                    )}
+                  </>
                 );
               }
-            } else if (heading.type === "parent") {
-              return (
-                <>
-                  <RotatedTh
-                    className="text-white primary"
-                    onClick={() =>
-                      setToggles({
-                        ...toggles,
-                        [`toggle${index + 1}`]: !toggles[`toggle${index + 1}`],
-                      })
-                    }
-                    icon={
-                      toggles[`toggle${index + 1}`]
-                        ? HiOutlineChevronLeft
-                        : HiOutlineChevronRight
-                    }
-                  >
-                    {heading.value}
-                  </RotatedTh>
-                  {toggles[`toggle${index + 1}`] && (
-                    <>
-                      {heading.content.map((each) => {
-                        return <RotatedTh>{each.value}</RotatedTh>;
-                      })}
-                    </>
-                  )}
-                </>
-              );
-            }
-          })}
-        </tr>
+            })}
+          </tr>
 
-        {/* KENH A */}
-        {Object.entries(data.content).map((location, index) => {
-          return (
-            <>
-              <Box
-                as="tr"
-                className="pointer text-white "
-                onClick={() =>
-                  setRowToggles({
-                    ...rowToggles,
-                    [`toggle${index + 1}`]: !rowToggles[`toggle${index + 1}`],
-                  })
-                }
-              >
-                <Flex
-                  justifyContent="space-between"
-                  alignItems="center"
-                  as="td"
-                  cursor="pointer"
-                  className="primary min-w-56"
+          {/* KENH A */}
+          {Object.entries(data.content).map((location, index) => {
+            return (
+              <>
+                <Box
+                  as="tr"
+                  className="pointer text-white "
+                  onClick={() =>
+                    setRowToggles({
+                      ...rowToggles,
+                      [`toggle${index + 1}`]: !rowToggles[`toggle${index + 1}`],
+                    })
+                  }
                 >
-                  <p>{location[0]}</p>
-                  {toggles[`toggle${index + 1}`] ? (
-                    <HiOutlineChevronUp />
-                  ) : (
-                    <HiOutlineChevronDown />
-                  )}
-                </Flex>
-              </Box>
-              {rowToggles[`toggle${index + 1}`] && (
-                <>
-                  {location[1].map((value, index) => (
-                    <Tr
-                      d={value}
-                      bg={
-                        index < location[1].length - 3 ? "#EDF2F666" : "#EDF2F6"
-                      }
-                    />
-                  ))}
-                </>
-              )}
-            </>
-          );
-        })}
-      </table>
-    </div>
+                  <Flex
+                    justifyContent="space-between"
+                    alignItems="center"
+                    as="td"
+                    cursor="pointer"
+                    className="primary min-w-56"
+                  >
+                    <p>{location[0]}</p>
+                    {toggles[`toggle${index + 1}`] ? (
+                      <HiOutlineChevronUp />
+                    ) : (
+                      <HiOutlineChevronDown />
+                    )}
+                  </Flex>
+                </Box>
+                {rowToggles[`toggle${index + 1}`] && (
+                  <>
+                    {location[1].map((value, index) => (
+                      <Tr
+                        d={value}
+                        bg={
+                          index < location[1].length - 3
+                            ? "#EDF2F666"
+                            : "#EDF2F6"
+                        }
+                      />
+                    ))}
+                  </>
+                )}
+              </>
+            );
+          })}
+        </table>
+      </div>
+    </>
   );
 }
 
