@@ -1,5 +1,5 @@
 import { Box, Flex, Icon } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
@@ -29,6 +29,12 @@ function Table({ data }) {
 
     return toggles;
   });
+
+  useEffect(() => {
+    document.addEventListener("contextmenu", (event) => {
+      event.preventDefault();
+    });
+  }, []);
 
   const Tr = ({ d, bg }) => {
     return (
