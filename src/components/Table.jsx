@@ -1,4 +1,12 @@
-import { Box, Flex, Icon } from "@chakra-ui/react";
+import {
+  Flex,
+  Box,
+  Icon,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+} from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import {
   HiOutlineChevronLeft,
@@ -6,7 +14,6 @@ import {
   HiOutlineChevronDown,
   HiOutlineChevronUp,
 } from "react-icons/hi";
-import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 function Table({ data }) {
   const [toggles, setToggles] = useState(() => {
@@ -36,6 +43,29 @@ function Table({ data }) {
     });
   }, []);
 
+  const RotatedTh = ({ className, children, icon, ...rest }) => {
+    return (
+      <Box
+        as="th"
+        {...rest}
+        className={`vertical ${className ? className : ""}`}
+      >
+        <Menu>
+          <MenuButton>
+            <div className={`wrapper ${!icon && "no-icon"}`}>
+              <span className="vertical">{children}</span>
+              {icon && <Icon as={icon} fontSize="1.5rem" />}
+            </div>
+          </MenuButton>
+          <MenuList>
+            <MenuItem>Download</MenuItem>
+            <MenuItem>Create a Copy</MenuItem>
+          </MenuList>
+        </Menu>
+      </Box>
+    );
+  };
+
   const Tr = ({ d, bg }) => {
     return (
       <Box as="tr" bg={bg}>
@@ -51,24 +81,12 @@ function Table({ data }) {
           } else if (heading.type === "parent") {
             return (
               <>
-                <Td
-                  cursor="pointer"
-                  onClick={() =>
-                    setToggles({
-                      ...toggles,
-                      [`toggle${i + 1}`]: !toggles[`toggle${i + 1}`],
-                    })
-                  }
-                  icon={
-                    toggles[`toggle${i + 1}`]
-                      ? HiOutlineChevronLeft
-                      : HiOutlineChevronRight
-                  }
-                >
+                <Td cursor="pointer">
                   {typeof d[heading.count] === "undefined"
                     ? ""
                     : d[heading.count]}
                 </Td>
+
                 {toggles[`toggle${i + 1}`] && (
                   <>
                     {heading.content.map((child) => {
@@ -90,6 +108,38 @@ function Table({ data }) {
     );
   };
 
+  const Td = ({ children, ...props }) => {
+    if (children) {
+      return (
+        <Box
+          as="td"
+          className="text-center min-20"
+          {...props}
+          onClick={() => console.log("a")}
+        >
+          <Menu>
+            <MenuButton>{children}</MenuButton>
+            <MenuList>
+              <MenuItem>Chi tiết</MenuItem>
+              <MenuItem>Cập nhật</MenuItem>
+            </MenuList>
+          </Menu>
+        </Box>
+      );
+    }
+
+    return (
+      <Box
+        as="td"
+        className="text-center min-20"
+        {...props}
+        onClick={() => console.log("a")}
+      >
+        {children}
+      </Box>
+    );
+  };
+
   return (
     <>
       <p className="font-bold text-md mt-2">
@@ -107,8 +157,16 @@ function Table({ data }) {
               if (heading.type === "child") {
                 if (index === 0) {
                   return (
-                    <th className="min-w-56 text-white primary">
-                      {heading.value}
+                    <th className="min-w-36 md:min-w-56 primary">
+                      <Menu>
+                        <MenuButton className="text-white">
+                          {heading.value}
+                        </MenuButton>
+                        <MenuList>
+                          <MenuItem>Download</MenuItem>
+                          <MenuItem>Create a Copy</MenuItem>
+                        </MenuList>
+                      </Menu>
                     </th>
                   );
                 } else {
@@ -171,7 +229,7 @@ function Table({ data }) {
                     alignItems="center"
                     as="td"
                     cursor="pointer"
-                    className="primary min-w-56"
+                    className="primary min-w-36 md:min-w-56"
                   >
                     <p>{location[0]}</p>
                     {toggles[`toggle${index + 1}`] ? (
@@ -203,24 +261,5 @@ function Table({ data }) {
     </>
   );
 }
-
-const RotatedTh = ({ className, children, icon, ...rest }) => {
-  return (
-    <Box as="th" {...rest} className={`vertical ${className ? className : ""}`}>
-      <div className={`wrapper ${!icon && "no-icon"}`}>
-        <span className="vertical">{children}</span>
-        {icon && <Icon as={icon} fontSize="1.5rem" />}
-      </div>
-    </Box>
-  );
-};
-
-const Td = ({ children, ...props }) => {
-  return (
-    <Box as="td" className="text-center min-20" {...props}>
-      {children}
-    </Box>
-  );
-};
 
 export default Table;

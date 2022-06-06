@@ -19,7 +19,9 @@ function ProjectDetail() {
                 _selected={{ borderColor: "red.500" }}
                 key={i}
               >
-                <h1 className="text-lg font-semibold text-gray-700">{tab}</h1>
+                <h1 className="text-lg font-semibold text-gray-700 whitespace-nowrap">
+                  {tab}
+                </h1>
               </Tab>
             ))}
           </TabList>
