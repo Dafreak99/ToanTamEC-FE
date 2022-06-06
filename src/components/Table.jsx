@@ -6,6 +6,7 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  useDisclosure,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import {
@@ -14,8 +15,11 @@ import {
   HiOutlineChevronDown,
   HiOutlineChevronUp,
 } from "react-icons/hi";
+import TotalDetailsCellModal from "./modals/TotalsDetailCellModal";
 
 function Table({ data }) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const [toggles, setToggles] = useState(() => {
     let toggles = {};
     for (let i = 1; i <= data.formattedHeadings.length; i++) {
@@ -50,18 +54,16 @@ function Table({ data }) {
         {...rest}
         className={`vertical ${className ? className : ""}`}
       >
-        <Menu>
-          <MenuButton>
-            <div className={`wrapper ${!icon && "no-icon"}`}>
-              <span className="vertical">{children}</span>
-              {icon && <Icon as={icon} fontSize="1.5rem" />}
-            </div>
-          </MenuButton>
-          <MenuList>
-            <MenuItem>Download</MenuItem>
-            <MenuItem>Create a Copy</MenuItem>
-          </MenuList>
-        </Menu>
+        {icon && <Icon as={icon} fontSize="1.5rem" />}
+        <span className="vertical">
+          <Menu>
+            <MenuButton>{children}</MenuButton>
+            <MenuList>
+              <MenuItem>Download</MenuItem>
+              <MenuItem>Create a Copy</MenuItem>
+            </MenuList>
+          </Menu>
+        </span>
       </Box>
     );
   };
@@ -120,7 +122,7 @@ function Table({ data }) {
           <Menu>
             <MenuButton>{children}</MenuButton>
             <MenuList>
-              <MenuItem>Chi tiết</MenuItem>
+              <MenuItem onClick={onOpen}>Chi tiết</MenuItem>
               <MenuItem>Cập nhật</MenuItem>
             </MenuList>
           </Menu>
@@ -152,6 +154,7 @@ function Table({ data }) {
         {/* First Row */}
 
         <table class="big-table">
+          <TotalDetailsCellModal isOpen={isOpen} onClose={onClose} />
           <tr className="h-80">
             {data.formattedHeadings.map((heading, index) => {
               if (heading.type === "child") {
@@ -210,7 +213,7 @@ function Table({ data }) {
             })}
           </tr>
 
-          {/* KENH A */}
+          {/* Locations */}
           {Object.entries(data.content).map((location, index) => {
             return (
               <>
@@ -229,7 +232,7 @@ function Table({ data }) {
                     alignItems="center"
                     as="td"
                     cursor="pointer"
-                    className="primary min-w-36 md:min-w-56"
+                    className="primary min-w-36 md:min-w-56 p-2"
                   >
                     <p>{location[0]}</p>
                     {toggles[`toggle${index + 1}`] ? (

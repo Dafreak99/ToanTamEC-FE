@@ -90,8 +90,8 @@ a {
 
   .vertical span {
     display: flex;
-    transform: rotate(-180deg);
-    -ms-writing-mode: tb-rl;
+    transform: rotate(90deg);
+    -ms-writing-mode: vertical-lr;
     writing-mode: vertical-rl;
     text-transform: uppercase;
     min-width: 30px;
@@ -104,6 +104,12 @@ a {
 
   .vertical svg {
     order: -1;
+  }
+
+  .chakra-menu__menu-button {
+    width: 100%;
+    height: 100%;
+    padding: 5px 10px;
   }
 }
 
@@ -130,10 +136,4 @@ input:focus,
 textarea:focus {
   box-shadow: 0 0 0 1px #de3b33 !important;
   border-color: #de3b33 !important;
-}
-
-.chakra-menu__menu-button {
-  width: 100%;
-  height: 100%;
-  padding: 5px 10px;
 }

@@ -4,7 +4,6 @@ import { Vietnamese } from "flatpickr/dist/l10n/vn.js";
 
 function Datepicker({ onChange }) {
   const options = {
-    static: true,
     monthSelectorType: "static",
     dateFormat: "M j, Y",
     defaultDate: new Date(),
@@ -28,7 +27,7 @@ function Datepicker({ onChange }) {
         className="form-input pl-9 text-slate-500 hover:text-slate-600 font-medium focus:border-slate-300 w-60"
         options={options}
       />
-      <div className="absolute inset-0 right-auto flex items-center pointer-events-none">
+      <div className="absolute top-3 right-auto flex items-center pointer-events-none">
         <svg
           className="w-4 h-4 fill-current text-slate-500 ml-3"
           viewBox="0 0 16 16"
