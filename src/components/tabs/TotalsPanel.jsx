@@ -43,14 +43,14 @@ function TotalsPanel() {
         });
       console.log("original converted JSON format", data);
 
-      await processTableData(data);
+      processTableData(data);
       setLoading(false);
     };
 
     reader.readAsBinaryString(file);
   };
 
-  const processTableData = async (data) => {
+  const processTableData = (data) => {
     let formatted = {
       headings: [],
       content: {},
@@ -124,19 +124,87 @@ function TotalsPanel() {
     });
 
     processTableData(result);
+
+    toast({
+      status: "success",
+      duration: 500,
+      position: "bottom-right",
+      title: "Xoá thành công!",
+    });
   };
 
   const removeRow = () => {
     let INDEX = 3;
 
-    let original = data.original;
-
+    let { original } = data;
     original.splice(INDEX, 1);
 
     processTableData(original);
+    toast({
+      status: "success",
+      duration: 500,
+      position: "bottom-right",
+      title: "Xoá thành công!",
+    });
   };
 
-  console.log(isLoading);
+  const removeExpandableCol = () => {
+    let INDEX = 2;
+    // 1. remove these cols in all rows
+    const { formattedHeadings, original } = data;
+
+    let result = original.map((row) => {
+      row.splice(INDEX, formattedHeadings[INDEX].content.length + 1);
+      return row;
+    });
+
+    processTableData(result);
+
+    toast({
+      status: "success",
+      duration: 500,
+      position: "bottom-right",
+      title: "Xoá thành công!",
+    });
+
+    // 2. Update the roman number in heading => II. becomes I.
+  };
+
+  const removeExpandableRow = () => {
+    let LOCATION = "3/ ĐDTT nhánh Đường Cày";
+    // 1. remove these cols in all rows
+    const { content, original } = data;
+
+    let locations = Object.entries(content);
+    let from = 1;
+    let to = 1;
+
+    for (let i = 0; i < locations.length; i++) {
+      console.log(locations[i][0]);
+      if (locations[i][0] === LOCATION) {
+        to += locations[i][1].length;
+        break;
+      } else {
+        from += locations[i][1].length + 1;
+        to += locations[i][1].length + 1;
+      }
+    }
+    console.log(original[from], original[to]);
+    original.splice(from, to - from);
+
+    console.log(original[from]);
+
+    processTableData(original);
+
+    toast({
+      status: "success",
+      duration: 500,
+      title: "Xoá thành công!",
+    });
+
+    // 2. Update the roman number in heading => II. becomes I.
+  };
+
   if (isLoading) {
     return (
       <div className="py-8 flex flex-col justify-center items-center">
@@ -150,10 +218,16 @@ function TotalsPanel() {
     <>
       {data ? (
         <>
-          <Button onClick={removeCol} mr="10px">
-            Remove col (3)
+          <Button onClick={removeCol}>Remove col (3)</Button>
+          <Button onClick={removeRow} ml="4">
+            Remove row (3)
           </Button>
-          <Button onClick={removeRow}>Remove row (3)</Button>
+          <Button onClick={removeExpandableCol} ml="4">
+            Remove expand col
+          </Button>
+          <Button onClick={removeExpandableRow} ml="4">
+            Remove expand row
+          </Button>
           <Table data={data} />
         </>
       ) : (

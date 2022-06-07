@@ -30,9 +30,20 @@ import TotalDetailsCellModal from "./modals/TotalsDetailCellModal";
 function Table({ data }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
-    isOpen: isOpen2,
-    onOpen: onOpen2,
-    onClose: onClose2,
+    isOpen: isCellModalOpen,
+    onOpen: onCellModalOpen,
+    onClose: onCellModalClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isHeadingModalOpen,
+    onOpen: onHeadingModalOpen,
+    onClose: onHeadingModalClose,
+  } = useDisclosure();
+  const {
+    isOpen: isLocationModalOpen,
+    onOpen: onLocationModalOpen,
+    onClose: onLocationModalClose,
   } = useDisclosure();
 
   const [toggles, setToggles] = useState(() => {
@@ -68,6 +79,7 @@ function Table({ data }) {
         as="th"
         {...rest}
         className={`vertical ${className ? className : ""}`}
+        onClick={onHeadingModalOpen}
       >
         {icon && <Icon as={icon} fontSize="1.5rem" />}
         <span className="vertical">{children}</span>
@@ -127,16 +139,9 @@ function Table({ data }) {
           as="td"
           className="text-center min-20"
           {...props}
-          onClick={() => onOpen2()}
+          onClick={() => onCellModalOpen()}
         >
           {children}
-          {/* <Menu>
-            <MenuButton>{children}</MenuButton>
-            <MenuList>
-              <MenuItem onClick={onOpen}>Chi tiết</MenuItem>
-              <MenuItem>Cập nhật</MenuItem>
-            </MenuList>
-          </Menu> */}
         </Box>
       );
     }
@@ -148,9 +153,9 @@ function Table({ data }) {
     );
   };
 
-  const ModalE = () => {
+  const CellModal = () => {
     return (
-      <Modal isOpen={isOpen2} onClose={onClose2} isCentered>
+      <Modal isOpen={isCellModalOpen} onClose={onCellModalClose} isCentered>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader fontSize="sm">
@@ -165,7 +170,7 @@ function Table({ data }) {
                   bg="#4a5567"
                   color="#fff"
                   onClick={() => {
-                    onClose2();
+                    onCellModalClose();
                     onOpen();
                   }}
                 >
@@ -174,6 +179,78 @@ function Table({ data }) {
               </ListItem>
               <ListItem>
                 <Button isFullWidth>Cập nhật</Button>
+              </ListItem>
+            </List>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    );
+  };
+
+  const HeadingModal = () => {
+    return (
+      <Modal
+        isOpen={isHeadingModalOpen}
+        onClose={onHeadingModalClose}
+        isCentered
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader fontSize="sm">Heading</ModalHeader>
+          <ModalBody p="1rem 2rem">
+            <List>
+              <ListItem>
+                <Button
+                  isFullWidth
+                  mb="2"
+                  bg="#4a5567"
+                  color="#fff"
+                  onClick={() => {
+                    onHeadingModalClose();
+                    onOpen();
+                  }}
+                >
+                  Thêm vật tư
+                </Button>
+              </ListItem>
+              <ListItem>
+                <Button isFullWidth>Xoá</Button>
+              </ListItem>
+            </List>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    );
+  };
+
+  const LocationModal = () => {
+    return (
+      <Modal
+        isOpen={isLocationModalOpen}
+        onClose={onLocationModalClose}
+        isCentered
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader fontSize="sm">Location Modal </ModalHeader>
+          <ModalBody p="1rem 2rem">
+            <List>
+              <ListItem>
+                <Button
+                  isFullWidth
+                  mb="2"
+                  bg="#4a5567"
+                  color="#fff"
+                  onClick={() => {
+                    onLocationModalClose();
+                    onOpen();
+                  }}
+                >
+                  Thêm vật tư
+                </Button>
+              </ListItem>
+              <ListItem>
+                <Button isFullWidth>Xoá</Button>
               </ListItem>
             </List>
           </ModalBody>
@@ -194,7 +271,10 @@ function Table({ data }) {
         {/* First Row */}
 
         <table class="big-table">
-          <ModalE />
+          <CellModal />
+          <HeadingModal />
+          <LocationModal />
+
           <TotalDetailsCellModal isOpen={isOpen} onClose={onClose} />
           <tr className="h-80">
             {data.formattedHeadings.map((heading, index) => {
@@ -226,7 +306,7 @@ function Table({ data }) {
                     <RotatedTh
                       className="text-white primary"
                       cursor="pointer"
-                      onClick={() =>
+                      onDoubleClick={() =>
                         setToggles({
                           ...toggles,
                           [`toggle${index + 1}`]:
@@ -261,12 +341,16 @@ function Table({ data }) {
                 <Box
                   as="tr"
                   className="pointer text-white "
-                  onClick={() =>
+                  onClick={(e) => {
+                    console.log(e.type);
                     setRowToggles({
                       ...rowToggles,
                       [`toggle${index + 1}`]: !rowToggles[`toggle${index + 1}`],
-                    })
-                  }
+                    });
+                  }}
+                  onContextMenu={() => {
+                    console.log("right");
+                  }}
                 >
                   <Flex
                     justifyContent="space-between"
@@ -276,7 +360,7 @@ function Table({ data }) {
                     className="primary min-w-36 md:min-w-56 p-2"
                   >
                     <p>{location[0]}</p>
-                    {toggles[`toggle${index + 1}`] ? (
+                    {rowToggles[`toggle${index + 1}`] ? (
                       <HiOutlineChevronUp />
                     ) : (
                       <HiOutlineChevronDown />
