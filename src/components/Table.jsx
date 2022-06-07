@@ -7,6 +7,16 @@ import {
   MenuItem,
   MenuList,
   useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  ModalCloseButton,
+  List,
+  ListItem,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import {
@@ -19,6 +29,11 @@ import TotalDetailsCellModal from "./modals/TotalsDetailCellModal";
 
 function Table({ data }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isOpen2,
+    onOpen: onOpen2,
+    onClose: onClose2,
+  } = useDisclosure();
 
   const [toggles, setToggles] = useState(() => {
     let toggles = {};
@@ -55,15 +70,7 @@ function Table({ data }) {
         className={`vertical ${className ? className : ""}`}
       >
         {icon && <Icon as={icon} fontSize="1.5rem" />}
-        <span className="vertical">
-          <Menu>
-            <MenuButton>{children}</MenuButton>
-            <MenuList>
-              <MenuItem>Download</MenuItem>
-              <MenuItem>Create a Copy</MenuItem>
-            </MenuList>
-          </Menu>
-        </span>
+        <span className="vertical">{children}</span>
       </Box>
     );
   };
@@ -112,33 +119,66 @@ function Table({ data }) {
 
   const Td = ({ children, ...props }) => {
     if (children) {
+      if (open) {
+      } else {
+      }
       return (
         <Box
           as="td"
           className="text-center min-20"
           {...props}
-          onClick={() => console.log("a")}
+          onClick={() => onOpen2()}
         >
-          <Menu>
+          {children}
+          {/* <Menu>
             <MenuButton>{children}</MenuButton>
             <MenuList>
               <MenuItem onClick={onOpen}>Chi tiết</MenuItem>
               <MenuItem>Cập nhật</MenuItem>
             </MenuList>
-          </Menu>
+          </Menu> */}
         </Box>
       );
     }
 
     return (
-      <Box
-        as="td"
-        className="text-center min-20"
-        {...props}
-        onClick={() => console.log("a")}
-      >
+      <Box as="td" className="text-center min-20" {...props}>
         {children}
       </Box>
+    );
+  };
+
+  const ModalE = () => {
+    return (
+      <Modal isOpen={isOpen2} onClose={onClose2} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader fontSize="sm">
+            474VC/175/9/2/12/4 - TRỤ BTLT 12M (BV số 07)
+          </ModalHeader>
+          <ModalBody p="1rem 2rem">
+            <List>
+              <ListItem>
+                <Button
+                  isFullWidth
+                  mb="2"
+                  bg="#4a5567"
+                  color="#fff"
+                  onClick={() => {
+                    onClose2();
+                    onOpen();
+                  }}
+                >
+                  Chi tiết
+                </Button>
+              </ListItem>
+              <ListItem>
+                <Button isFullWidth>Cập nhật</Button>
+              </ListItem>
+            </List>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     );
   };
 
@@ -154,6 +194,7 @@ function Table({ data }) {
         {/* First Row */}
 
         <table class="big-table">
+          <ModalE />
           <TotalDetailsCellModal isOpen={isOpen} onClose={onClose} />
           <tr className="h-80">
             {data.formattedHeadings.map((heading, index) => {

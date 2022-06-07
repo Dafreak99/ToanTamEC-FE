@@ -27,7 +27,7 @@ function TotalsPanel() {
       });
     }
 
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       const bstr = evt.target.result;
       const wb = XLSX.read(bstr, { type: "binary" });
       const wsname = wb.SheetNames[0];
@@ -43,15 +43,14 @@ function TotalsPanel() {
         });
       console.log("original converted JSON format", data);
 
-      processTableData(data);
-
+      await processTableData(data);
       setLoading(false);
     };
 
     reader.readAsBinaryString(file);
   };
 
-  const processTableData = (data) => {
+  const processTableData = async (data) => {
     let formatted = {
       headings: [],
       content: {},
@@ -137,6 +136,7 @@ function TotalsPanel() {
     processTableData(original);
   };
 
+  console.log(isLoading);
   if (isLoading) {
     return (
       <div className="py-8 flex flex-col justify-center items-center">

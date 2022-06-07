@@ -90,7 +90,7 @@ a {
 
   .vertical span {
     display: flex;
-    transform: rotate(90deg);
+    transform: rotate(-180deg);
     -ms-writing-mode: vertical-lr;
     writing-mode: vertical-rl;
     text-transform: uppercase;
