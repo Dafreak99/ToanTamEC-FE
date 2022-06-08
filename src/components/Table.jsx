@@ -2,21 +2,13 @@ import {
   Flex,
   Box,
   Icon,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
   useDisclosure,
   Modal,
   ModalOverlay,
   ModalContent,
   ModalHeader,
   ModalBody,
-  ModalFooter,
   Button,
-  ModalCloseButton,
-  List,
-  ListItem,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import {
@@ -27,7 +19,13 @@ import {
 } from "react-icons/hi";
 import TotalDetailsCellModal from "./modals/TotalsDetailCellModal";
 
-function Table({ data }) {
+function Table({
+  data,
+  removeCol,
+  removeRow,
+  removeExpandableCol,
+  removeExpandableRow,
+}) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isCellModalOpen,
@@ -45,6 +43,11 @@ function Table({ data }) {
     onOpen: onLocationModalOpen,
     onClose: onLocationModalClose,
   } = useDisclosure();
+
+  const [modalHeading, setModalHeading] = useState("");
+  const [modalType, setModalType] = useState("");
+  const [deleteCol, setDeleteCol] = useState(null);
+  const [deleteRow, setDeleteRow] = useState(null);
 
   const [toggles, setToggles] = useState(() => {
     let toggles = {};
@@ -73,13 +76,26 @@ function Table({ data }) {
     });
   }, []);
 
+  const setModal = (type, value, isParent = "child") => {
+    setModalHeading(value);
+    setModalType(isParent);
+
+    if (type === "heading") {
+      onHeadingModalOpen();
+    } else if (type === "location") {
+      onLocationModalOpen();
+    } else if (type === "cell") {
+      onCellModalOpen();
+    }
+  };
+
   const RotatedTh = ({ className, children, icon, ...rest }) => {
     return (
       <Box
         as="th"
         {...rest}
         className={`vertical ${className ? className : ""}`}
-        onClick={onHeadingModalOpen}
+        onDoubleClick={onHeadingModalOpen}
       >
         {icon && <Icon as={icon} fontSize="1.5rem" />}
         <span className="vertical">{children}</span>
@@ -87,35 +103,61 @@ function Table({ data }) {
     );
   };
 
-  const Tr = ({ d, bg }) => {
+  const Tr = ({ d, isLastThree }) => {
     return (
-      <Box as="tr" bg={bg}>
+      <Box as="tr" bg={isLastThree ? "#EDF2F6" : "#EDF2F666"}>
         {data.formattedHeadings.map((heading, i) => {
           if (heading.type === "child") {
             return (
-              <Td bg={i === 0 ? "#EDF2F6" : "#EDF2F666"}>
-                {typeof d[heading.count] === "undefined"
-                  ? ""
-                  : d[heading.count]}
+              <Td
+                bg={i === 0 ? "#EDF2F6" : "#EDF2F666"}
+                cursor="pointer"
+                onClick={() => {
+                  if (!isLastThree) {
+                    if (i === 0) {
+                      setModal("location", d[heading.count]);
+
+                      const { rows } = data;
+                      let index = rows.findIndex(
+                        (row) => row === d[heading.count]
+                      );
+                      setDeleteRow(index);
+                    } else if (i === 1) {
+                      setModal("cell", `${d[0]} - ${heading.value}`);
+                    }
+                  }
+                }}
+              >
+                {d?.[heading.count]}
               </Td>
             );
           } else if (heading.type === "parent") {
             return (
               <>
-                <Td cursor="pointer">
-                  {typeof d[heading.count] === "undefined"
-                    ? ""
-                    : d[heading.count]}
+                <Td
+                  cursor="pointer"
+                  onContextMenu={() => {
+                    if (!isLastThree && d[heading.count]) {
+                      setModal("location", d[heading.count]);
+                    }
+                  }}
+                >
+                  {d?.[heading.count]}
                 </Td>
 
                 {toggles[`toggle${i + 1}`] && (
                   <>
                     {heading.content.map((child) => {
                       return (
-                        <Td cursor="pointer">
-                          {typeof d[child.count] === "undefined"
-                            ? ""
-                            : d[child.count]}
+                        <Td
+                          cursor="pointer"
+                          onClick={() => {
+                            if (!isLastThree && d[child.count]) {
+                              setModal("cell", `${d[0]} - ${child.value}`);
+                            }
+                          }}
+                        >
+                          {d?.[child.count]}
                         </Td>
                       );
                     })}
@@ -130,64 +172,66 @@ function Table({ data }) {
   };
 
   const Td = ({ children, ...props }) => {
-    if (children) {
-      if (open) {
-      } else {
-      }
-      return (
-        <Box
-          as="td"
-          className="text-center min-20"
-          {...props}
-          onClick={() => onCellModalOpen()}
-        >
-          {children}
-        </Box>
-      );
-    }
-
     return (
-      <Box as="td" className="text-center min-20" {...props}>
+      <Box as="td" className="text-center" {...props}>
         {children}
       </Box>
     );
   };
 
-  const CellModal = () => {
-    return (
-      <Modal isOpen={isCellModalOpen} onClose={onCellModalClose} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader fontSize="sm">
-            474VC/175/9/2/12/4 - TRỤ BTLT 12M (BV số 07)
-          </ModalHeader>
-          <ModalBody p="1rem 2rem">
-            <List>
-              <ListItem>
-                <Button
-                  isFullWidth
-                  mb="2"
-                  bg="#4a5567"
-                  color="#fff"
-                  onClick={() => {
-                    onCellModalClose();
-                    onOpen();
-                  }}
-                >
-                  Chi tiết
-                </Button>
-              </ListItem>
-              <ListItem>
-                <Button isFullWidth>Cập nhật</Button>
-              </ListItem>
-            </List>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    );
-  };
-
   const HeadingModal = () => {
+    const ParentBody = () => {
+      return (
+        <>
+          <Button
+            isFullWidth
+            variant="gray"
+            mr="4"
+            onClick={() => {
+              onHeadingModalClose();
+              onOpen();
+            }}
+          >
+            Thêm vật tư
+          </Button>
+          <Button
+            isFullWidth
+            onClick={() => {
+              removeExpandableCol(deleteCol);
+              onHeadingModalClose();
+            }}
+          >
+            Xoá
+          </Button>
+        </>
+      );
+    };
+
+    const ChildBody = () => {
+      return (
+        <Button
+          isFullWidth
+          onClick={() => {
+            removeCol(deleteCol);
+            onHeadingModalClose();
+          }}
+        >
+          Xoá
+        </Button>
+      );
+    };
+
+    const PivotBody = () => {
+      return (
+        <>
+          <Button isFullWidth mr="4" variant="gray" onClick={() => {}}>
+            Thêm kênh
+          </Button>
+          <Button isFullWidth>Thêm danh sách vật tư</Button>
+        </>
+      );
+    };
+
     return (
       <Modal
         isOpen={isHeadingModalOpen}
@@ -196,27 +240,46 @@ function Table({ data }) {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader fontSize="sm">Heading</ModalHeader>
+          <ModalHeader fontSize="sm">{modalHeading}</ModalHeader>
           <ModalBody p="1rem 2rem">
-            <List>
-              <ListItem>
-                <Button
-                  isFullWidth
-                  mb="2"
-                  bg="#4a5567"
-                  color="#fff"
-                  onClick={() => {
-                    onHeadingModalClose();
-                    onOpen();
-                  }}
-                >
-                  Thêm vật tư
-                </Button>
-              </ListItem>
-              <ListItem>
-                <Button isFullWidth>Xoá</Button>
-              </ListItem>
-            </List>
+            <Flex justifyContent="space-between" alignItems="center">
+              {modalType === "parent" ? (
+                <ParentBody />
+              ) : modalType === "child" ? (
+                <ChildBody />
+              ) : (
+                <PivotBody />
+              )}
+            </Flex>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    );
+  };
+
+  const CellModal = () => {
+    return (
+      <Modal isOpen={isCellModalOpen} onClose={onCellModalClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader fontSize="sm">{modalHeading}</ModalHeader>
+          <ModalBody p="1rem 2rem">
+            <Flex justifyContent="center" alignItems="center">
+              <Button
+                isFullWidth
+                variant="gray"
+                mr="4"
+                onClick={() => {
+                  onOpen();
+                  onCellModalClose();
+                }}
+              >
+                Chi tiết
+              </Button>
+              <Button isFullWidth onClick={() => {}}>
+                Cập nhật
+              </Button>
+            </Flex>
           </ModalBody>
         </ModalContent>
       </Modal>
@@ -224,6 +287,38 @@ function Table({ data }) {
   };
 
   const LocationModal = () => {
+    const ParentBody = () => {
+      return (
+        <>
+          <Button isFullWidth variant="gray" mr="4" onClick={() => {}}>
+            Thêm trụ
+          </Button>
+          <Button
+            isFullWidth
+            onClick={() => {
+              removeExpandableRow(deleteRow);
+              onLocationModalClose();
+            }}
+          >
+            Xoá
+          </Button>
+        </>
+      );
+    };
+    const ChildBody = () => {
+      return (
+        <Button
+          isFullWidth
+          onClick={() => {
+            removeRow(deleteRow);
+            onLocationModalClose();
+          }}
+        >
+          Xoá
+        </Button>
+      );
+    };
+
     return (
       <Modal
         isOpen={isLocationModalOpen}
@@ -232,27 +327,11 @@ function Table({ data }) {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader fontSize="sm">Location Modal </ModalHeader>
+          <ModalHeader fontSize="sm">{modalHeading}</ModalHeader>
           <ModalBody p="1rem 2rem">
-            <List>
-              <ListItem>
-                <Button
-                  isFullWidth
-                  mb="2"
-                  bg="#4a5567"
-                  color="#fff"
-                  onClick={() => {
-                    onLocationModalClose();
-                    onOpen();
-                  }}
-                >
-                  Thêm vật tư
-                </Button>
-              </ListItem>
-              <ListItem>
-                <Button isFullWidth>Xoá</Button>
-              </ListItem>
-            </List>
+            <Flex justifyItems="center" alignItems="center">
+              {modalType === "parent" ? <ParentBody /> : <ChildBody />}
+            </Flex>
           </ModalBody>
         </ModalContent>
       </Modal>
@@ -281,21 +360,27 @@ function Table({ data }) {
               if (heading.type === "child") {
                 if (index === 0) {
                   return (
-                    <th className="min-w-36 md:min-w-56 primary">
-                      <Menu>
-                        <MenuButton className="text-white">
-                          {heading.value}
-                        </MenuButton>
-                        <MenuList>
-                          <MenuItem>Download</MenuItem>
-                          <MenuItem>Create a Copy</MenuItem>
-                        </MenuList>
-                      </Menu>
+                    <th
+                      className="min-w-36 md:min-w-56 text-white primary cursor-pointer"
+                      onClick={() => {
+                        onHeadingModalOpen();
+                        setModal("heading", heading.value, "pivot");
+                        setDeleteCol(heading.count);
+                      }}
+                    >
+                      {heading.value}
                     </th>
                   );
                 } else {
                   return (
-                    <RotatedTh className="text-white primary">
+                    <RotatedTh
+                      onClick={() => {
+                        setModal("heading", heading.value);
+                        setDeleteCol(heading.count);
+                      }}
+                      className="text-white primary cursor-pointer"
+                      type={heading.type}
+                    >
                       {heading.value}
                     </RotatedTh>
                   );
@@ -304,15 +389,18 @@ function Table({ data }) {
                 return (
                   <>
                     <RotatedTh
-                      className="text-white primary"
-                      cursor="pointer"
-                      onDoubleClick={() =>
+                      className="text-white primary cursor-pointer"
+                      onClick={() =>
                         setToggles({
                           ...toggles,
                           [`toggle${index + 1}`]:
                             !toggles[`toggle${index + 1}`],
                         })
                       }
+                      onContextMenu={() => {
+                        setModal("heading", heading.value, "parent");
+                        setDeleteCol(heading.count);
+                      }}
                       icon={
                         toggles[`toggle${index + 1}`]
                           ? HiOutlineChevronLeft
@@ -321,10 +409,21 @@ function Table({ data }) {
                     >
                       {heading.value}
                     </RotatedTh>
+
                     {toggles[`toggle${index + 1}`] && (
                       <>
                         {heading.content.map((each) => {
-                          return <RotatedTh>{each.value}</RotatedTh>;
+                          return (
+                            <RotatedTh
+                              onClick={() => {
+                                setModal("heading", each.value);
+                                setDeleteCol(each.count);
+                              }}
+                              className="cursor-pointer"
+                            >
+                              {each.value}
+                            </RotatedTh>
+                          );
                         })}
                       </>
                     )}
@@ -341,15 +440,19 @@ function Table({ data }) {
                 <Box
                   as="tr"
                   className="pointer text-white "
-                  onClick={(e) => {
-                    console.log(e.type);
+                  onClick={() => {
                     setRowToggles({
                       ...rowToggles,
                       [`toggle${index + 1}`]: !rowToggles[`toggle${index + 1}`],
                     });
                   }}
                   onContextMenu={() => {
-                    console.log("right");
+                    onLocationModalOpen();
+                    setModal("location", location[0], "parent");
+
+                    const { rows } = data;
+                    let index = rows.findIndex((row) => row === location[0]);
+                    setDeleteRow(index);
                   }}
                 >
                   <Flex
@@ -369,14 +472,10 @@ function Table({ data }) {
                 </Box>
                 {rowToggles[`toggle${index + 1}`] && (
                   <>
-                    {location[1].map((value, index) => (
+                    {location[1].map((value, childIndex) => (
                       <Tr
                         d={value}
-                        bg={
-                          index < location[1].length - 3
-                            ? "#EDF2F666"
-                            : "#EDF2F6"
-                        }
+                        isLastThree={childIndex >= location[1].length - 3}
                       />
                     ))}
                   </>

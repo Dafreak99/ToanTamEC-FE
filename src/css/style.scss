@@ -33,17 +33,14 @@ a {
     @apply text-xs md:text-sm;
   }
 
-  th {
-    font-weight: 500;
-    background: #edf2f6;
-  }
-
   tr {
     th {
       position: sticky;
       top: 0;
-
+      font-weight: 500;
+      background: #edf2f6;
       z-index: 9;
+      text-transform: capitalize;
 
       &:first-child {
         left: 0;
@@ -104,6 +101,7 @@ a {
     order: 1;
     align-items: center;
     height: 265px;
+    text-align: left;
   }
 
   .vertical svg {

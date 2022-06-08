@@ -76,7 +76,6 @@ function TotalsPanel() {
     const { headings } = formatted;
 
     let formattedHeadings = [];
-    let toggleHeadings = [];
     let isParent = false;
 
     headings.forEach((heading, index) => {
@@ -88,38 +87,35 @@ function TotalsPanel() {
           count: index,
         });
         isParent = true;
-        toggleHeadings.push(true);
       } else if (isParent) {
         formattedHeadings[formattedHeadings.length - 1].content.push({
           type: "child",
           value: heading,
           count: index,
         });
-        toggleHeadings.push(false);
       } else {
         formattedHeadings.push({
           type: "child",
           value: heading,
           count: index,
         });
-        toggleHeadings.push(false);
       }
     });
-    console.log(formattedHeadings);
+
+    let rows = data.map((row) => row[0]);
+
     setData({
       ...formatted,
       formattedHeadings,
-      toggleHeadings,
       original: data,
+      rows,
     });
   };
 
-  const removeCol = () => {
-    let INDEX = 3;
-
-    let original = data.original;
+  const removeCol = (index) => {
+    let { original } = data;
     let result = original.map((row) => {
-      row.splice(INDEX, 1);
+      row.splice(index, 1);
       return row;
     });
 
@@ -127,34 +123,31 @@ function TotalsPanel() {
 
     toast({
       status: "success",
-      duration: 500,
+      duration: 1000,
       position: "bottom-right",
       title: "Xoá thành công!",
     });
   };
 
-  const removeRow = () => {
-    let INDEX = 3;
-
+  const removeRow = (index) => {
     let { original } = data;
-    original.splice(INDEX, 1);
+    original.splice(index, 1);
 
     processTableData(original);
     toast({
       status: "success",
-      duration: 500,
+      duration: 1000,
       position: "bottom-right",
       title: "Xoá thành công!",
     });
   };
 
-  const removeExpandableCol = () => {
-    let INDEX = 2;
+  const removeExpandableCol = (index) => {
     // 1. remove these cols in all rows
     const { formattedHeadings, original } = data;
 
     let result = original.map((row) => {
-      row.splice(INDEX, formattedHeadings[INDEX].content.length + 1);
+      row.splice(index, formattedHeadings[index].content.length + 1);
       return row;
     });
 
@@ -162,7 +155,7 @@ function TotalsPanel() {
 
     toast({
       status: "success",
-      duration: 500,
+      duration: 1000,
       position: "bottom-right",
       title: "Xoá thành công!",
     });
@@ -170,17 +163,17 @@ function TotalsPanel() {
     // 2. Update the roman number in heading => II. becomes I.
   };
 
-  const removeExpandableRow = () => {
-    let LOCATION = "3/ ĐDTT nhánh Đường Cày";
+  const removeExpandableRow = (index) => {
     // 1. remove these cols in all rows
-    const { content, original } = data;
+    const { content, original, rows } = data;
+
+    let LOCATION = rows[index];
 
     let locations = Object.entries(content);
     let from = 1;
     let to = 1;
 
     for (let i = 0; i < locations.length; i++) {
-      console.log(locations[i][0]);
       if (locations[i][0] === LOCATION) {
         to += locations[i][1].length;
         break;
@@ -189,19 +182,15 @@ function TotalsPanel() {
         to += locations[i][1].length + 1;
       }
     }
-    console.log(original[from], original[to]);
-    original.splice(from, to - from);
-
-    console.log(original[from]);
+    original.splice(from, to - from + 1);
 
     processTableData(original);
 
     toast({
       status: "success",
-      duration: 500,
+      duration: 1000,
       title: "Xoá thành công!",
     });
-
     // 2. Update the roman number in heading => II. becomes I.
   };
 
@@ -218,17 +207,13 @@ function TotalsPanel() {
     <>
       {data ? (
         <>
-          <Button onClick={removeCol}>Remove col (3)</Button>
-          <Button onClick={removeRow} ml="4">
-            Remove row (3)
-          </Button>
-          <Button onClick={removeExpandableCol} ml="4">
-            Remove expand col
-          </Button>
-          <Button onClick={removeExpandableRow} ml="4">
-            Remove expand row
-          </Button>
-          <Table data={data} />
+          <Table
+            data={data}
+            removeCol={removeCol}
+            removeRow={removeRow}
+            removeExpandableCol={removeExpandableCol}
+            removeExpandableRow={removeExpandableRow}
+          />
         </>
       ) : (
         <div className="py-8 flex flex-col justify-center items-center">

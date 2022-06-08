@@ -28,6 +28,13 @@ const customTheme = extendTheme({
             bg: "#b8261f",
           },
         },
+        gray: {
+          bg: "#4a5567",
+          color: "#fff",
+          _hover: {
+            bg: "#343c49",
+          },
+        },
       },
       defaultProps: {
         // Then here we set the base variant as the default
