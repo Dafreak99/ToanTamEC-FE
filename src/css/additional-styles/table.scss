@@ -1,6 +1,6 @@
 .chakra-table {
   &__container {
-    max-height: 400px;
+    max-height: 75vh;
     overflow-y: scroll !important;
   }
   th {
@@ -17,6 +17,13 @@
 
   td {
     text-align: center;
+  }
+
+  th,
+  td {
+    border: 2px solid #fff;
+    font-family: inherit;
+    @apply text-xs md:text-sm;
   }
 }
 

@@ -194,6 +194,23 @@ function TotalsPanel() {
     // 2. Update the roman number in heading => II. becomes I.
   };
 
+  const addLocation = (submittedData) => {
+    const { original, content } = data;
+
+    let temp = Array.from({ length: original[0].length }, (_, i) => {
+      if (i === 0) {
+        return `${Object.keys(content).length + 1}/ ${
+          submittedData.locationName
+        }`;
+      }
+      return null;
+    });
+
+    original.push(temp);
+
+    processTableData(original);
+  };
+
   if (isLoading) {
     return (
       <div className="py-8 flex flex-col justify-center items-center">
@@ -213,6 +230,7 @@ function TotalsPanel() {
             removeRow={removeRow}
             removeExpandableCol={removeExpandableCol}
             removeExpandableRow={removeExpandableRow}
+            addLocation={addLocation}
           />
         </>
       ) : (

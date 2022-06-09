@@ -56,10 +56,10 @@ function Projects() {
           <Table size="sm" variant="striped">
             <Thead>
               <Tr textTransform="lowercase">
-                <Th>Mã dự án</Th>
-                <Th>Tên dự án</Th>
-                <Th>Chỉnh sửa lần cuối</Th>
-                <Th>Người chỉnh sửa</Th>
+                <Th className="border-none">Mã dự án</Th>
+                <Th className="border-none">Tên dự án</Th>
+                <Th className="border-none">Chỉnh sửa lần cuối</Th>
+                <Th className="border-none">Người chỉnh sửa</Th>
               </Tr>
             </Thead>
             <Tbody>
