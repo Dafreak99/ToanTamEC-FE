@@ -211,6 +211,21 @@ function TotalsPanel() {
     processTableData(original);
   };
 
+  const addMaterial = (submittedData) => {
+    const { original } = data;
+
+    let newOriginal = original.map((row, i) => {
+      if (i === 0) {
+        row.push(submittedData.materialName);
+      } else {
+        row.push(null);
+      }
+      return row;
+    });
+
+    processTableData(newOriginal);
+  };
+
   if (isLoading) {
     return (
       <div className="py-8 flex flex-col justify-center items-center">
@@ -231,6 +246,7 @@ function TotalsPanel() {
             removeExpandableCol={removeExpandableCol}
             removeExpandableRow={removeExpandableRow}
             addLocation={addLocation}
+            addMaterial={addMaterial}
           />
         </>
       ) : (

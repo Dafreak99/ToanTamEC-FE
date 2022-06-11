@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Button,
   FormControl,
@@ -21,7 +21,7 @@ import ErrorMessage from "../../utils/ErrorMessage";
  * @children Pass in the button
  */
 
-const AddLocation = ({ children, onSubmit: parentOnSubmit }) => {
+const AddMaterial = ({ children, onSubmit: parentOnSubmit }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const initialRef = React.useRef();
@@ -30,7 +30,6 @@ const AddLocation = ({ children, onSubmit: parentOnSubmit }) => {
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors },
   } = useForm();
 
@@ -65,19 +64,19 @@ const AddLocation = ({ children, onSubmit: parentOnSubmit }) => {
       >
         <ModalOverlay />
         <ModalContent as="form" onSubmit={handleSubmit(onSubmit)}>
-          <ModalHeader textAlign="center">Thêm kênh</ModalHeader>
+          <ModalHeader textAlign="center">Thêm danh sách vật tư</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl>
               <FormLabel>
-                Tên kênh <span className="text-red-500">*</span>
+                Tên danh sách vật tư <span className="text-red-500">*</span>
               </FormLabel>
               <Input
                 ref={initialRef}
-                placeholder="Tên kênh"
-                {...register("locationName", { required: true })}
+                placeholder="Tên danh sách vật tư"
+                {...register("materialName", { required: true })}
               />
-              {renderError("locationName")}
+              {renderError("materialName")}
             </FormControl>
           </ModalBody>
 
@@ -95,4 +94,4 @@ const AddLocation = ({ children, onSubmit: parentOnSubmit }) => {
   );
 };
 
-export default AddLocation;
+export default AddMaterial;

@@ -5,21 +5,54 @@ import {
   Select,
   Table,
   TableContainer,
-  Tbody,
   Td,
   Th,
   Thead,
   Tr,
 } from "@chakra-ui/react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import AddDiary from "../components/modals/AddDiary";
 import { IoAdd } from "react-icons/io5";
 
+import viLocale from "date-fns/locale/vi";
+
+import { sub, add, format } from "date-fns";
+
 function Upload() {
+  const [dates, setDates] = useState([]);
   const getClassNames = (i) => {
-    return `text-black ${i % 2 === 0 ? "bg-light-gray" : "bg-lighter-gray"}`;
+    // return `text-black ${i % 2 === 0 ? "bg-light-gray" : "bg-lighter-gray"}`;
+
+    return {
+      color: "black",
+      background: i % 2 === 0 ? "#EDF2F6" : "#F8FAFC",
+    };
   };
+
+  useEffect(() => {
+    Date.prototype.addDays = function (days) {
+      var dat = new Date(this.valueOf());
+      dat.setDate(dat.getDate() + days);
+      return dat;
+    };
+
+    function getDates(startDate, stopDate) {
+      var dateArray = new Array();
+      var currentDate = startDate;
+      while (currentDate <= stopDate) {
+        const [dateInW, day] = format(currentDate, "EEEEE-dd", {
+          locale: viLocale,
+        }).split("-");
+        dateArray.push({ dateInW, day });
+        currentDate = add(currentDate, { days: 1 });
+      }
+
+      setDates(dateArray);
+    }
+
+    getDates(sub(new Date(), { days: 10 }), new Date());
+  }, []);
 
   return (
     <Layout>
@@ -55,29 +88,36 @@ function Upload() {
           </Box>
         </div>
         <TableContainer marginTop={6}>
-          <Table size="sm" variant="striped">
+          <Table size="sm">
             <Thead>
               <Tr>
-                <Th rowSpan="2" w="15%" className="border-none">
-                  MSCT
+                <Th rowSpan="2" className="sticky top-0 left-0 z-10">
+                  <Th rowSpan="2" w="15%" className="border-none">
+                    MSCT
+                  </Th>
+                  <Th rowSpan="2" w="15%" className="border-none">
+                    Nội dung công việc
+                  </Th>
+                  <Th rowSpan="2" w="15%" className="border-none">
+                    Biễu mẫu
+                  </Th>
                 </Th>
-                <Th rowSpan="2" w="15%" className="border-none">
-                  Nội dung công việc
-                </Th>
-                <Th rowSpan="2" w="15%" className="border-none">
-                  Biễu mẫu
-                </Th>
-                {Array.from({ length: 10 }, (_, i) => (
-                  <Th colSpan="2" className={getClassNames(i)}>
-                    T{i + 2} <br /> 1
+
+                {dates.map((date, i) => (
+                  <Th colSpan="2">
+                    {date.dateInW} <br /> {date.day}
                   </Th>
                 ))}
               </Tr>
-              <Tr>
-                {Array.from({ length: 10 }, (_, i) => (
+              <Tr className="z-20">
+                {dates.map((_, i) => (
                   <>
-                    <Td className={`${getClassNames(i)} sticky top-14`}>S</Td>
-                    <Td className={`${getClassNames(i)} sticky top-14`}>C</Td>
+                    <Td className="sticky top-16" {...getClassNames(i)}>
+                      S
+                    </Td>
+                    <Td className="sticky top-16" {...getClassNames(i)}>
+                      C
+                    </Td>
                   </>
                 ))}
               </Tr>
@@ -85,22 +125,25 @@ function Upload() {
 
             <tbody>
               {Array.from({ length: 20 }, (_, i) => (
-                <Tr
-                  className={`cursor-pointer border ${
-                    i % 2 === 0 ? "bg-light-gray" : "bg-lighter-gray"
-                  }`}
-                  key={i}
-                >
-                  <Td className="sticky top-10">Trần Văn A</Td>
-                  <Td>Chỉ huy trưởng công trình</Td>
-                  <Td>
-                    Lorem ipsum dolor sit amet <br /> Lorem ipsum dolor sit amet
-                    <br /> Lorem ipsum dolor sit amet
+                <Tr className="cursor-pointer" {...getClassNames(i)} key={i}>
+                  <Td className="sticky left-0">
+                    <Td className="border-none"> Trần Văn A</Td>
+                    <Td className="border-none">Chỉ huy trưởng công trình</Td>
+                    <Td className="border-none">
+                      Lorem ipsum dolor sit amet <br /> Lorem ipsum dolor sit
+                      amet
+                      <br /> Lorem ipsum dolor sit amet
+                    </Td>
                   </Td>
-                  {Array.from({ length: 10 }, (_, i) => (
+
+                  {dates.map((_, i) => (
                     <>
-                      <Td className={getClassNames(i)}>x</Td>
-                      <Td className={getClassNames(i)}>x</Td>
+                      <Td {...getClassNames(i)} zIndex="inherit">
+                        x
+                      </Td>
+                      <Td {...getClassNames(i)} zIndex="inherit">
+                        x
+                      </Td>
                     </>
                   ))}
                 </Tr>

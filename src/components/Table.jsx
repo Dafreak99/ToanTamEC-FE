@@ -18,6 +18,7 @@ import {
   HiOutlineChevronUp,
 } from "react-icons/hi";
 import AddLocation from "./modals/AddLocation";
+import AddMaterial from "./modals/AddMaterial";
 import TotalDetailsCellModal from "./modals/TotalsDetailCellModal";
 
 function Table({
@@ -27,6 +28,7 @@ function Table({
   removeExpandableCol,
   removeExpandableRow,
   addLocation,
+  addMaterial,
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
@@ -224,13 +226,19 @@ function Table({
     };
 
     const PivotBody = () => {
-      const onSubmit = (data) => {
+      const onSubmitLocation = (data) => {
         onHeadingModalClose();
         addLocation(data);
       };
+
+      const onSubmitMaterial = (data) => {
+        onHeadingModalClose();
+        addMaterial(data);
+      };
+
       return (
         <>
-          <AddLocation onSubmit={onSubmit}>
+          <AddLocation onSubmit={onSubmitLocation}>
             <Button
               isFullWidth
               mr="4"
@@ -241,7 +249,9 @@ function Table({
             </Button>
           </AddLocation>
 
-          <Button isFullWidth>Thêm danh sách vật tư</Button>
+          <AddMaterial onSubmit={onSubmitMaterial}>
+            <Button isFullWidth>Thêm danh sách vật tư</Button>
+          </AddMaterial>
         </>
       );
     };
