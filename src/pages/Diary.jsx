@@ -79,8 +79,7 @@ function Upload() {
               <Button
                 className="ml-4"
                 leftIcon={<IoAdd color="#fff" />}
-                background="primary"
-                color="white"
+                variant="primary"
               >
                 Tạo dự án
               </Button>
