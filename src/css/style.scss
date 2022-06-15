@@ -137,3 +137,11 @@ textarea:focus {
   box-shadow: 0 0 0 1px #de3b33 !important;
   border-color: #de3b33 !important;
 }
+
+.top-18 {
+  top: 70px;
+}
+
+.chakra-form__label {
+  @apply text-xs md:text-sm;
+}

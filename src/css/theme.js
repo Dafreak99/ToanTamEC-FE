@@ -41,6 +41,21 @@ const customTheme = extendTheme({
         // variant: "primary",
       },
     },
+    Input: {
+      baseStyle: {
+        fontSize: "sm",
+      },
+    },
+    Textarea: {
+      baseStyle: {
+        fontSize: "sm",
+      },
+    },
+    FormLabel: {
+      baseStyle: {
+        fontSize: "sm",
+      },
+    },
   },
 });
 

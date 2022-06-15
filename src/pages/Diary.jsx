@@ -111,10 +111,10 @@ function Upload() {
               <Tr className="z-20">
                 {dates.map((_, i) => (
                   <>
-                    <Td className="sticky top-16" {...getClassNames(i)}>
+                    <Td className="sticky top-18" {...getClassNames(i)}>
                       S
                     </Td>
-                    <Td className="sticky top-16" {...getClassNames(i)}>
+                    <Td className="sticky top-18" {...getClassNames(i)}>
                       C
                     </Td>
                   </>
@@ -124,8 +124,8 @@ function Upload() {
 
             <tbody>
               {Array.from({ length: 20 }, (_, i) => (
-                <Tr className="cursor-pointer" {...getClassNames(i)} key={i}>
-                  <Td className="sticky left-0">
+                <Tr className="cursor-pointer" key={i}>
+                  <Td className="sticky left-0" {...getClassNames(i)}>
                     <Td className="border-none"> Trần Văn A</Td>
                     <Td className="border-none">Chỉ huy trưởng công trình</Td>
                     <Td className="border-none">
