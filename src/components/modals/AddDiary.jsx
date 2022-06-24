@@ -44,7 +44,7 @@ import { FaTrash, FaPlus } from "react-icons/fa";
  * @children Pass in the button
  */
 
-const AddDiary = ({ children }) => {
+const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const {
@@ -54,6 +54,7 @@ const AddDiary = ({ children }) => {
     getValues,
     setError,
     clearErrors,
+    reset,
     formState: { errors },
   } = useForm();
 
@@ -127,7 +128,6 @@ const AddDiary = ({ children }) => {
   };
 
   const onSubmit = (data) => {
-    console.log(step);
     if (step === 1) {
       setStep1Content(data);
       setStep(step + 1);
@@ -135,9 +135,13 @@ const AddDiary = ({ children }) => {
       checkRequired();
 
       if (Object.keys(errors).length === 0) {
-        console.log({ ...step1Content, workContents });
+        // Change status here
+        parentOnSubmit({ ...step1Content, workContents, status: "green" });
+        onClose();
+        reset();
+        setWorkContents([]);
+        setStep(1);
       }
-      // console.log({ ...data, workContents });
     }
   };
 
@@ -227,7 +231,6 @@ const AddDiary = ({ children }) => {
 
     workContents.forEach((workContent, workIndex) => {
       workContent.forms.forEach((form, formIndex) => {
-        console.log(form);
         if (!form.attachedFile) {
           setError(
             `workContents[${workIndex}].forms[${formIndex}].attachedFile`,
@@ -387,7 +390,6 @@ const AddDiary = ({ children }) => {
                   </Flex>
 
                   {forms.map((form, formIndex) => {
-                    console.log(form);
                     return (
                       <Flex
                         p="0.5rem 1rem"
@@ -417,10 +419,14 @@ const AddDiary = ({ children }) => {
                         </Box>
                         <Box className="flex-auto w-full md:w-4/12">
                           <FormControl>
-                            <FormLabel htmlFor={`attachedFile-${formIndex}`}>
+                            <FormLabel
+                              htmlFor={`attachedFile-${index}-${formIndex}`}
+                            >
                               Tệp đính kèm *
                             </FormLabel>
-                            <label htmlFor={`attachedFile-${formIndex}`}>
+                            <label
+                              htmlFor={`attachedFile-${index}-${formIndex}`}
+                            >
                               <Flex
                                 alignItems="center"
                                 bg="#fff"
@@ -449,10 +455,11 @@ const AddDiary = ({ children }) => {
                                     {form.attachedFile?.name.slice(0, 20)}...
                                   </Text>
                                 </Tooltip>
+                                {index}
                               </Flex>
                             </label>
                             <Input
-                              id={`attachedFile-${formIndex}`}
+                              id={`attachedFile-${index}-${formIndex}`}
                               type="file"
                               accept=".xls,.xlsx"
                               display="none"

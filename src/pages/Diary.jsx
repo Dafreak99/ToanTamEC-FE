@@ -8,6 +8,7 @@ import {
   Td,
   Th,
   Thead,
+  Tooltip,
   Tr,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
@@ -57,7 +58,7 @@ function Upload() {
       {
         workingDate: dates[0],
         workingSession: ["morning"],
-        MSCT: "001",
+        workingLocation: "001",
         status: "red",
         workContents: [
           {
@@ -95,7 +96,7 @@ function Upload() {
       {
         workingDate: dates[1],
         workingSession: ["morning", "afternoon"],
-        MSCT: "002",
+        workingLocation: "002",
         status: "green",
         workContents: [
           {
@@ -118,14 +119,14 @@ function Upload() {
       {
         workingDate: dates[2],
         workingSession: [],
-        MSCT: "003",
+        workingLocation: "003",
         status: "red",
         workContents: [],
       },
       {
         workingDate: dates[3],
         workingSession: [],
-        MSCT: "004",
+        workingLocation: "004",
         status: "yellow",
         workContents: [
           {
@@ -143,7 +144,7 @@ function Upload() {
       {
         workingDate: dates[4],
         workingSession: ["morning", "afternoon"],
-        MSCT: "004",
+        workingLocation: "004",
         status: "green",
         workContents: [
           {
@@ -167,7 +168,7 @@ function Upload() {
         workingDate: dates[5],
         workingSession: ["morning", "afternoon"],
         status: "green",
-        MSCT: "005",
+        workingLocation: "005",
         workContents: [
           {
             title: "workContent2",
@@ -189,7 +190,7 @@ function Upload() {
       {
         workingDate: dates[6],
         workingSession: ["morning", "afternoon"],
-        MSCT: "005",
+        workingLocation: "005",
         status: "green",
         workContents: [
           {
@@ -212,7 +213,7 @@ function Upload() {
       {
         workingDate: dates[7],
         workingSession: ["morning", "afternoon"],
-        MSCT: "005",
+        workingLocation: "005",
         status: "green",
         workContents: [
           {
@@ -235,34 +236,11 @@ function Upload() {
       {
         workingDate: dates[8],
         workingSession: ["morning", "afternoon"],
-        MSCT: "005",
+        workingLocation: "005",
         status: "green",
         workContents: [
           {
             title: "workContent2",
-            forms: [
-              {
-                formType: "formType1",
-                attachedFile: File,
-                isOffcial: false,
-              },
-              {
-                formType: "formType2",
-                attachedFile: File,
-                isOffcial: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[9],
-        workingSession: ["morning", "afternoon"],
-        MSCT: "005",
-        status: "yellow",
-        workContents: [
-          {
-            title: "workContent2 workContent2",
             forms: [
               {
                 formType: "formType1",
@@ -285,7 +263,6 @@ function Upload() {
 
   const renderCheckMark = (i, calDay, currDay, workingSession, status) => {
     let style;
-    console.log(status);
     if (status === "green") {
       style = { background: "green.100", color: "green.800" };
     } else if (status === "red") {
@@ -330,6 +307,20 @@ function Upload() {
     );
   };
 
+  const onSubmitDiary = (data) => {
+    if (typeof data.workingSession === "string") {
+      data.workingSession = [data.workingSession];
+    }
+
+    const [dateInW, day] = format(data.workingDate, "EEEEE-dd", {
+      locale: viLocale,
+    }).split("-");
+
+    data.workingDate = { dateInW, day };
+
+    setLogs([...logs, data]);
+  };
+
   return (
     <Layout>
       <div className="w-full bg-white shadow-lg p-4">
@@ -351,7 +342,7 @@ function Upload() {
 
           <Box ml="auto">
             <Button>Xuất nhật kí</Button>
-            <AddDiary>
+            <AddDiary onSubmit={onSubmitDiary}>
               <Button
                 className="ml-4"
                 leftIcon={<IoAdd color="#fff" />}
@@ -367,27 +358,27 @@ function Upload() {
             <Thead>
               <Tr>
                 <Th rowSpan="2" className="sticky top-0 left-0 z-10">
-                  <Th rowSpan="2" w="15%" className="border-none">
+                  <Th w="100px" maxW="100px" className="border-none">
                     MSCT
                   </Th>
-                  <Th rowSpan="2" w="15%" className="border-none">
+                  <Th w="200px" maxW="200px" className="border-none">
                     Nội dung công việc
                   </Th>
-                  <Th rowSpan="2" w="15%" className="border-none">
+                  <Th w="100px" maxW="100px" className="border-none">
                     Biễu mẫu
                   </Th>
                 </Th>
 
-                {logs.map(({ workingDate }, i) => {
+                {dates.map(({ dateInW, day }, i) => {
                   return (
                     <Th colSpan="2">
-                      {workingDate?.dateInW} <br /> {workingDate?.day}
+                      {dateInW} <br /> {day}
                     </Th>
                   );
                 })}
               </Tr>
               <Tr className="z-20">
-                {logs.map((_, i) => (
+                {dates.map((_, i) => (
                   <>
                     <Td className="sticky top-18" {...getClassNames(i)}>
                       S
@@ -403,7 +394,13 @@ function Upload() {
             <tbody>
               {logs.map(
                 (
-                  { MSCT, workContents, workingDate, workingSession, status },
+                  {
+                    workingLocation,
+                    workContents,
+                    workingDate,
+                    workingSession,
+                    status,
+                  },
                   i
                 ) => (
                   <Tr className="cursor-pointer" key={i}>
@@ -414,17 +411,31 @@ function Upload() {
                       justifyContent="space-between"
                       alignItems="center"
                     >
-                      <Td className="border-none"> {MSCT}</Td>
-                      <Td className="border-none">
+                      <Td className="border-none" maxW="100px" p="0" pr="2">
+                        <Tooltip label={workingLocation}>
+                          {workingLocation.slice(0, 10) + "..."}
+                        </Tooltip>
+                      </Td>
+                      <Td
+                        className="border-none"
+                        w="200px"
+                        maxW="200px"
+                        p="0"
+                        pr="2"
+                      >
                         {workContents.map((workContent) => (
-                          <p>{workContent.title}</p>
+                          <Tooltip label={workContent.title}>
+                            <p>{workContent.title.slice(0, 10) + "..."}</p>
+                          </Tooltip>
                         ))}
                       </Td>
-                      <Td className="border-none pr-4">
+                      <Td className="border-none" maxW="100px" p="0">
                         {workContents.map((workContent) => (
                           <>
                             {workContent.forms.map((form) => (
-                              <p>{form.formType}</p>
+                              <Tooltip label={form.formType}>
+                                <p>{form.formType.slice(0, 10)}...</p>
+                              </Tooltip>
                             ))}
                           </>
                         ))}
@@ -433,20 +444,6 @@ function Upload() {
 
                     {dates.map((date, i) => (
                       <>
-                        {/* <Td
-                          {...getClassNames(i)}
-                          zIndex="inherit"
-                          backgroundColor={
-                            date.day === workingDate.day &&
-                            workingSession.includes("morning") &&
-                            status
-                          }
-                        >
-                          {date.day === workingDate.day &&
-                            workingSession.includes("morning") &&
-                            "x"}
-                        </Td> */}
-
                         {renderCheckMark(
                           i,
                           date.day,
