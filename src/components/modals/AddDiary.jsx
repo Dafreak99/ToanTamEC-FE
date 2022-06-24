@@ -27,6 +27,12 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  CheckboxGroup,
+  Tooltip,
+  IconButton,
+  Alert,
+  AlertIcon,
+  AlertTitle,
 } from "@chakra-ui/react";
 import { Controller, useForm } from "react-hook-form";
 import Datepicker from "../../partials/actions/Datepicker";
@@ -41,20 +47,23 @@ import { FaTrash, FaPlus } from "react-icons/fa";
 const AddDiary = ({ children }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
-
-  const initialRef = React.useRef();
-  const finalRef = React.useRef();
-
   const {
     register,
     handleSubmit,
     control,
     getValues,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm();
+
   const [step, setStep] = useState(1);
+  const [step1Content, setStep1Content] = useState(null);
   const [workContents, setWorkContents] = useState([]);
   const [num, setNum] = useState(0);
+
+  const initialRef = React.useRef();
+  const finalRef = React.useRef();
 
   const WORK_CONTENT = [
     {
@@ -80,15 +89,26 @@ const AddDiary = ({ children }) => {
         "Danh sách phương tiện, thiết bị thi công",
         "Biện pháp tổ chức thi công",
         "KHTC theo đoạn tuyến",
-        "KHTC theo thời gian]",
+        "KHTC theo thời gian",
       ],
     },
   ];
 
-  useEffect(() => {}, [num]);
-
   const addNewWorkRow = () => {
     const title = getValues("workContent");
+    const existed = workContents.find(
+      (workContent) => workContent.title === title
+    );
+
+    if (existed) {
+      toast({
+        status: "warning",
+        position: "top-right",
+        description: "Nội dung công việc đã tồn tại!",
+      });
+      return;
+    }
+
     const newWorkContent = {
       title,
       forms: [
@@ -107,9 +127,18 @@ const AddDiary = ({ children }) => {
   };
 
   const onSubmit = (data) => {
-    console.log(data);
+    console.log(step);
+    if (step === 1) {
+      setStep1Content(data);
+      setStep(step + 1);
+    } else if (step === 2) {
+      checkRequired();
 
-    setStep(step + 1);
+      if (Object.keys(errors).length === 0) {
+        console.log({ ...step1Content, workContents });
+      }
+      // console.log({ ...data, workContents });
+    }
   };
 
   const addNewForm = (workTitle, formTitle) => {
@@ -134,21 +163,20 @@ const AddDiary = ({ children }) => {
     setNum(Math.random());
   };
 
-  console.log(workContents);
-
   const getForms = (title) => {
     const matchedContent = WORK_CONTENT.find(
       (content) => content.title === title
     );
 
-    return matchedContent.forms.map((aaa) => {
+    return matchedContent.forms.map((eachContent) => {
       const belongTo = workContents.find((work) => work.title === title);
 
       const existed =
-        belongTo.forms.findIndex((form) => form.formType === aaa) !== -1;
+        belongTo.forms.findIndex((form) => form.formType === eachContent) !==
+        -1;
 
       return {
-        title: aaa,
+        title: eachContent,
         existed,
       };
     });
@@ -176,8 +204,6 @@ const AddDiary = ({ children }) => {
 
     let val;
 
-    console.log(name);
-
     if (name === "isOfficialFile") {
       val = checked;
     } else if (name === "attachedFile") {
@@ -186,12 +212,50 @@ const AddDiary = ({ children }) => {
       val = value;
     }
 
-    console.log(val);
-
     workContents[workIndex].forms[formIndex][name] = val;
-
+    setNum(Math.random());
     setWorkContents(workContents);
-    console.log(workContents);
+  };
+
+  const checkRequired = () => {
+    clearErrors("workContents");
+
+    if (workContents.length === 0) {
+      setError(`workContents`, { type: "required" });
+      return;
+    }
+
+    workContents.forEach((workContent, workIndex) => {
+      workContent.forms.forEach((form, formIndex) => {
+        console.log(form);
+        if (!form.attachedFile) {
+          setError(
+            `workContents[${workIndex}].forms[${formIndex}].attachedFile`,
+            { type: "required" }
+          );
+        }
+      });
+    });
+  };
+
+  const removeWorkContent = (index) => {
+    let newContent = [...workContents];
+
+    newContent.splice(index, 1);
+    setWorkContents(newContent);
+  };
+
+  const removeForm = (workIndex, formIndex) => {
+    let newContent = [...workContents];
+
+    newContent[workIndex].forms.splice(formIndex, 1);
+
+    newContent[workIndex].forms = [
+      ...newContent[workIndex].forms.slice(0, formIndex),
+      ...newContent[workIndex].forms.slice(formIndex),
+    ];
+    setWorkContents(newContent);
+    setNum(Math.random());
   };
 
   const renderStep = () => {
@@ -204,10 +268,10 @@ const AddDiary = ({ children }) => {
             </FormLabel>
             <Input
               ref={initialRef}
-              // defaultValue="Nguyễn Hoàng Phúc"
+              placeholder="Tự fill???"
               {...register("name", { required: true })}
             />
-            {renderError("projectName")}
+            {renderError("name")}
           </FormControl>
 
           <FormControl mt={4}>
@@ -237,12 +301,12 @@ const AddDiary = ({ children }) => {
                 required: true,
               }}
               render={({ field }) => (
-                <RadioGroup {...field}>
+                <CheckboxGroup {...field}>
                   <Stack direction="row">
-                    <Radio value="morning">Sáng</Radio>
-                    <Radio value="afternoon">Chiều</Radio>
+                    <Checkbox value="morning">Sáng</Checkbox>
+                    <Checkbox value="afternoon">Chiều</Checkbox>
                   </Stack>
-                </RadioGroup>
+                </CheckboxGroup>
               )}
             />
           </FormControl>
@@ -274,6 +338,14 @@ const AddDiary = ({ children }) => {
     } else {
       return (
         <Box>
+          {errors?.workContents?.type === "required" && (
+            <Box w="md" mx="auto">
+              <Alert status="error" mb="2rem" borderRadius="md">
+                <AlertIcon />
+                <AlertTitle>Vui lòng thêm nội dung công việc!</AlertTitle>
+              </Alert>
+            </Box>
+          )}
           {workContents.length > 0 && (
             <Box maxH="400px" overflow="scroll" mb="2rem" px="0.5rem">
               {workContents.map(({ title, forms }, index) => (
@@ -294,7 +366,7 @@ const AddDiary = ({ children }) => {
                     </Text>
                     <Flex>
                       <Menu>
-                        <MenuButton>
+                        <MenuButton type="button">
                           <FaPlus className="mr-3" />
                         </MenuButton>
                         <MenuList>
@@ -310,81 +382,107 @@ const AddDiary = ({ children }) => {
                         </MenuList>
                       </Menu>
 
-                      <FaTrash />
+                      <FaTrash onClick={() => removeWorkContent(index)} />
                     </Flex>
                   </Flex>
 
-                  {forms.map((form, formIndex) => (
-                    <Flex
-                      p="0.5rem 1rem"
-                      alignItems="flex-end"
-                      columnGap={{ base: 0, md: "1rem" }}
-                      rowGap={{ base: "0.5rem", md: 0 }}
-                      flexWrap="wrap"
-                    >
-                      <Box className="w-full md:w-4/12">
-                        <FormControl>
-                          <FormLabel htmlFor="formType" className="">
-                            Loại biểu mẫu *
-                          </FormLabel>
+                  {forms.map((form, formIndex) => {
+                    console.log(form);
+                    return (
+                      <Flex
+                        p="0.5rem 1rem"
+                        columnGap={{ base: 0, md: "1rem" }}
+                        rowGap={{ base: "0.5rem", md: 0 }}
+                        flexWrap="wrap"
+                      >
+                        <Box className="flex-auto w-full md:w-4/12">
+                          <FormControl>
+                            <FormLabel htmlFor="formType" className="">
+                              Loại biểu mẫu *
+                            </FormLabel>
 
-                          <Select
-                            maxW="md"
-                            bg="#fff"
-                            name="formType"
-                            defaultValue={form.formType}
+                            <Select
+                              maxW="md"
+                              bg="#fff"
+                              name="formType"
+                              defaultValue={form.formType}
+                              onChange={(e) => onChange(e, index, formIndex)}
+                            >
+                              {getForms(title).map((form) => (
+                                <option value={form.title}>{form.title}</option>
+                              ))}
+                            </Select>
+                            {form.formType}
+                          </FormControl>
+                        </Box>
+                        <Box className="flex-auto w-full md:w-4/12">
+                          <FormControl>
+                            <FormLabel htmlFor={`attachedFile-${formIndex}`}>
+                              Tệp đính kèm *
+                            </FormLabel>
+                            <label htmlFor={`attachedFile-${formIndex}`}>
+                              <Flex
+                                alignItems="center"
+                                bg="#fff"
+                                p="6px 15px"
+                                borderRadius="md"
+                                border="1px solid"
+                                borderColor={
+                                  errors?.workContents?.[index]?.forms?.[
+                                    formIndex
+                                  ]?.attachedFile?.type === "required"
+                                    ? "red.500"
+                                    : "#CBD5E0"
+                                }
+                              >
+                                <Box
+                                  mr="0.5rem"
+                                  fontSize="sm"
+                                  p="2px 5px"
+                                  bg="#E9EAEC"
+                                  borderRadius="md"
+                                >
+                                  Tải tệp lên
+                                </Box>
+                                <Tooltip label={form.attachedFile?.name}>
+                                  <Text>
+                                    {form.attachedFile?.name.slice(0, 20)}...
+                                  </Text>
+                                </Tooltip>
+                              </Flex>
+                            </label>
+                            <Input
+                              id={`attachedFile-${formIndex}`}
+                              type="file"
+                              accept=".xls,.xlsx"
+                              display="none"
+                              name="attachedFile"
+                              onChange={(e) => onChange(e, index, formIndex)}
+                            />
+                            {errors?.workContents?.[index]?.forms?.[formIndex]
+                              ?.attachedFile?.type === "required" && (
+                              <ErrorMessage />
+                            )}
+                          </FormControl>
+                        </Box>
+                        <Flex
+                          className="flex-auto w-full md:w-3/12"
+                          justifyContent="space-between"
+                          alignItems="center"
+                        >
+                          <Checkbox
+                            name="isOfficialFile"
                             onChange={(e) => onChange(e, index, formIndex)}
                           >
-                            {getForms(title).map((form) => (
-                              <option value={form.title}>{form.title}</option>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </Box>
-                      <Box className="w-full md:w-5/12">
-                        <FormControl>
-                          <FormLabel htmlFor="attachedFile">
-                            Tệp đính kèm *
-                          </FormLabel>
-                          <label htmlFor="attachedFile">
-                            <Flex
-                              alignItems="center"
-                              bg="#fff"
-                              p="4px 15px"
-                              borderRadius="md"
-                              border="1px solid #CBD5E0"
-                            >
-                              <Box
-                                mr="0.5rem"
-                                fontSize="md"
-                                p="2px 5px"
-                                bg="#E9EAEC"
-                                borderRadius="md"
-                              >
-                                Tải tệp lên
-                              </Box>
-                              <Text>20220606_LenhKhoiCong.docx</Text>
-                            </Flex>
-                          </label>
-                          <Input
-                            id="attachedFile"
-                            type="file"
-                            display="none"
-                            name="attachedFile"
-                            onChange={(e) => onChange(e, index, formIndex)}
+                            Bản chính
+                          </Checkbox>
+                          <FaTrash
+                            onClick={() => removeForm(index, formIndex)}
                           />
-                        </FormControl>
-                      </Box>
-                      <Box className="w-full md:w-2/12">
-                        <Checkbox
-                          name="isOfficialFile"
-                          onChange={(e) => onChange(e, index, formIndex)}
-                        >
-                          Bản chính
-                        </Checkbox>
-                      </Box>
-                    </Flex>
-                  ))}
+                        </Flex>
+                      </Flex>
+                    );
+                  })}
                 </Box>
               ))}
             </Box>
@@ -467,7 +565,7 @@ const AddDiary = ({ children }) => {
                 Tiếp theo
               </Button>
             ) : (
-              <Button variant="primary" type="submit">
+              <Button variant="primary" onClick={onSubmit}>
                 Lưu
               </Button>
             )}
