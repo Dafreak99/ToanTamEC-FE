@@ -186,10 +186,6 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
     });
   };
 
-  const getFormsMinimal = (title) => {
-    return WORK_CONTENT.find((content) => content.title === title).forms;
-  };
-
   const childrenWithProps = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
       return React.cloneElement(child, { onClick: onOpen });
@@ -246,6 +242,12 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
 
     newContent.splice(index, 1);
     setWorkContents(newContent);
+
+    for (let i = 0; i < workContents[index].forms.length; i++) {
+      clearErrors(`workContents[${index}].forms[${i}].attachedFile`, {
+        type: "required",
+      });
+    }
   };
 
   const removeForm = (workIndex, formIndex) => {
@@ -284,11 +286,16 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
             <Controller
               name="workingDate"
               control={control}
-              defaultValue={new Date()}
+              defaultValue={step1Content?.workingDate || new Date()}
               rules={{
                 required: true,
               }}
-              render={({ field }) => <Datepicker onChange={field.onChange} />}
+              render={({ field }) => (
+                <Datepicker
+                  onChange={field.onChange}
+                  defaultDate={step1Content?.workingDate || new Date()}
+                />
+              )}
             />
           </FormControl>
 
@@ -408,13 +415,20 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
                               bg="#fff"
                               name="formType"
                               defaultValue={form.formType}
+                              value={form.formType}
+                              className={form.formType}
                               onChange={(e) => onChange(e, index, formIndex)}
                             >
                               {getForms(title).map((form) => (
-                                <option value={form.title}>{form.title}</option>
+                                <option
+                                  value={form.title}
+                                  className={form.formType}
+                                >
+                                  {form.title}
+                                </option>
                               ))}
+                              {form.formType}
                             </Select>
-                            {form.formType}
                           </FormControl>
                         </Box>
                         <Box className="flex-auto w-full md:w-4/12">
@@ -452,10 +466,10 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
                                 </Box>
                                 <Tooltip label={form.attachedFile?.name}>
                                   <Text>
-                                    {form.attachedFile?.name.slice(0, 20)}...
+                                    {form.attachedFile?.name.slice(0, 20)}{" "}
+                                    {form.attachedFile?.name && "..."}
                                   </Text>
                                 </Tooltip>
-                                {index}
                               </Flex>
                             </label>
                             <Input
@@ -497,12 +511,13 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
 
           <Flex
             justifyContent="center"
+            alignItems="center"
             bg="#F8FAFC"
-            p="46px 0"
+            p={{ base: "46px", md: "46px 0" }}
             border="1px dashed #CBD5E0"
             borderRadius="md"
+            flexDirection={{ base: "column", md: "row" }}
           >
-            {/* TODO: Need to have a predefined list for Works & Papers */}
             <Controller
               name="workContent"
               control={control}
@@ -520,7 +535,8 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
             />
 
             <Button
-              className="ml-4"
+              marginLeft={{ base: 0, md: 4 }}
+              marginTop={{ base: 4, md: 0 }}
               leftIcon={<IoAdd color="#fff" />}
               variant="primary"
               onClick={addNewWorkRow}
@@ -564,17 +580,24 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
           <ModalBody pb={6}>{renderStep()}</ModalBody>
 
           <ModalFooter>
-            <Button onClick={onClose} mr={3}>
-              Hủy
-            </Button>
             {step === 1 ? (
-              <Button variant="primary" type="submit">
-                Tiếp theo
-              </Button>
+              <>
+                <Button onClick={onClose} mr={3}>
+                  Hủy
+                </Button>
+                <Button variant="primary" type="submit">
+                  Tiếp theo
+                </Button>
+              </>
             ) : (
-              <Button variant="primary" onClick={onSubmit}>
-                Lưu
-              </Button>
+              <>
+                <Button onClick={() => setStep(step - 1)} mr={3}>
+                  Trở về
+                </Button>
+                <Button variant="primary" onClick={onSubmit}>
+                  Lưu
+                </Button>
+              </>
             )}
           </ModalFooter>
         </ModalContent>
