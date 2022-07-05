@@ -24,6 +24,7 @@ import TotalDetailsCellModal from "./modals/TotalsDetailCellModal";
 function Table({
   data,
   removeCol,
+  editCell,
   removeRow,
   removeExpandableCol,
   removeExpandableRow,
@@ -52,6 +53,10 @@ function Table({
   const [modalType, setModalType] = useState("");
   const [deleteCol, setDeleteCol] = useState(null);
   const [deleteRow, setDeleteRow] = useState(null);
+  const [selectedCell, setSelectedCell] = useState({
+    col: null,
+    row: null,
+  });
 
   const [toggles, setToggles] = useState(() => {
     let toggles = {};
@@ -80,9 +85,25 @@ function Table({
     });
   }, []);
 
-  const setModal = (type, value, isParent = "child") => {
+  const setModal = (
+    type,
+    value,
+    isParent = "child",
+    rowContent,
+    colContent
+  ) => {
     setModalHeading(value);
     setModalType(isParent);
+
+    const { headings, rows, original } = data;
+
+    const rowIdx = rows.findIndex(
+      (row, idx) => row.value === rowContent && !isEdited(original[idx])
+    );
+    const colIdx = headings.findIndex((col) => col === colContent);
+
+    console.log(colIdx, rowIdx);
+    setSelectedCell({ col: colIdx, row: rowIdx });
 
     if (type === "heading") {
       onHeadingModalOpen();
@@ -91,6 +112,26 @@ function Table({
     } else if (type === "cell") {
       onCellModalOpen();
     }
+  };
+
+  const onCellSubmit = (data) => {
+    // edit cell value
+    editCell(selectedCell.row, selectedCell.col, data);
+  };
+
+  const isEdited = (row) => {
+    return row.some((col) => col?.edited);
+  };
+
+  const renderColor = (status) => {
+    let style;
+    if (status === "passed") {
+      style = { background: "green.100", color: "green.800" };
+    } else if (status === "failed") {
+      style = { background: "red.100", color: "red.800" };
+    }
+
+    return style;
   };
 
   const RotatedTh = ({ className, children, icon, ...rest }) => {
@@ -107,19 +148,23 @@ function Table({
     );
   };
 
-  const Tr = ({ d, isLastThree }) => {
+  const Tr = ({ d, isLastThree, isEdited }) => {
     return (
-      <Box as="tr" bg={isLastThree ? "#EDF2F6" : "#EDF2F666"}>
+      <Box
+        as="tr"
+        bg={isLastThree ? "#EDF2F6" : "#EDF2F666"}
+        opacity={isEdited ? "0.3" : "1"}
+      >
         {data.formattedHeadings.map((heading, i) => {
           if (heading.type === "child") {
             return (
               <Td
-                bg={i === 0 ? "#EDF2F6" : "#EDF2F666"}
                 cursor="pointer"
+                bg={i === 0 && "#edf2f6"}
                 onClick={() => {
-                  if (!isLastThree) {
+                  if (!isLastThree && !isEdited) {
                     if (i === 0) {
-                      setModal("location", d[heading.count]);
+                      setModal("location", d[heading.count].value);
 
                       const { rows } = data;
                       let index = rows.findIndex(
@@ -127,12 +172,18 @@ function Table({
                       );
                       setDeleteRow(index);
                     } else if (i === 1) {
-                      setModal("cell", `${d[0]} - ${heading.value}`);
+                      setModal(
+                        "cell",
+                        `${d[0].value} - ${heading.value}`,
+                        "child",
+                        d[0].value,
+                        heading.value
+                      );
                     }
                   }
                 }}
               >
-                {d?.[heading.count]}
+                {d?.[heading.count]?.value}
               </Td>
             );
           } else if (heading.type === "parent") {
@@ -140,13 +191,14 @@ function Table({
               <>
                 <Td
                   cursor="pointer"
+                  {...renderColor(d?.[heading.count]?.status)}
                   onContextMenu={() => {
-                    if (!isLastThree && d[heading.count]) {
-                      setModal("location", d[heading.count]);
+                    if (!isLastThree && d[heading.count] && !isEdited) {
+                      setModal("location", d[heading.count].value);
                     }
                   }}
                 >
-                  {d?.[heading.count]}
+                  {d?.[heading.count]?.value}
                 </Td>
 
                 {toggles[`toggle${i + 1}`] && (
@@ -155,13 +207,20 @@ function Table({
                       return (
                         <Td
                           cursor="pointer"
+                          {...renderColor(d?.[child.count]?.status)}
                           onClick={() => {
-                            if (!isLastThree && d[child.count]) {
-                              setModal("cell", `${d[0]} - ${child.value}`);
+                            if (!isLastThree && d[child.count] && !isEdited) {
+                              setModal(
+                                "cell",
+                                `${d[0].value} - ${child.value}`,
+                                "child",
+                                d[0].value,
+                                child.value
+                              );
                             }
                           }}
                         >
-                          {d?.[child.count]}
+                          {d?.[child.count]?.value}
                         </Td>
                       );
                     })}
@@ -300,9 +359,6 @@ function Table({
               >
                 Chi tiết
               </Button>
-              <Button isFullWidth onClick={() => {}}>
-                Cập nhật
-              </Button>
             </Flex>
           </ModalBody>
         </ModalContent>
@@ -378,7 +434,10 @@ function Table({
           <HeadingModal />
           <LocationModal />
 
-          <TotalDetailsCellModal isOpen={isOpen} onClose={onClose} />
+          <TotalDetailsCellModal
+            {...{ isOpen, onClose }}
+            onSubmit={onCellSubmit}
+          />
           <tr className="h-80">
             {data.formattedHeadings.map((heading, index) => {
               if (heading.type === "child") {
@@ -500,6 +559,7 @@ function Table({
                       <Tr
                         d={value}
                         isLastThree={childIndex >= location[1].length - 3}
+                        isEdited={isEdited(value)}
                       />
                     ))}
                   </>

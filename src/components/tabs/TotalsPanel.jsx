@@ -43,7 +43,22 @@ function TotalsPanel() {
         });
       console.log("original converted JSON format", data);
 
-      processTableData(data);
+      const newData = data.map((row, index) => {
+        if (index === 0) return row;
+        else {
+          return row.map((col, colIndex) => {
+            if (col === null) return col;
+
+            return {
+              value: col,
+              status: "blank",
+              edited: false,
+            };
+          });
+        }
+      });
+
+      processTableData(newData);
       setLoading(false);
     };
 
@@ -61,14 +76,14 @@ function TotalsPanel() {
     let currentContent;
     for (let i = 1; i < data.length; i++) {
       // content location
-      if (data[i][0].match(/^[1-9]\//)) {
+      if (data[i][0]?.value.match(/^[1-9]\//)) {
         currentContent = data[i][0];
         formatted.content = {
           ...formatted.content,
-          [currentContent]: [],
+          [currentContent.value]: [],
         };
       } else {
-        formatted.content[currentContent].push(data[i]);
+        formatted.content[currentContent.value].push(data[i]);
       }
     }
 
@@ -127,6 +142,25 @@ function TotalsPanel() {
       position: "bottom-right",
       title: "Xoá thành công!",
     });
+  };
+
+  const editCell = (rowIdx, colIdx, newData) => {
+    const { original } = data;
+    let newRow = [...original[rowIdx]];
+
+    newRow[colIdx] = {
+      ...newRow[colIdx],
+      value: +newData.quantity,
+      edited: false,
+      status: newData.assessment,
+    };
+
+    original[rowIdx][colIdx].edited = true;
+
+    // add new row
+    original.splice(rowIdx + 1, 0, newRow);
+
+    processTableData(original);
   };
 
   const removeRow = (index) => {
@@ -240,13 +274,16 @@ function TotalsPanel() {
       {data ? (
         <>
           <Table
-            data={data}
-            removeCol={removeCol}
-            removeRow={removeRow}
-            removeExpandableCol={removeExpandableCol}
-            removeExpandableRow={removeExpandableRow}
-            addLocation={addLocation}
-            addMaterial={addMaterial}
+            {...{
+              data,
+              removeCol,
+              removeRow,
+              removeExpandableCol,
+              removeExpandableRow,
+              addLocation,
+              addMaterial,
+              editCell,
+            }}
           />
         </>
       ) : (

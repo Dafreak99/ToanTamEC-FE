@@ -2,7 +2,7 @@ import React from "react";
 import Flatpickr from "react-flatpickr";
 import { Vietnamese } from "flatpickr/dist/l10n/vn.js";
 
-function Datepicker({ onChange, defaultDate }) {
+function Datepicker({ onChange, defaultDate = new Date() }) {
   const options = {
     monthSelectorType: "static",
     dateFormat: "M j, Y",

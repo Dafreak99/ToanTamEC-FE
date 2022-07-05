@@ -25,7 +25,11 @@ import ErrorMessage from "../../utils/ErrorMessage";
  * @children Pass in the button
  */
 
-const TotalDetailsCellModal = ({ isOpen, onClose }) => {
+const TotalDetailsCellModal = ({
+  isOpen,
+  onClose,
+  onSubmit: parentOnSubmit,
+}) => {
   const initialRef = React.useRef();
   const finalRef = React.useRef();
 
@@ -38,7 +42,7 @@ const TotalDetailsCellModal = ({ isOpen, onClose }) => {
   } = useForm();
 
   const onSubmit = (data) => {
-    console.log(data);
+    parentOnSubmit(data);
     onClose();
     reset();
   };
@@ -104,13 +108,14 @@ const TotalDetailsCellModal = ({ isOpen, onClose }) => {
                 className="2/3"
                 name="assessment"
                 control={control}
-                defaultValue={"passed"}
+                defaultValue="blank"
                 rules={{
                   required: true,
                 }}
                 render={({ field }) => (
                   <RadioGroup {...field}>
                     <Stack direction="column">
+                      <Radio value="blank">Chưa nghiệm thu</Radio>
                       <Radio value="passed">Nghiệm thu đạt</Radio>
                       <Radio value="failed">Nghiệm thu chưa đạt</Radio>
                     </Stack>
