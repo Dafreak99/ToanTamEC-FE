@@ -59,7 +59,7 @@ const Login = () => {
     );
   }
   if (auth) {
-    return <Navigate to="/" />;
+    return <Navigate to="/du-an" />;
   }
 
   return (

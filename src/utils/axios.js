@@ -12,6 +12,10 @@ axios.interceptors.request.use(
 
     console.log(`%cMaking request to /${config.url}`, "color: #73a9ff");
 
+    if ((config.url === "/") | (config.url.indexOf("/refreshToken") >= 0)) {
+      return config;
+    }
+
     const token = cookies.get("accessToken");
 
     return {

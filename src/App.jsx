@@ -27,7 +27,7 @@ function App() {
 
   useEffect(() => {
     dispatch(getMe());
-  });
+  }, []);
 
   if (isLoading) {
     return (

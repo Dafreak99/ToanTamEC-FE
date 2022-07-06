@@ -1,11 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Cookies from "universal-cookie";
+import { clearLogin } from "../../features/user/userSlice";
 import Transition from "../../utils/Transition";
+import { useDispatch } from "react-redux";
 
 function UserMenu() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const trigger = useRef(null);
   const dropdown = useRef(null);
 
@@ -22,7 +25,7 @@ function UserMenu() {
     };
     document.addEventListener("click", clickHandler);
     return () => document.removeEventListener("click", clickHandler);
-  });
+  }, []);
 
   // close if the esc key is pressed
   useEffect(() => {
@@ -32,7 +35,7 @@ function UserMenu() {
     };
     document.addEventListener("keydown", keyHandler);
     return () => document.removeEventListener("keydown", keyHandler);
-  });
+  }, []);
 
   return (
     <div className="relative inline-flex">
@@ -91,6 +94,7 @@ function UserMenu() {
                 onClick={() => {
                   const cookies = new Cookies();
                   cookies.remove("accessToken");
+                  dispatch(clearLogin());
                   navigate("/");
                 }}
               >

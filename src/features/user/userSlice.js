@@ -33,6 +33,10 @@ export const userSlice = createSlice({
     toggleLoading: () => {
       state.loading = !state.loading;
     },
+    clearLogin: () => {
+      state.isLoading = false;
+      state.auth = null;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(login.fulfilled, (state, { payload }) => {
@@ -50,6 +54,6 @@ export const userSlice = createSlice({
   },
 });
 
-export const { toggleLoading } = userSlice.actions;
+export const { toggleLoading, clearLogin } = userSlice.actions;
 
 export default userSlice.reducer;
