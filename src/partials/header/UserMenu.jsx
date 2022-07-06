@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import Cookies from "universal-cookie";
 import Transition from "../../utils/Transition";
 
 function UserMenu() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
+  const navigate = useNavigate();
   const trigger = useRef(null);
   const dropdown = useRef(null);
 
@@ -42,13 +43,6 @@ function UserMenu() {
         onClick={() => setDropdownOpen(!dropdownOpen)}
         aria-expanded={dropdownOpen}
       >
-        {/* <img
-          className="w-8 h-8 rounded-full"
-          src={UserAvatar}
-          width="32"
-          height="32"
-          alt="User"
-        /> */}
         <div className="flex items-center truncate">
           <span className="truncate ml-2 text-sm font-medium group-hover:text-slate-800">
             Hai Tran.
@@ -86,7 +80,6 @@ function UserMenu() {
               <Link
                 className="font-medium text-sm text-indigo-500 hover:text-indigo-600 flex items-center py-1 px-3"
                 to="/thong-tin"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
               >
                 Thông tin tài khoản
               </Link>
@@ -95,7 +88,11 @@ function UserMenu() {
               <Link
                 className="font-medium text-sm text-indigo-500 hover:text-indigo-600 flex items-center py-1 px-3"
                 to="/"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
+                onClick={() => {
+                  const cookies = new Cookies();
+                  cookies.remove("accessToken");
+                  navigate("/");
+                }}
               >
                 Đăng xuất
               </Link>

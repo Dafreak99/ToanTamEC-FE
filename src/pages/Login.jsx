@@ -10,21 +10,57 @@ import { useForm } from "react-hook-form";
 import logo from "../images/company-logo.svg";
 import bg from "../images/bg.png";
 import ErrorMessage from "../utils/ErrorMessage";
+import { login } from "../features/user/userSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { showToast } from "../utils/toast";
+import Cookies from "universal-cookie";
+import { Navigate } from "react-router-dom";
+import { useState } from "react";
 
 const Login = () => {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm();
-  const onSubmit = (data) => console.log(data);
+  const dispatch = useDispatch();
+  const cookies = new Cookies();
+  const { isLoading, auth } = useSelector((state) => state.user);
+  const [formLoading, setFormLoading] = useState(false);
+  const onSubmit = async (formData) => {
+    setFormLoading(true);
+
+    const resultAction = await dispatch(login(formData));
+
+    if (login.fulfilled.match(resultAction)) {
+      const user = resultAction.payload;
+      cookies.set("accessToken", user.token);
+    } else {
+      console.log(resultAction);
+      showToast("error", "Lỗi", resultAction.payload.error);
+    }
+    setFormLoading(false);
+  };
 
   const renderError = (name, type = "required") => {
     if (name in errors && errors[name].type === type) {
       return <ErrorMessage />;
     }
   };
+
+  if (isLoading) {
+    return (
+      <Flex
+        h="100vh"
+        w="100vw"
+        justifyContent="center"
+        alignItems="center"
+      ></Flex>
+    );
+  }
+  if (auth) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <Flex h="100vh" overflow="hidden">
@@ -53,12 +89,19 @@ const Login = () => {
             </FormLabel>
             <Input
               placeholder="Nhập mật khẩu"
+              type="password"
               {...register("password", { required: true })}
             />
             {renderError("password")}
           </FormControl>
           <FormControl mt={8}>
-            <Button variant="primary" display="block" isFullWidth type="submit">
+            <Button
+              variant="primary"
+              display="block"
+              isFullWidth
+              type="submit"
+              disabled={formLoading}
+            >
               ĐĂNG NHẬP
             </Button>
           </FormControl>
