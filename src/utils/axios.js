@@ -2,7 +2,7 @@ import * as Axios from "axios";
 import Cookies from "universal-cookie";
 
 export const axios = Axios.create({
-  baseURL: "http://localhost:8080/api/",
+  baseURL: "http://localhost:8080/api/v1",
   headers: { "Content-type": "application/json" },
 });
 

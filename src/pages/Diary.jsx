@@ -57,37 +57,37 @@ function Upload() {
     const logs = [
       {
         workingDate: dates[0],
-        workingSession: ["morning"],
-        workingLocation: "001",
+        shift: ["morning"],
+        projectId: "001",
         status: "red",
         workContents: [
           {
-            title: "workContent1",
-            forms: [
+            name: "workContent1",
+            docs: [
               {
-                formType: "formType1",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType1",
+                proof: File,
+                draft: false,
               },
               {
-                formType: "formType1",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType1",
+                proof: File,
+                draft: false,
               },
             ],
           },
           {
-            title: "workContent3",
-            forms: [
+            name: "workContent3",
+            docs: [
               {
-                formType: "formType3a",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType3a",
+                proof: File,
+                draft: false,
               },
               {
-                formType: "formType3b",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType3b",
+                proof: File,
+                draft: false,
               },
             ],
           },
@@ -95,22 +95,22 @@ function Upload() {
       },
       {
         workingDate: dates[1],
-        workingSession: ["morning", "afternoon"],
-        workingLocation: "002",
+        shift: ["morning", "afternoon"],
+        projectId: "002",
         status: "green",
         workContents: [
           {
-            title: "workContent2",
-            forms: [
+            name: "workContent2",
+            docs: [
               {
-                formType: "formType1",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType1",
+                proof: File,
+                draft: false,
               },
               {
-                formType: "formType2",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType2",
+                proof: File,
+                draft: false,
               },
             ],
           },
@@ -118,24 +118,24 @@ function Upload() {
       },
       {
         workingDate: dates[2],
-        workingSession: [],
-        workingLocation: "003",
+        shift: [],
+        projectId: "003",
         status: "red",
         workContents: [],
       },
       {
         workingDate: dates[3],
-        workingSession: [],
-        workingLocation: "004",
+        shift: [],
+        projectId: "004",
         status: "yellow",
         workContents: [
           {
-            title: "workContent1",
-            forms: [
+            name: "workContent1",
+            docs: [
               {
-                formType: "formType3",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType3",
+                proof: File,
+                draft: false,
               },
             ],
           },
@@ -143,22 +143,22 @@ function Upload() {
       },
       {
         workingDate: dates[4],
-        workingSession: ["morning", "afternoon"],
-        workingLocation: "004",
+        shift: ["morning", "afternoon"],
+        projectId: "004",
         status: "green",
         workContents: [
           {
-            title: "workContent2",
-            forms: [
+            name: "workContent2",
+            docs: [
               {
-                formType: "formType1",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType1",
+                proof: File,
+                draft: false,
               },
               {
-                formType: "formType2",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType2",
+                proof: File,
+                draft: false,
               },
             ],
           },
@@ -166,22 +166,22 @@ function Upload() {
       },
       {
         workingDate: dates[5],
-        workingSession: ["morning", "afternoon"],
+        shift: ["morning", "afternoon"],
         status: "green",
-        workingLocation: "005",
+        projectId: "005",
         workContents: [
           {
-            title: "workContent2",
-            forms: [
+            name: "workContent2",
+            docs: [
               {
-                formType: "formType1",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType1",
+                proof: File,
+                draft: false,
               },
               {
-                formType: "formType2",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType2",
+                proof: File,
+                draft: false,
               },
             ],
           },
@@ -189,22 +189,22 @@ function Upload() {
       },
       {
         workingDate: dates[6],
-        workingSession: ["morning", "afternoon"],
-        workingLocation: "005",
+        shift: ["morning", "afternoon"],
+        projectId: "005",
         status: "green",
         workContents: [
           {
-            title: "workContent2",
-            forms: [
+            name: "workContent2",
+            docs: [
               {
-                formType: "formType1",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType1",
+                proof: File,
+                draft: false,
               },
               {
-                formType: "formType2",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType2",
+                proof: File,
+                draft: false,
               },
             ],
           },
@@ -212,22 +212,22 @@ function Upload() {
       },
       {
         workingDate: dates[7],
-        workingSession: ["morning", "afternoon"],
-        workingLocation: "005",
+        shift: ["morning", "afternoon"],
+        projectId: "005",
         status: "green",
         workContents: [
           {
-            title: "workContent2",
-            forms: [
+            name: "workContent2",
+            docs: [
               {
-                formType: "formType1",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType1",
+                proof: File,
+                draft: false,
               },
               {
-                formType: "formType2",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType2",
+                proof: File,
+                draft: false,
               },
             ],
           },
@@ -235,22 +235,22 @@ function Upload() {
       },
       {
         workingDate: dates[8],
-        workingSession: ["morning", "afternoon"],
-        workingLocation: "005",
+        shift: ["morning", "afternoon"],
+        projectId: "005",
         status: "green",
         workContents: [
           {
-            title: "workContent2",
-            forms: [
+            name: "workContent2",
+            docs: [
               {
-                formType: "formType1",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType1",
+                proof: File,
+                draft: false,
               },
               {
-                formType: "formType2",
-                attachedFile: File,
-                isOffcial: false,
+                name: "formType2",
+                proof: File,
+                draft: false,
               },
             ],
           },
@@ -261,7 +261,7 @@ function Upload() {
     setLogs(logs);
   }, []);
 
-  const renderCheckMark = (i, calDay, currDay, workingSession, status) => {
+  const renderCheckMark = (i, calDay, currDay, shift, status) => {
     let style;
     if (status === "green") {
       style = { background: "green.100", color: "green.800" };
@@ -272,9 +272,8 @@ function Upload() {
       style = { background: "yellow.100", color: "yellow.800" };
     }
 
-    const morning = calDay === currDay && workingSession.includes("morning");
-    const afternoon =
-      calDay === currDay && workingSession.includes("afternoon");
+    const morning = calDay === currDay && shift.includes("morning");
+    const afternoon = calDay === currDay && shift.includes("afternoon");
 
     return (
       <>
@@ -308,8 +307,8 @@ function Upload() {
   };
 
   const onSubmitDiary = (data) => {
-    if (typeof data.workingSession === "string") {
-      data.workingSession = [data.workingSession];
+    if (typeof data.shift === "string") {
+      data.shift = [data.shift];
     }
 
     const [dateInW, day] = format(data.workingDate, "EEEEE-dd", {
@@ -394,13 +393,7 @@ function Upload() {
             <tbody>
               {logs.map(
                 (
-                  {
-                    workingLocation,
-                    workContents,
-                    workingDate,
-                    workingSession,
-                    status,
-                  },
+                  { projectId, workContents, workingDate, shift, status },
                   i
                 ) => (
                   <Tr className="cursor-pointer" key={i}>
@@ -412,9 +405,7 @@ function Upload() {
                       alignItems="center"
                     >
                       <Td className="border-none" maxW="100px" p="0" pr="2">
-                        <Tooltip label={workingLocation}>
-                          {workingLocation.slice(0, 10) + "..."}
-                        </Tooltip>
+                        {projectId}
                       </Td>
                       <Td
                         className="border-none"
@@ -424,17 +415,17 @@ function Upload() {
                         pr="2"
                       >
                         {workContents.map((workContent) => (
-                          <Tooltip label={workContent.title}>
-                            <p>{workContent.title.slice(0, 10) + "..."}</p>
+                          <Tooltip label={workContent.name}>
+                            <p>{workContent.name.slice(0, 10) + "..."}</p>
                           </Tooltip>
                         ))}
                       </Td>
                       <Td className="border-none" maxW="100px" p="0">
                         {workContents.map((workContent) => (
                           <>
-                            {workContent.forms.map((form) => (
-                              <Tooltip label={form.formType}>
-                                <p>{form.formType.slice(0, 10)}...</p>
+                            {workContent.docs.map((doc) => (
+                              <Tooltip label={doc.name}>
+                                <p>{doc.name.slice(0, 10)}...</p>
                               </Tooltip>
                             ))}
                           </>
@@ -448,7 +439,7 @@ function Upload() {
                           i,
                           date.day,
                           workingDate.day,
-                          workingSession,
+                          shift,
                           status
                         )}
                       </>
