@@ -19,6 +19,7 @@ import { IoAdd } from "react-icons/io5";
 import viLocale from "date-fns/locale/vi";
 
 import { sub, add, format } from "date-fns";
+import Datepicker from "../partials/actions/Datepicker";
 
 function Upload() {
   const [dates, setDates] = useState(() => {
@@ -326,18 +327,7 @@ function Upload() {
         <h3 className="h3">Nhật ký công việc</h3>
         <hr className="mb-6" />
         <div className="flex">
-          <Flex>
-            <Select placeholder="Chọn tháng" w="lg" mr="1rem">
-              <option value="option1">1</option>
-              <option value="option2">2</option>
-              <option value="option3">3</option>
-            </Select>
-            <Select placeholder="Chọn năm">
-              <option value="option1">2022</option>
-              <option value="option2">2021</option>
-              <option value="option3">2020</option>
-            </Select>
-          </Flex>
+          <Datepicker onChange={() => {}} />
 
           <Box ml="auto">
             <Button>Xuất nhật kí</Button>

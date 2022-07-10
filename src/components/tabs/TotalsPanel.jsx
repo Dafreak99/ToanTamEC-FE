@@ -87,7 +87,6 @@ function TotalsPanel() {
       }
     }
 
-    console.log("desired JSON data format", formatted);
     const { headings } = formatted;
 
     let formattedHeadings = [];
@@ -126,6 +125,8 @@ function TotalsPanel() {
       rows,
     });
   };
+
+  console.log("all data", data);
 
   const removeCol = (index) => {
     let { original } = data;

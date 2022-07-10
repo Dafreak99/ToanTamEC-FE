@@ -148,12 +148,13 @@ function Table({
     );
   };
 
+  // TODO: Change edited value to orange
   const Tr = ({ d, isLastThree, isEdited }) => {
     return (
       <Box
         as="tr"
         bg={isLastThree ? "#EDF2F6" : "#EDF2F666"}
-        opacity={isEdited ? "0.3" : "1"}
+        opacity={isEdited ? "0.7" : "1"}
       >
         {data.formattedHeadings.map((heading, i) => {
           if (heading.type === "child") {
