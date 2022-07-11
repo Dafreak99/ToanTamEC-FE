@@ -123,8 +123,13 @@ function Table({
     return row.some((col) => col?.edited);
   };
 
-  const renderColor = (status) => {
+  const renderColor = (status, edited) => {
     let style;
+
+    if (edited) {
+      style = { background: "orange.200", color: "orange.800" };
+    }
+
     if (status === "passed") {
       style = { background: "green.100", color: "green.800" };
     } else if (status === "failed") {
@@ -162,6 +167,10 @@ function Table({
               <Td
                 cursor="pointer"
                 bg={i === 0 && "#edf2f6"}
+                {...renderColor(
+                  d?.[heading.count]?.status,
+                  d?.[heading.count]?.edited
+                )}
                 onClick={() => {
                   if (!isLastThree && !isEdited) {
                     if (i === 0) {
@@ -192,7 +201,10 @@ function Table({
               <>
                 <Td
                   cursor="pointer"
-                  {...renderColor(d?.[heading.count]?.status)}
+                  {...renderColor(
+                    d?.[heading.count]?.status,
+                    d?.[heading.count]?.edited
+                  )}
                   onContextMenu={() => {
                     if (!isLastThree && d[heading.count] && !isEdited) {
                       setModal("location", d[heading.count].value);
@@ -208,7 +220,10 @@ function Table({
                       return (
                         <Td
                           cursor="pointer"
-                          {...renderColor(d?.[child.count]?.status)}
+                          {...renderColor(
+                            d?.[child.count]?.status,
+                            d?.[child.count]?.edited
+                          )}
                           onClick={() => {
                             if (!isLastThree && d[child.count] && !isEdited) {
                               setModal(

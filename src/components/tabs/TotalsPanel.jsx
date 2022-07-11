@@ -87,6 +87,28 @@ function TotalsPanel() {
       }
     }
 
+    let keys = Object.keys(formatted.content);
+
+    for (let key of keys) {
+      const length = formatted.content[key][0].length;
+      let arr = new Array().fill(length);
+      arr[0] = { value: "TK" };
+
+      for (let i = 1; i < length; i++) {
+        let total = 0;
+        for (let j = 0; j < formatted.content[key].length; j++) {
+          if (
+            formatted.content[key]?.[j]?.[i] &&
+            !formatted.content[key][j][i].edited
+          ) {
+            total += parseFloat(formatted.content[key][j][i].value);
+          }
+        }
+        arr[i] = { value: total };
+      }
+      formatted.content[key].push(arr);
+    }
+
     const { headings } = formatted;
 
     let formattedHeadings = [];
@@ -156,10 +178,19 @@ function TotalsPanel() {
       status: newData.assessment,
     };
 
+    // TODO: Fix one change cause all of its disabled rows change
     original[rowIdx][colIdx].edited = true;
+
+    for (let i = 1; i < original[rowIdx].length; i++) {
+      if (original?.[rowIdx - 1]?.[i]?.edited) {
+        original[rowIdx][i].edited = true;
+      }
+    }
 
     // add new row
     original.splice(rowIdx + 1, 0, newRow);
+
+    console.log(original);
 
     processTableData(original);
   };
