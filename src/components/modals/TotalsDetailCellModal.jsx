@@ -92,7 +92,10 @@ const TotalDetailsCellModal = ({
                 type="number"
                 ref={initialRef}
                 w="max-content"
-                {...register("quantity", { required: true })}
+                {...register("quantity", {
+                  required: true,
+                  valueAsNumber: true,
+                })}
               />
             </FormControl>
             {renderError("quantity")}

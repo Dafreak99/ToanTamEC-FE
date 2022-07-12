@@ -53,6 +53,7 @@ function TotalsPanel() {
               value: col,
               status: "blank",
               edited: false,
+              modifiedDate: new Date(),
             };
           });
         }
@@ -87,26 +88,42 @@ function TotalsPanel() {
       }
     }
 
+    // Calculate the last 3 rows of each location
     let keys = Object.keys(formatted.content);
 
     for (let key of keys) {
       const length = formatted.content[key][0].length;
-      let arr = new Array().fill(length);
-      arr[0] = { value: "TK" };
+      let totalArr = new Array().fill(length);
+      let implementedArr = new Array().fill(length);
+      let restArr = new Array().fill(length);
+
+      totalArr[0] = { value: "TỔNG" };
+      implementedArr[0] = { value: "TC" };
+      restArr[0] = { value: "CL" };
 
       for (let i = 1; i < length; i++) {
         let total = 0;
+        let implemented = 0;
+        let rest = 0;
+
         for (let j = 0; j < formatted.content[key].length; j++) {
           if (
             formatted.content[key]?.[j]?.[i] &&
-            !formatted.content[key][j][i].edited
+            !isEdited(formatted.content[key][j])
           ) {
+            // count implemented stuff
+            if (formatted.content[key][j][i].status === "passed") {
+              implemented += parseFloat(formatted.content[key][j][i].value);
+            }
             total += parseFloat(formatted.content[key][j][i].value);
           }
+          rest = total - implemented;
         }
-        arr[i] = { value: total };
+        totalArr[i] = { value: total };
+        implementedArr[i] = { value: implemented };
+        restArr[i] = { value: rest };
       }
-      formatted.content[key].push(arr);
+      formatted.content[key].push(totalArr, implementedArr, restArr);
     }
 
     const { headings } = formatted;
@@ -149,6 +166,9 @@ function TotalsPanel() {
   };
 
   console.log("all data", data);
+  const isEdited = (row) => {
+    return row.some((col) => col?.edited);
+  };
 
   const removeCol = (index) => {
     let { original } = data;
@@ -171,28 +191,36 @@ function TotalsPanel() {
     const { original } = data;
     let newRow = [...original[rowIdx]];
 
+    const { quantity, assessment, reason } = newData;
+
     newRow[colIdx] = {
       ...newRow[colIdx],
-      value: +newData.quantity,
+      value: quantity,
       edited: false,
-      status: newData.assessment,
+      status: assessment,
+      modifiedDate: new Date(),
+      reason,
     };
 
-    // TODO: Fix one change cause all of its disabled rows change
-    original[rowIdx][colIdx].edited = true;
+    // Looks clunky but it fixed the address reference in array (one changed in a row cause all rows changed)
+    const newD = [
+      ...original.slice(0, rowIdx),
+      [
+        ...original[rowIdx].slice(0, colIdx),
+        { ...original[rowIdx][colIdx], edited: true },
+        ...original[rowIdx].slice(colIdx + 1),
+      ],
+      newRow,
+      ...original.slice(rowIdx + 1),
+    ];
 
-    for (let i = 1; i < original[rowIdx].length; i++) {
-      if (original?.[rowIdx - 1]?.[i]?.edited) {
-        original[rowIdx][i].edited = true;
+    for (let i = 1; i < newD[rowIdx].length - 1; i++) {
+      if (newD?.[rowIdx - 1]?.[i]?.edited) {
+        newD[rowIdx - 1][i].edited = true;
       }
     }
 
-    // add new row
-    original.splice(rowIdx + 1, 0, newRow);
-
-    console.log(original);
-
-    processTableData(original);
+    processTableData(newD);
   };
 
   const removeRow = (index) => {
