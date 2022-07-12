@@ -191,14 +191,14 @@ function TotalsPanel() {
     const { original } = data;
     let newRow = [...original[rowIdx]];
 
-    const { quantity, assessment, reason } = newData;
+    const { quantity, assessment, reason, date } = newData;
 
     newRow[colIdx] = {
       ...newRow[colIdx],
       value: quantity,
       edited: false,
       status: assessment,
-      modifiedDate: new Date(),
+      modifiedDate: date,
       reason,
     };
 
