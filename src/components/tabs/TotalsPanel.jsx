@@ -32,7 +32,7 @@ function TotalsPanel() {
       const wb = XLSX.read(bstr, { type: "binary" });
       const wsname = wb.SheetNames[0];
       const ws = wb.Sheets[wsname];
-      const data = XLSX.utils
+      const parsed = XLSX.utils
         .sheet_to_json(ws, {
           header: 1,
           defval: null,
@@ -41,12 +41,13 @@ function TotalsPanel() {
           each.splice(each.length - 1, 1);
           return each;
         });
-      console.log("original converted JSON format", data);
 
-      const newData = data.map((row, index) => {
+      console.log("original converted JSON format", parsed);
+
+      const newData = parsed.map((row, index) => {
         if (index === 0) return row;
         else {
-          return row.map((col, colIndex) => {
+          return row.map((col) => {
             if (col === null) return col;
 
             return {
@@ -106,19 +107,17 @@ function TotalsPanel() {
         let implemented = 0;
         let rest = 0;
 
-        for (let j = 0; j < formatted.content[key].length; j++) {
-          if (
-            formatted.content[key]?.[j]?.[i] &&
-            !isEdited(formatted.content[key][j])
-          ) {
+        for (const element of formatted.content[key]) {
+          if (element?.[i] && !isEdited(element)) {
             // count implemented stuff
-            if (formatted.content[key][j][i].status === "passed") {
-              implemented += parseFloat(formatted.content[key][j][i].value);
+            if (element[i].status === "passed") {
+              implemented += parseFloat(element[i].value);
             }
-            total += parseFloat(formatted.content[key][j][i].value);
+            total += parseFloat(element[i].value);
           }
           rest = total - implemented;
         }
+
         totalArr[i] = { value: total };
         implementedArr[i] = { value: implemented };
         restArr[i] = { value: rest };

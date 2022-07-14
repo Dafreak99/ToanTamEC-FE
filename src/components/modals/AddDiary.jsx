@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { IoAdd } from "react-icons/io5";
 import {
   Button,
@@ -12,12 +12,9 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
-  Textarea,
   useDisclosure,
   Select,
-  RadioGroup,
   Stack,
-  Radio,
   Text,
   Box,
   Flex,
@@ -29,7 +26,6 @@ import {
   MenuItem,
   CheckboxGroup,
   Tooltip,
-  IconButton,
   Alert,
   AlertIcon,
   AlertTitle,
@@ -61,7 +57,7 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
   const [step, setStep] = useState(1);
   const [step1Content, setStep1Content] = useState(null);
   const [workContents, setWorkContents] = useState([]);
-  const [num, setNum] = useState(0);
+  const [, setNum] = useState(0);
 
   const initialRef = React.useRef();
   const finalRef = React.useRef();
@@ -419,12 +415,12 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
                               className={form.formType}
                               onChange={(e) => onChange(e, index, formIndex)}
                             >
-                              {getForms(title).map((form) => (
+                              {getForms(title).map((formOption) => (
                                 <option
-                                  value={form.title}
-                                  className={form.formType}
+                                  value={formOption.title}
+                                  className={formOption.formType}
                                 >
-                                  {form.title}
+                                  {form.formOption}
                                 </option>
                               ))}
                               {form.formType}

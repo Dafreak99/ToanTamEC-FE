@@ -1,8 +1,6 @@
 import {
   Box,
   Button,
-  Flex,
-  Select,
   Table,
   TableContainer,
   Td,
@@ -22,16 +20,17 @@ import { sub, add, format } from "date-fns";
 import Datepicker from "../partials/actions/Datepicker";
 
 function Upload() {
-  const [dates, setDates] = useState(() => {
+  const [dates, _] = useState(() => {
     Date.prototype.addDays = function (days) {
-      var dat = new Date(this.valueOf());
+      const dat = new Date(this.valueOf());
       dat.setDate(dat.getDate() + days);
       return dat;
     };
 
     function getDates(startDate, stopDate) {
-      var dateArray = new Array();
-      var currentDate = startDate;
+      const dateArray = new Array();
+      let currentDate = startDate;
+
       while (currentDate <= stopDate) {
         const [dateInW, day] = format(currentDate, "EEEEE-dd", {
           locale: viLocale,
@@ -327,7 +326,7 @@ function Upload() {
         <h3 className="h3">Nhật ký công việc</h3>
         <hr className="mb-6" />
         <div className="flex">
-          <Datepicker onChange={() => {}} />
+          <Datepicker onChange={null} />
 
           <Box ml="auto">
             <Button>Xuất nhật kí</Button>

@@ -12,7 +12,7 @@ import friends from "../../images/friends.svg";
 import report from "../../images/BM.png";
 
 function ReportsPanel() {
-  let [docs, setDocs] = useState([1]);
+  let [docs] = useState([1]);
 
   return (
     <div>
@@ -24,7 +24,7 @@ function ReportsPanel() {
       {docs.length > 0 ? (
         <Box height="70vh" overflow="scroll" overflowX="hidden">
           <Grid templateColumns="repeat(4,1fr)" mt="2rem">
-            {Array.from({ length: 8 }, (_, i) => (
+            {Array.from({ length: 8 }, () => (
               <Flex flexDirection="column" alignItems="center">
                 <Image src={report} />
                 <Heading fontSize="md" fontWeight="400">

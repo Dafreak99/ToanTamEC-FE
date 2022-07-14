@@ -8,7 +8,7 @@ const initialState = {
 
 export const login = createAsyncThunk("login", async (formData, thunkAPI) => {
   try {
-    const { data } = await axios.post("login", formData);
+    const { data } = await axios.post("user/login", formData);
     return data;
   } catch (error) {
     console.dir(error);
@@ -19,7 +19,7 @@ export const login = createAsyncThunk("login", async (formData, thunkAPI) => {
 
 export const getMe = createAsyncThunk("getMe", async (_, thunkAPI) => {
   try {
-    const { data } = await axios("me");
+    const { data } = await axios("user");
     return data;
   } catch (error) {
     return thunkAPI.rejectWithValue({ error: error.response.data.error });
@@ -47,7 +47,7 @@ export const userSlice = createSlice({
       state.isLoading = false;
       state.auth = payload.user;
     });
-    builder.addCase(getMe.rejected, (state, { payload }) => {
+    builder.addCase(getMe.rejected, (state, { _payload }) => {
       state.isLoading = false;
       state.auth = null;
     });

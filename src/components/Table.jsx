@@ -59,24 +59,24 @@ function Table({
   });
 
   const [toggles, setToggles] = useState(() => {
-    let toggles = {};
+    let stateToggles = {};
     for (let i = 1; i <= data.formattedHeadings.length; i++) {
       let propName = `toggle${i}`;
-      toggles[propName] = true;
+      stateToggles[propName] = true;
     }
 
-    return toggles;
+    return stateToggles;
   });
 
   const [rowToggles, setRowToggles] = useState(() => {
-    let toggles = {};
+    let rToggles = {};
 
     for (let i = 1; i <= Object.keys(data.content).length; i++) {
       let propName = `toggle${i}`;
-      toggles[propName] = true;
+      rToggles[propName] = true;
     }
 
-    return toggles;
+    return rToggles;
   });
 
   useEffect(() => {
@@ -88,9 +88,9 @@ function Table({
   const setModal = (
     type,
     value,
-    isParent = "child",
-    rowContent,
-    colContent
+    rowContent = null,
+    colContent = null,
+    isParent = "child"
   ) => {
     setModalHeading(value);
     setModalType(isParent);
@@ -114,9 +114,9 @@ function Table({
     }
   };
 
-  const onCellSubmit = (data) => {
+  const onCellSubmit = (formData) => {
     // edit cell value
-    editCell(selectedCell.row, selectedCell.col, data);
+    editCell(selectedCell.row, selectedCell.col, formData);
   };
 
   const isEdited = (row) => {
@@ -154,12 +154,12 @@ function Table({
   };
 
   // TODO: Change edited value to orange
-  const Tr = ({ d, isLastThree, isEdited }) => {
+  const Tr = ({ d, isLastThree, edited }) => {
     return (
       <Box
         as="tr"
         bg={isLastThree ? "#EDF2F6" : "#EDF2F666"}
-        opacity={isEdited ? "0.7" : "1"}
+        opacity={edited ? "0.7" : "1"}
       >
         {data.formattedHeadings.map((heading, i) => {
           if (heading.type === "child") {
@@ -172,7 +172,7 @@ function Table({
                   d?.[heading.count]?.edited
                 )}
                 onClick={() => {
-                  if (!isLastThree && !isEdited) {
+                  if (!isLastThree && !edited && i !== 0) {
                     if (i === 0) {
                       setModal("location", d[heading.count].value);
 
@@ -185,9 +185,9 @@ function Table({
                       setModal(
                         "cell",
                         `${d[0].value} - ${heading.value}`,
-                        "child",
                         d[0].value,
-                        heading.value
+                        heading.value,
+                        "child"
                       );
                     }
                   }
@@ -206,7 +206,7 @@ function Table({
                     d?.[heading.count]?.edited
                   )}
                   onContextMenu={() => {
-                    if (!isLastThree && d[heading.count] && !isEdited) {
+                    if (!isLastThree && d[heading.count] && !edited) {
                       setModal("location", d[heading.count].value);
                     }
                   }}
@@ -225,13 +225,13 @@ function Table({
                             d?.[child.count]?.edited
                           )}
                           onClick={() => {
-                            if (!isLastThree && d[child.count] && !isEdited) {
+                            if (!isLastThree && d[child.count] && !edited) {
                               setModal(
                                 "cell",
                                 `${d[0].value} - ${child.value}`,
-                                "child",
                                 d[0].value,
-                                child.value
+                                child.value,
+                                "child"
                               );
                             }
                           }}
@@ -301,14 +301,14 @@ function Table({
     };
 
     const PivotBody = () => {
-      const onSubmitLocation = (data) => {
+      const onSubmitLocation = (formData) => {
         onHeadingModalClose();
-        addLocation(data);
+        addLocation(formData);
       };
 
-      const onSubmitMaterial = (data) => {
+      const onSubmitMaterial = (formData) => {
         onHeadingModalClose();
-        addMaterial(data);
+        addMaterial(formData);
       };
 
       return (
@@ -331,6 +331,16 @@ function Table({
       );
     };
 
+    const renderBody = () => {
+      if (modalType === "parent") {
+        return <ParentBody />;
+      } else if (modalType === "child") {
+        return <ChildBody />;
+      } else {
+        return <PivotBody />;
+      }
+    };
+
     return (
       <Modal
         isOpen={isHeadingModalOpen}
@@ -342,13 +352,7 @@ function Table({
           <ModalHeader fontSize="sm">{modalHeading}</ModalHeader>
           <ModalBody p="1rem 2rem">
             <Flex justifyContent="space-between" alignItems="center">
-              {modalType === "parent" ? (
-                <ParentBody />
-              ) : modalType === "child" ? (
-                <ChildBody />
-              ) : (
-                <PivotBody />
-              )}
+              {renderBody()}
             </Flex>
           </ModalBody>
         </ModalContent>
@@ -386,7 +390,7 @@ function Table({
     const ParentBody = () => {
       return (
         <>
-          <Button isFullWidth variant="gray" mr="4" onClick={() => {}}>
+          <Button isFullWidth variant="gray" mr="4" onClick={null}>
             Thêm trụ
           </Button>
           <Button
@@ -547,11 +551,11 @@ function Table({
                   }}
                   onContextMenu={() => {
                     onLocationModalOpen();
-                    setModal("location", location[0], "parent");
+                    setModal("location", location[0], null, null, "parent");
 
                     const { rows } = data;
-                    let index = rows.findIndex((row) => row === location[0]);
-                    setDeleteRow(index);
+                    let idx = rows.findIndex((row) => row === location[0]);
+                    setDeleteRow(idx);
                   }}
                 >
                   <Flex
