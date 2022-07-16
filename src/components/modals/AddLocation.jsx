@@ -1,20 +1,20 @@
-import React from "react";
 import {
   Button,
   FormControl,
   FormLabel,
   Input,
   Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
   ModalBody,
   ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   useDisclosure,
-} from "@chakra-ui/react";
-import { useForm } from "react-hook-form";
-import ErrorMessage from "../../utils/ErrorMessage";
+} from '@chakra-ui/react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import ErrorMessage from '../../utils/ErrorMessage';
 
 /**
  *
@@ -30,7 +30,6 @@ const AddLocation = ({ children, onSubmit: parentOnSubmit }) => {
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors },
   } = useForm();
 
@@ -46,10 +45,12 @@ const AddLocation = ({ children, onSubmit: parentOnSubmit }) => {
     return child;
   });
 
-  const renderError = (name, type = "required") => {
+  const renderError = (name, type = 'required') => {
     if (name in errors && errors[name].type === type) {
       return <ErrorMessage />;
     }
+
+    return null;
   };
 
   return (
@@ -64,20 +65,20 @@ const AddLocation = ({ children, onSubmit: parentOnSubmit }) => {
         onClose={onClose}
       >
         <ModalOverlay />
-        <ModalContent as="form" onSubmit={handleSubmit(onSubmit)}>
-          <ModalHeader textAlign="center">Thêm kênh</ModalHeader>
+        <ModalContent as='form' onSubmit={handleSubmit(onSubmit)}>
+          <ModalHeader textAlign='center'>Thêm kênh</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl>
               <FormLabel>
-                Tên kênh <span className="text-red-500">*</span>
+                Tên kênh <span className='text-red-500'>*</span>
               </FormLabel>
               <Input
                 ref={initialRef}
-                placeholder="Tên kênh"
-                {...register("locationName", { required: true })}
+                placeholder='Tên kênh'
+                {...register('locationName', { required: true })}
               />
-              {renderError("locationName")}
+              {renderError('locationName')}
             </FormControl>
           </ModalBody>
 
@@ -85,7 +86,7 @@ const AddLocation = ({ children, onSubmit: parentOnSubmit }) => {
             <Button onClick={onClose} mr={3}>
               Hủy
             </Button>
-            <Button background="primary" color="white" type="submit">
+            <Button background='primary' color='white' type='submit'>
               Thêm
             </Button>
           </ModalFooter>

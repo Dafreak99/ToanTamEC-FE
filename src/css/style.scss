@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=fallback");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=fallback');
 
 @tailwind base;
 
@@ -9,13 +9,13 @@ a {
 @tailwind components;
 
 // Additional styles
-@import "additional-styles/utility-patterns.scss";
-@import "additional-styles/range-slider.scss";
-@import "additional-styles/toggle-switch.scss";
-@import "additional-styles/flatpickr.scss";
-@import "additional-styles/theme.scss";
-@import "additional-styles/table.scss";
-@import "additional-styles/spinner.scss";
+@import 'additional-styles/utility-patterns.scss';
+@import 'additional-styles/range-slider.scss';
+@import 'additional-styles/toggle-switch.scss';
+@import 'additional-styles/flatpickr.scss';
+@import 'additional-styles/theme.scss';
+@import 'additional-styles/table.scss';
+@import 'additional-styles/spinner.scss';
 
 @tailwind utilities;
 

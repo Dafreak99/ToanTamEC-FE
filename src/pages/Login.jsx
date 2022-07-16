@@ -5,17 +5,17 @@ import {
   FormControl,
   FormLabel,
   Input,
-} from "@chakra-ui/react";
-import { useForm } from "react-hook-form";
-import logo from "../images/company-logo.svg";
-import bg from "../images/bg.png";
-import ErrorMessage from "../utils/ErrorMessage";
-import { login } from "../features/user/userSlice";
-import { useDispatch, useSelector } from "react-redux";
-import { showToast } from "../utils/toast";
-import Cookies from "universal-cookie";
-import { Navigate } from "react-router-dom";
-import { useState } from "react";
+} from '@chakra-ui/react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux';
+import { Navigate } from 'react-router-dom';
+import Cookies from 'universal-cookie';
+import { login } from '../features/user/userSlice';
+import bg from '../images/bg.png';
+import logo from '../images/company-logo.svg';
+import ErrorMessage from '../utils/ErrorMessage';
+import { showToast } from '../utils/toast';
 
 const Login = () => {
   const {
@@ -34,72 +34,68 @@ const Login = () => {
 
     if (login.fulfilled.match(resultAction)) {
       const user = resultAction.payload;
-      cookies.set("accessToken", user.token);
+      cookies.set('accessToken', user.token);
     } else {
       console.log(resultAction);
-      showToast("error", "Lỗi", resultAction.payload.error);
+      showToast('error', 'Lỗi', resultAction.payload.error);
     }
     setFormLoading(false);
   };
 
-  const renderError = (name, type = "required") => {
+  const renderError = (name, type = 'required') => {
     if (name in errors && errors[name].type === type) {
       return <ErrorMessage />;
     }
+    return null;
   };
 
   if (isLoading) {
     return (
-      <Flex
-        h="100vh"
-        w="100vw"
-        justifyContent="center"
-        alignItems="center"
-      ></Flex>
+      <Flex h='100vh' w='100vw' justifyContent='center' alignItems='center' />
     );
   }
   if (auth) {
-    return <Navigate to="/du-an" />;
+    return <Navigate to='/du-an' />;
   }
 
   return (
-    <Flex h="100vh" overflow="hidden">
+    <Flex h='100vh' overflow='hidden'>
       <Flex
-        w="40%"
-        flexDir="column"
-        px={{ base: "3rem", xl: "4rem" }}
-        justifyContent="center"
+        w='40%'
+        flexDir='column'
+        px={{ base: '3rem', xl: '4rem' }}
+        justifyContent='center'
       >
-        <Box as="img" src={logo} alt="logo" height="100px" mb="5rem" />
-        <Box as="form" onSubmit={handleSubmit(onSubmit)}>
+        <Box as='img' src={logo} alt='logo' height='100px' mb='5rem' />
+        <Box as='form' onSubmit={handleSubmit(onSubmit)}>
           <FormControl>
             <FormLabel>
-              Tên người dùng <span className="text-red-500">*</span>
+              Tên người dùng <span className='text-red-500'>*</span>
             </FormLabel>
             <Input
-              placeholder="Nhập tên người dùng"
-              {...register("username", { required: true })}
+              placeholder='Nhập tên người dùng'
+              {...register('username', { required: true })}
             />
-            {renderError("username")}
+            {renderError('username')}
           </FormControl>
 
           <FormControl mt={4}>
             <FormLabel>
-              Mật khẩu <span className="text-red-500">*</span>
+              Mật khẩu <span className='text-red-500'>*</span>
             </FormLabel>
             <Input
-              placeholder="Nhập mật khẩu"
-              type="password"
-              {...register("password", { required: true })}
+              placeholder='Nhập mật khẩu'
+              type='password'
+              {...register('password', { required: true })}
             />
-            {renderError("password")}
+            {renderError('password')}
           </FormControl>
           <FormControl mt={8}>
             <Button
-              variant="primary"
-              display="block"
+              variant='primary'
+              display='block'
               isFullWidth
-              type="submit"
+              type='submit'
               disabled={formLoading}
             >
               ĐĂNG NHẬP
@@ -107,12 +103,7 @@ const Login = () => {
           </FormControl>
         </Box>
       </Flex>
-      <Box
-        w="60%"
-        backgroundImage={bg}
-        bgRepeat="no-repeat"
-        bgSize="cover"
-      ></Box>
+      <Box w='60%' backgroundImage={bg} bgRepeat='no-repeat' bgSize='cover' />
     </Flex>
   );
 };

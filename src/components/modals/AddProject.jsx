@@ -1,23 +1,22 @@
-import React, { useState } from "react";
-import { IoAdd } from "react-icons/io5";
 import {
   Button,
   FormControl,
   FormLabel,
   Input,
   Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
   ModalBody,
   ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Textarea,
   useDisclosure,
-} from "@chakra-ui/react";
-import { Controller, useForm } from "react-hook-form";
-import Datepicker from "../../partials/actions/Datepicker";
-import ErrorMessage from "../../utils/ErrorMessage";
+} from '@chakra-ui/react';
+import React from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import Datepicker from '../../partials/actions/Datepicker';
+import ErrorMessage from '../../utils/ErrorMessage';
 
 /**
  *
@@ -26,7 +25,6 @@ import ErrorMessage from "../../utils/ErrorMessage";
 
 const AddProject = ({ children }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [startDate, setStartDate] = useState(new Date());
 
   const initialRef = React.useRef();
   const finalRef = React.useRef();
@@ -47,10 +45,11 @@ const AddProject = ({ children }) => {
     return child;
   });
 
-  const renderError = (name, type = "required") => {
+  const renderError = (name, type = 'required') => {
     if (name in errors && errors[name].type === type) {
       return <ErrorMessage />;
     }
+    return null;
   };
 
   return (
@@ -65,41 +64,41 @@ const AddProject = ({ children }) => {
         onClose={onClose}
       >
         <ModalOverlay />
-        <ModalContent as="form" onSubmit={handleSubmit(onSubmit)}>
-          <ModalHeader textAlign="center">Thông tin dự án</ModalHeader>
+        <ModalContent as='form' onSubmit={handleSubmit(onSubmit)}>
+          <ModalHeader textAlign='center'>Thông tin dự án</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl>
               <FormLabel>
-                Tên dự án <span className="text-red-500">*</span>
+                Tên dự án <span className='text-red-500'>*</span>
               </FormLabel>
               <Input
                 ref={initialRef}
-                placeholder="Tên dự án"
-                {...register("projectName", { required: true })}
+                placeholder='Tên dự án'
+                {...register('projectName', { required: true })}
               />
-              {renderError("projectName")}
+              {renderError('projectName')}
             </FormControl>
 
             <FormControl mt={4}>
               <FormLabel>
-                Địa điểm <span className="text-red-500">*</span>
+                Địa điểm <span className='text-red-500'>*</span>
               </FormLabel>
               <Input
                 ref={initialRef}
-                placeholder="Địa điểm"
-                {...register("location", { required: true })}
+                placeholder='Địa điểm'
+                {...register('location', { required: true })}
               />
-              {renderError("location")}
+              {renderError('location')}
             </FormControl>
 
             <FormControl mt={4}>
               <FormLabel>
-                Thời điểm khởi công <span className="text-red-500">*</span>
+                Thời điểm khởi công <span className='text-red-500'>*</span>
               </FormLabel>
 
               <Controller
-                name="startDate"
+                name='startDate'
                 control={control}
                 defaultValue={new Date()}
                 rules={{
@@ -111,13 +110,13 @@ const AddProject = ({ children }) => {
 
             <FormControl mt={4}>
               <FormLabel>
-                Căn cứ nghiệm thu<span className="text-red-500">*</span>
+                Căn cứ nghiệm thu<span className='text-red-500'>*</span>
               </FormLabel>
               <Textarea
-                placeholder="Nhập căn cứ nghiệm thu"
-                {...register("basedAcceptance", { required: true })}
+                placeholder='Nhập căn cứ nghiệm thu'
+                {...register('basedAcceptance', { required: true })}
               />
-              {renderError("basedAcceptance")}
+              {renderError('basedAcceptance')}
             </FormControl>
           </ModalBody>
 
@@ -125,7 +124,7 @@ const AddProject = ({ children }) => {
             <Button onClick={onClose} mr={3}>
               Hủy
             </Button>
-            <Button background="primary" color="white" type="submit">
+            <Button background='primary' color='white' type='submit'>
               Tạo dự án
             </Button>
           </ModalFooter>

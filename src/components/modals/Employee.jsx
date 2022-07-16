@@ -1,22 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { IoAdd } from "react-icons/io5";
 import {
   Button,
   FormControl,
   FormLabel,
   Input,
   Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
   ModalBody,
   ModalCloseButton,
-  Textarea,
-  useDisclosure,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Select,
-} from "@chakra-ui/react";
-import { Controller, useForm } from "react-hook-form";
+  useDisclosure,
+} from '@chakra-ui/react';
+import React, { useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
 /**
  *
@@ -51,7 +49,7 @@ const EmployeeModal = ({ children, onSubmit }) => {
   });
 
   useEffect(() => {
-    return function () {
+    return () => {
       reset();
     };
   }, [isOpen]);
@@ -68,54 +66,58 @@ const EmployeeModal = ({ children, onSubmit }) => {
         onClose={onClose}
       >
         <ModalOverlay />
-        <ModalContent as="form" onSubmit={handleSubmit(formOnSubmit)}>
-          <ModalHeader textAlign="center">Thêm thành viên</ModalHeader>
+        <ModalContent as='form' onSubmit={handleSubmit(formOnSubmit)}>
+          <ModalHeader textAlign='center'>Thêm thành viên</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl>
               <FormLabel>Tài khoản người dùng</FormLabel>
               <Input
                 ref={initialRef}
-                _placeholder="Nhập tên người dùng"
-                {...register("userName")}
+                _placeholder='Nhập tên người dùng'
+                {...register('userName')}
               />
             </FormControl>
 
             <FormControl mt={4}>
               <FormLabel>
-                Họ và tên <span className="text-red-500">*</span>
+                Họ và tên <span className='text-red-500'>*</span>
               </FormLabel>
               <Input
                 ref={initialRef}
-                placeholder="Nhập họ và tên thành viên"
-                {...register("fullName", { required: true })}
+                placeholder='Nhập họ và tên thành viên'
+                {...register('fullName', { required: true })}
               />
               {errors.fullName && (
-                <p class="text-red-500 mt-1 text-xs">Vui lòng nhập họ tên</p>
+                <p className='text-red-500 mt-1 text-xs'>
+                  Vui lòng nhập họ tên
+                </p>
               )}
             </FormControl>
 
             <FormControl mt={4}>
               <FormLabel>
-                Chức vụ <span className="text-red-500">*</span>
+                Chức vụ <span className='text-red-500'>*</span>
               </FormLabel>
 
               <Controller
-                name="jobTitle"
+                name='jobTitle'
                 control={control}
                 rules={{
                   required: true,
                 }}
                 render={({ field }) => (
-                  <Select {...field} placeholder="Chọn chức vụ">
-                    <option value="option1">Chỉ huy trưởng công trình</option>
-                    <option value="option2">Kỹ thuật viên thi công</option>
-                    <option value="option3">Giám sát viên</option>
+                  <Select {...field} placeholder='Chọn chức vụ'>
+                    <option value='option1'>Chỉ huy trưởng công trình</option>
+                    <option value='option2'>Kỹ thuật viên thi công</option>
+                    <option value='option3'>Giám sát viên</option>
                   </Select>
                 )}
               />
               {errors.jobTitle && (
-                <p class="text-red-500 mt-1 text-xs">Vui lòng chọn chức vụ</p>
+                <p className='text-red-500 mt-1 text-xs'>
+                  Vui lòng chọn chức vụ
+                </p>
               )}
             </FormControl>
 
@@ -123,8 +125,8 @@ const EmployeeModal = ({ children, onSubmit }) => {
               <FormLabel>Số điện thoại</FormLabel>
               <Input
                 ref={initialRef}
-                placeholder="Nhập sđt"
-                {...register("phone")}
+                placeholder='Nhập sđt'
+                {...register('phone')}
               />
             </FormControl>
 
@@ -132,9 +134,9 @@ const EmployeeModal = ({ children, onSubmit }) => {
               <FormLabel>Email</FormLabel>
               <Input
                 ref={initialRef}
-                placeholder="user@example.com"
-                type="email"
-                {...register("phone")}
+                placeholder='user@example.com'
+                type='email'
+                {...register('phone')}
               />
             </FormControl>
           </ModalBody>
@@ -143,7 +145,7 @@ const EmployeeModal = ({ children, onSubmit }) => {
             <Button onClick={onClose} mr={3}>
               Hủy
             </Button>
-            <Button background="primary" color="white" type="submit">
+            <Button background='primary' color='white' type='submit'>
               Lưu
             </Button>
           </ModalFooter>

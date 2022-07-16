@@ -1,14 +1,14 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { axios } from "../../utils/axios";
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { axios } from '../../utils/axios';
 
 const initialState = {
   isLoading: true,
   auth: null,
 };
 
-export const login = createAsyncThunk("login", async (formData, thunkAPI) => {
+export const login = createAsyncThunk('login', async (formData, thunkAPI) => {
   try {
-    const { data } = await axios.post("user/login", formData);
+    const { data } = await axios.post('user/login', formData);
     return data;
   } catch (error) {
     console.dir(error);
@@ -17,9 +17,9 @@ export const login = createAsyncThunk("login", async (formData, thunkAPI) => {
   }
 });
 
-export const getMe = createAsyncThunk("getMe", async (_, thunkAPI) => {
+export const getMe = createAsyncThunk('getMe', async (_, thunkAPI) => {
   try {
-    const { data } = await axios("user");
+    const { data } = await axios('user');
     return data;
   } catch (error) {
     return thunkAPI.rejectWithValue({ error: error.response.data.error });
@@ -27,13 +27,13 @@ export const getMe = createAsyncThunk("getMe", async (_, thunkAPI) => {
 });
 
 export const userSlice = createSlice({
-  name: "user",
+  name: 'user',
   initialState,
   reducers: {
-    toggleLoading: () => {
+    toggleLoading: (state) => {
       state.loading = !state.loading;
     },
-    clearLogin: () => {
+    clearLogin: (state) => {
       state.isLoading = false;
       state.auth = null;
     },
@@ -47,7 +47,7 @@ export const userSlice = createSlice({
       state.isLoading = false;
       state.auth = payload.user;
     });
-    builder.addCase(getMe.rejected, (state, { _payload }) => {
+    builder.addCase(getMe.rejected, (state) => {
       state.isLoading = false;
       state.auth = null;
     });

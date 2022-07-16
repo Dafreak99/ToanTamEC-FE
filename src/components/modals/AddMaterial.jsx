@@ -1,20 +1,20 @@
-import React from "react";
 import {
   Button,
   FormControl,
   FormLabel,
   Input,
   Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
   ModalBody,
   ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   useDisclosure,
-} from "@chakra-ui/react";
-import { useForm } from "react-hook-form";
-import ErrorMessage from "../../utils/ErrorMessage";
+} from '@chakra-ui/react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import ErrorMessage from '../../utils/ErrorMessage';
 
 /**
  *
@@ -45,10 +45,12 @@ const AddMaterial = ({ children, onSubmit: parentOnSubmit }) => {
     return child;
   });
 
-  const renderError = (name, type = "required") => {
+  const renderError = (name, type = 'required') => {
     if (name in errors && errors[name].type === type) {
       return <ErrorMessage />;
     }
+
+    return null;
   };
 
   return (
@@ -63,20 +65,20 @@ const AddMaterial = ({ children, onSubmit: parentOnSubmit }) => {
         onClose={onClose}
       >
         <ModalOverlay />
-        <ModalContent as="form" onSubmit={handleSubmit(onSubmit)}>
-          <ModalHeader textAlign="center">Thêm danh sách vật tư</ModalHeader>
+        <ModalContent as='form' onSubmit={handleSubmit(onSubmit)}>
+          <ModalHeader textAlign='center'>Thêm danh sách vật tư</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl>
               <FormLabel>
-                Tên danh sách vật tư <span className="text-red-500">*</span>
+                Tên danh sách vật tư <span className='text-red-500'>*</span>
               </FormLabel>
               <Input
                 ref={initialRef}
-                placeholder="Tên danh sách vật tư"
-                {...register("materialName", { required: true })}
+                placeholder='Tên danh sách vật tư'
+                {...register('materialName', { required: true })}
               />
-              {renderError("materialName")}
+              {renderError('materialName')}
             </FormControl>
           </ModalBody>
 
@@ -84,7 +86,7 @@ const AddMaterial = ({ children, onSubmit: parentOnSubmit }) => {
             <Button onClick={onClose} mr={3}>
               Hủy
             </Button>
-            <Button background="primary" color="white" type="submit">
+            <Button background='primary' color='white' type='submit'>
               Thêm
             </Button>
           </ModalFooter>
