@@ -115,7 +115,7 @@ $daysWidth: $daySize * 7;
 .flatpickr-day.selected.nextMonthDay,
 .flatpickr-day.startRange.nextMonthDay,
 .flatpickr-day.endRange.nextMonthDay {
-  @apply bg-indigo-500 text-indigo-50;
+  @apply bg-orange-600 text-indigo-50;
 }
 
 .flatpickr-day.inRange,
@@ -132,7 +132,7 @@ $daysWidth: $daySize * 7;
 .flatpickr-day.nextMonthDay:focus,
 .flatpickr-day.today:hover,
 .flatpickr-day.today:focus {
-  @apply bg-indigo-400 text-indigo-50;
+  @apply bg-orange-600 text-indigo-50;
 }
 
 .flatpickr-day.inRange,
@@ -220,4 +220,9 @@ span.flatpickr-weekday {
 .flatpickr-calendar.arrowTop::before,
 .flatpickr-calendar.arrowTop::after {
   display: none;
+}
+
+.numInputWrapper span.arrowUp,
+.numInputWrapper span.arrowDown {
+  display: block;
 }

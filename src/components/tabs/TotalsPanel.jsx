@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import Table from '../Table';
-import note from '../../images/add-notes.svg';
 import { Button, useToast } from '@chakra-ui/react';
+import React, { useState } from 'react';
 import { IoAdd } from 'react-icons/io5';
 import * as XLSX from 'xlsx';
+import note from '../../images/add-notes.svg';
 import Spinner from '../Spinner';
+import Table from '../Table';
 
 function TotalsPanel() {
   const [data, setData] = useState(null);
@@ -12,12 +12,113 @@ function TotalsPanel() {
 
   const toast = useToast();
 
+  const isEdited = (row) => {
+    return row.some((col) => col?.edited);
+  };
+
+  const processTableData = (tableData) => {
+    const formatted = {
+      headings: [],
+      content: {},
+    };
+
+    formatted.headings.push(...tableData[0]);
+
+    let currentContent;
+    for (let i = 1; i < tableData.length; i++) {
+      // content location
+      if (tableData[i][0]?.value.match(/^[1-9]\//)) {
+        currentContent = tableData[i][0];
+        formatted.content = {
+          ...formatted.content,
+          [currentContent.value]: [],
+        };
+      } else {
+        formatted.content[currentContent.value].push(tableData[i]);
+      }
+    }
+
+    // Calculate the last 3 rows of each location
+    const keys = Object.keys(formatted.content);
+
+    for (const key of keys) {
+      const length = formatted.content[key][0].length;
+      const totalArr = [].fill(length);
+      const implementedArr = [].fill(length);
+      const restArr = [].fill(length);
+
+      totalArr[0] = { value: 'Tổng' };
+      implementedArr[0] = { value: 'Đã thi công' };
+      restArr[0] = { value: 'Còn lại' };
+
+      for (let i = 1; i < length; i++) {
+        let total = 0;
+        let implemented = 0;
+        let rest = 0;
+
+        for (const element of formatted.content[key]) {
+          if (element?.[i] && !isEdited(element)) {
+            // count implemented stuff
+            if (element[i].status === 'passed') {
+              implemented += parseFloat(element[i].value);
+            }
+            total += parseFloat(element[i].value);
+          }
+          rest = total - implemented;
+        }
+
+        totalArr[i] = { value: total };
+        implementedArr[i] = { value: implemented };
+        restArr[i] = { value: rest };
+      }
+      formatted.content[key].push(totalArr, implementedArr, restArr);
+    }
+
+    const { headings } = formatted;
+
+    const formattedHeadings = [];
+    let isParent = false;
+
+    headings.forEach((heading, index) => {
+      if (heading.match(/^[MDCLXVI]{0,}\./)) {
+        formattedHeadings.push({
+          type: 'parent',
+          value: heading,
+          content: [],
+          count: index,
+        });
+        isParent = true;
+      } else if (isParent) {
+        formattedHeadings[formattedHeadings.length - 1].content.push({
+          type: 'child',
+          value: heading,
+          count: index,
+        });
+      } else {
+        formattedHeadings.push({
+          type: 'child',
+          value: heading,
+          count: index,
+        });
+      }
+    });
+
+    const rows = tableData.map((row) => row[0]);
+
+    setData({
+      ...formatted,
+      formattedHeadings,
+      original: tableData,
+      rows,
+    });
+  };
+
   const onChange = (e) => {
     setLoading(true);
     const [file] = e.target.files;
     const reader = new FileReader();
 
-    let extName = file.name.split('.').pop();
+    const extName = file.name.split('.').pop();
 
     if (extName !== 'xlsx') {
       toast({
@@ -46,18 +147,17 @@ function TotalsPanel() {
 
       const newData = parsed.map((row, index) => {
         if (index === 0) return row;
-        else {
-          return row.map((col) => {
-            if (col === null) return col;
 
-            return {
-              value: col,
-              status: 'blank',
-              edited: false,
-              modifiedDate: new Date(),
-            };
-          });
-        }
+        return row.map((col) => {
+          if (col === null) return col;
+
+          return {
+            value: col,
+            status: 'blank',
+            edited: false,
+            modifiedDate: new Date(),
+          };
+        });
       });
 
       processTableData(newData);
@@ -67,111 +167,9 @@ function TotalsPanel() {
     reader.readAsBinaryString(file);
   };
 
-  const processTableData = (data) => {
-    let formatted = {
-      headings: [],
-      content: {},
-    };
-
-    formatted.headings.push(...data[0]);
-
-    let currentContent;
-    for (let i = 1; i < data.length; i++) {
-      // content location
-      if (data[i][0]?.value.match(/^[1-9]\//)) {
-        currentContent = data[i][0];
-        formatted.content = {
-          ...formatted.content,
-          [currentContent.value]: [],
-        };
-      } else {
-        formatted.content[currentContent.value].push(data[i]);
-      }
-    }
-
-    // Calculate the last 3 rows of each location
-    let keys = Object.keys(formatted.content);
-
-    for (let key of keys) {
-      const length = formatted.content[key][0].length;
-      let totalArr = new Array().fill(length);
-      let implementedArr = new Array().fill(length);
-      let restArr = new Array().fill(length);
-
-      totalArr[0] = { value: 'TỔNG' };
-      implementedArr[0] = { value: 'TC' };
-      restArr[0] = { value: 'CL' };
-
-      for (let i = 1; i < length; i++) {
-        let total = 0;
-        let implemented = 0;
-        let rest = 0;
-
-        for (const element of formatted.content[key]) {
-          if (element?.[i] && !isEdited(element)) {
-            // count implemented stuff
-            if (element[i].status === 'passed') {
-              implemented += parseFloat(element[i].value);
-            }
-            total += parseFloat(element[i].value);
-          }
-          rest = total - implemented;
-        }
-
-        totalArr[i] = { value: total };
-        implementedArr[i] = { value: implemented };
-        restArr[i] = { value: rest };
-      }
-      formatted.content[key].push(totalArr, implementedArr, restArr);
-    }
-
-    const { headings } = formatted;
-
-    let formattedHeadings = [];
-    let isParent = false;
-
-    headings.forEach((heading, index) => {
-      if (heading.match(/^[MDCLXVI]{0,}\./)) {
-        formattedHeadings.push({
-          type: 'parent',
-          value: heading,
-          content: [],
-          count: index,
-        });
-        isParent = true;
-      } else if (isParent) {
-        formattedHeadings[formattedHeadings.length - 1].content.push({
-          type: 'child',
-          value: heading,
-          count: index,
-        });
-      } else {
-        formattedHeadings.push({
-          type: 'child',
-          value: heading,
-          count: index,
-        });
-      }
-    });
-
-    let rows = data.map((row) => row[0]);
-
-    setData({
-      ...formatted,
-      formattedHeadings,
-      original: data,
-      rows,
-    });
-  };
-
-  console.log('all data', data);
-  const isEdited = (row) => {
-    return row.some((col) => col?.edited);
-  };
-
   const removeCol = (index) => {
-    let { original } = data;
-    let result = original.map((row) => {
+    const { original } = data;
+    const result = original.map((row) => {
       row.splice(index, 1);
       return row;
     });
@@ -188,7 +186,7 @@ function TotalsPanel() {
 
   const editCell = (rowIdx, colIdx, newData) => {
     const { original } = data;
-    let newRow = [...original[rowIdx]];
+    const newRow = [...original[rowIdx]];
 
     const { quantity, assessment, reason, date } = newData;
 
@@ -223,7 +221,7 @@ function TotalsPanel() {
   };
 
   const removeRow = (index) => {
-    let { original } = data;
+    const { original } = data;
     original.splice(index, 1);
 
     processTableData(original);
@@ -239,7 +237,7 @@ function TotalsPanel() {
     // 1. remove these cols in all rows
     const { formattedHeadings, original } = data;
 
-    let result = original.map((row) => {
+    const result = original.map((row) => {
       row.splice(index, formattedHeadings[index].content.length + 1);
       return row;
     });
@@ -260,19 +258,19 @@ function TotalsPanel() {
     // 1. remove these cols in all rows
     const { content, original, rows } = data;
 
-    let LOCATION = rows[index];
+    const LOCATION = rows[index];
 
-    let locations = Object.entries(content);
+    const locations = Object.entries(content);
     let from = 1;
     let to = 1;
 
-    for (let i = 0; i < locations.length; i++) {
-      if (locations[i][0] === LOCATION) {
-        to += locations[i][1].length;
+    for (const element of locations) {
+      if (element[0] === LOCATION) {
+        to += element[1].length;
         break;
       } else {
-        from += locations[i][1].length + 1;
-        to += locations[i][1].length + 1;
+        from += element[1].length + 1;
+        to += element[1].length + 1;
       }
     }
     original.splice(from, to - from + 1);
@@ -290,7 +288,7 @@ function TotalsPanel() {
   const addLocation = (submittedData) => {
     const { original, content } = data;
 
-    let temp = Array.from({ length: original[0].length }, (_, i) => {
+    const temp = Array.from({ length: original[0].length }, (_, i) => {
       if (i === 0) {
         return `${Object.keys(content).length + 1}/ ${
           submittedData.locationName
@@ -307,7 +305,7 @@ function TotalsPanel() {
   const addMaterial = (submittedData) => {
     const { original } = data;
 
-    let newOriginal = original.map((row, i) => {
+    const newOriginal = original.map((row, i) => {
       if (i === 0) {
         row.push(submittedData.materialName);
       } else {

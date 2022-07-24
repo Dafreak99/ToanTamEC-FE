@@ -11,17 +11,29 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import React from 'react';
+import { format } from 'date-fns';
+import React, { useEffect } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { IoAdd } from 'react-icons/io5';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import AddProject from '../components/modals/AddProject';
+import Spinner from '../components/Spinner';
+import { getProjects } from '../features/project/projectSlice';
 
 function Projects() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { projects } = useSelector((state) => state.project);
 
-  const TOTAL = 16;
+  const fetchData = async () => {
+    await dispatch(getProjects());
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <Layout>
@@ -52,35 +64,40 @@ function Projects() {
           </AddProject>
         </div>
 
-        <TableContainer>
-          <Table size='sm' variant='striped'>
-            <Thead>
-              <Tr textTransform='lowercase'>
-                <Th className='border-none'>Mã dự án</Th>
-                <Th className='border-none'>Tên dự án</Th>
-                <Th className='border-none'>Chỉnh sửa lần cuối</Th>
-                <Th className='border-none'>Người chỉnh sửa</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {Array.from({ length: TOTAL }, (_, i) => (
-                <Tr
-                  onClick={() => navigate(`/du-an/${i}`)}
-                  className='cursor-pointer'
-                >
-                  <Td>001</Td>
-                  <Td>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  </Td>
-                  <Td>12/12/2022</Td>
-                  <Td>hoangphuc</Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
-
-        <small className='mt-4 inline-block'>Tổng cộng có {TOTAL} dự án</small>
+        {projects.length === 0 ? (
+          <Spinner />
+        ) : (
+          <>
+            <TableContainer>
+              <Table size='sm' variant='striped'>
+                <Thead>
+                  <Tr textTransform='lowercase'>
+                    <Th className='border-none'>Mã dự án</Th>
+                    <Th className='border-none'>Tên dự án</Th>
+                    <Th className='border-none'>Chỉnh sửa lần cuối</Th>
+                    <Th className='border-none'>Người chỉnh sửa</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {projects.map(({ _id, code, name, updatedAt }) => (
+                    <Tr
+                      onClick={() => navigate(`/du-an/${_id}`)}
+                      className='cursor-pointer'
+                    >
+                      <Td>{code}</Td>
+                      <Td>{name}</Td>
+                      <Td>{format(new Date(updatedAt), 'dd/MM/yyyy')}</Td>
+                      <Td>hoangphuc</Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
+            <small className='mt-4 inline-block'>
+              Tổng cộng có {projects.length} dự án
+            </small>
+          </>
+        )}
       </div>
     </Layout>
   );

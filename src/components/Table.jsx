@@ -580,7 +580,7 @@ function Table({
                       <Tr
                         d={value}
                         isLastThree={childIndex >= location[1].length - 3}
-                        isEdited={isEdited(value)}
+                        edited={isEdited(value)}
                       />
                     ))}
                   </>
