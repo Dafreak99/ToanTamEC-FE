@@ -1,6 +1,6 @@
+import { Vietnamese } from 'flatpickr/dist/l10n/vn.js';
 import React from 'react';
 import Flatpickr from 'react-flatpickr';
-import { Vietnamese } from 'flatpickr/dist/l10n/vn.js';
 
 function Datepicker({ onChange, defaultDate = new Date(), mode = 'single' }) {
   const options = {
@@ -26,7 +26,7 @@ function Datepicker({ onChange, defaultDate = new Date(), mode = 'single' }) {
   return (
     <div className='relative'>
       <Flatpickr
-        className='form-input pl-9 text-slate-500 hover:text-slate-600 font-medium focus:border-slate-300 w-60'
+        className='form-input pl-9 text-slate-500 hover:text-slate-600 font-medium focus:border-slate-300 w-40'
         options={options}
       />
       <div className='absolute top-3 right-auto flex items-center pointer-events-none'>

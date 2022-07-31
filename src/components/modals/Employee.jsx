@@ -2,7 +2,6 @@ import {
   Button,
   FormControl,
   FormLabel,
-  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -13,31 +12,44 @@ import {
   Select,
   useDisclosure,
 } from '@chakra-ui/react';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
+import { addMember } from '../../features/project/projectSlice';
+import { positions } from '../../utils/constants';
 
 /**
  *
  * @children Pass in the button
  */
 
-const EmployeeModal = ({ children, onSubmit }) => {
+const EmployeeModal = ({ children, _id, fullname, userId, role, edit }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const initialRef = React.useRef();
   const finalRef = React.useRef();
 
   const {
-    register,
     handleSubmit,
     control,
     formState: { errors },
     reset,
+    getValues,
+    setValue,
   } = useForm();
 
-  const formOnSubmit = (data) => {
-    onSubmit(data);
+  const dispatch = useDispatch();
+  const { systemUsers } = useSelector((state) => state.user);
+  const { id } = useParams();
+  const [loading, setLoading] = useState(false);
+
+  const formOnSubmit = async (formData) => {
+    setLoading(true);
+    await dispatch(addMember({ id, formData }));
+
     reset();
+    setLoading(false);
     onClose();
   };
 
@@ -49,6 +61,10 @@ const EmployeeModal = ({ children, onSubmit }) => {
   });
 
   useEffect(() => {
+    if (userId && role) {
+      reset({ userId, role });
+    }
+
     return () => {
       reset();
     };
@@ -67,33 +83,41 @@ const EmployeeModal = ({ children, onSubmit }) => {
       >
         <ModalOverlay />
         <ModalContent as='form' onSubmit={handleSubmit(formOnSubmit)}>
-          <ModalHeader textAlign='center'>Thêm thành viên</ModalHeader>
+          <ModalHeader textAlign='center'>
+            {edit ? 'Sửa' : 'Thêm'} thành viên
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <FormControl>
-              <FormLabel>Tài khoản người dùng</FormLabel>
-              <Input
-                ref={initialRef}
-                _placeholder='Nhập tên người dùng'
-                {...register('userName')}
-              />
-            </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>
-                Họ và tên <span className='text-red-500'>*</span>
-              </FormLabel>
-              <Input
-                ref={initialRef}
-                placeholder='Nhập họ và tên thành viên'
-                {...register('fullName', { required: true })}
-              />
-              {errors.fullName && (
-                <p className='text-red-500 mt-1 text-xs'>
-                  Vui lòng nhập họ tên
-                </p>
-              )}
-            </FormControl>
+            {!edit && (
+              <FormControl>
+                <FormLabel>
+                  Tài khoản người dùng
+                  <span className='text-red-500'> *</span>
+                </FormLabel>
+                <Controller
+                  name='userId'
+                  control={control}
+                  rules={{
+                    required: true,
+                  }}
+                  render={({ field }) => (
+                    <Select {...field}>
+                      <option value selected hidden>
+                        Chọn tài khoản người dùng
+                      </option>
+                      {systemUsers.map(({ username, _id }) => (
+                        <option value={_id}>{username}</option>
+                      ))}
+                    </Select>
+                  )}
+                />
+                {errors.userId && (
+                  <p className='text-red-500 mt-1 text-xs'>
+                    Vui lòng chọn tài khoản
+                  </p>
+                )}
+              </FormControl>
+            )}
 
             <FormControl mt={4}>
               <FormLabel>
@@ -101,16 +125,19 @@ const EmployeeModal = ({ children, onSubmit }) => {
               </FormLabel>
 
               <Controller
-                name='jobTitle'
+                name='role'
                 control={control}
                 rules={{
                   required: true,
                 }}
                 render={({ field }) => (
-                  <Select {...field} placeholder='Chọn chức vụ'>
-                    <option value='option1'>Chỉ huy trưởng công trình</option>
-                    <option value='option2'>Kỹ thuật viên thi công</option>
-                    <option value='option3'>Giám sát viên</option>
+                  <Select {...field}>
+                    <option value selected hidden>
+                      Chọn chức vụ
+                    </option>
+                    {positions.map(({ full }) => (
+                      <option value={full}>{full}</option>
+                    ))}
                   </Select>
                 )}
               />
@@ -120,32 +147,18 @@ const EmployeeModal = ({ children, onSubmit }) => {
                 </p>
               )}
             </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Số điện thoại</FormLabel>
-              <Input
-                ref={initialRef}
-                placeholder='Nhập sđt'
-                {...register('phone')}
-              />
-            </FormControl>
-
-            <FormControl mt={4}>
-              <FormLabel>Email</FormLabel>
-              <Input
-                ref={initialRef}
-                placeholder='user@example.com'
-                type='email'
-                {...register('phone')}
-              />
-            </FormControl>
           </ModalBody>
 
           <ModalFooter>
             <Button onClick={onClose} mr={3}>
               Hủy
             </Button>
-            <Button background='primary' color='white' type='submit'>
+            <Button
+              background='primary'
+              color='white'
+              type='submit'
+              disabled={loading}
+            >
               Lưu
             </Button>
           </ModalFooter>

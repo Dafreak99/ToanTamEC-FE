@@ -1,12 +1,30 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
+import Spinner from '../components/Spinner';
 import InfoPanel from '../components/tabs/InfoPanel';
 import ReportsPanel from '../components/tabs/ReportsPanel';
 import TotalsPanel from '../components/tabs/TotalsPanel';
+import { getProject } from '../features/project/projectSlice';
+import { getUsers } from '../features/user/userSlice';
 
 function ProjectDetail() {
   const tabs = ['Thông tin', 'Tổng kê', 'Biên bản'];
+  const dispatch = useDispatch();
+  const { detail } = useSelector((state) => state.project);
+
+  const { id } = useParams();
+
+  const getData = async () => {
+    await dispatch(getProject(id));
+    await dispatch(getUsers());
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
 
   return (
     <Layout>
@@ -29,7 +47,7 @@ function ProjectDetail() {
           <TabPanels>
             {/* Thông tin */}
             <TabPanel>
-              <InfoPanel />
+              {detail ? <InfoPanel {...{ detail }} /> : <Spinner />}
             </TabPanel>
 
             {/* Tổng kê */}
