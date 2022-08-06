@@ -8,6 +8,7 @@ import {
   Th,
   Thead,
   Tr,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { add, format, sub } from 'date-fns';
 import viLocale from 'date-fns/locale/vi';
@@ -16,11 +17,15 @@ import { BsCheck } from 'react-icons/bs';
 import { IoAdd } from 'react-icons/io5';
 import Layout from '../components/Layout';
 import AddDiary from '../components/modals/AddDiary';
+import UploadOfficialProof from '../components/modals/UploadOfficialProof';
 import Spinner from '../components/Spinner';
 import { useWorkDiaries } from '../hooks/useWorkDiaries';
 import Datepicker from '../partials/actions/Datepicker';
 
 function Upload() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedInfo, setSelectedInfo] = useState(null);
+
   const [dates] = useState(() => {
     Date.prototype.addDays = (days) => {
       const dat = new Date(this.valueOf());
@@ -176,6 +181,7 @@ function Upload() {
               {logs.map(
                 (
                   {
+                    _id: workDiaryId,
                     projectId,
                     workDiaryDetail: { workContents },
                     workingDate,
@@ -220,34 +226,44 @@ function Upload() {
                       >
                         {workContents.map((workContent) => (
                           <>
-                            {workContent.docs.map(({ name, proof, draft }) => (
-                              <Flex alignItems='baseline'>
-                                {draft && (
-                                  <BsCheck
-                                    fontSize='1rem'
-                                    className='text-green-500 text-lg'
-                                  />
-                                )}
-                                <Box
-                                  as='p'
-                                  textAlign='left'
-                                  wordBreak='break-all'
-                                >
-                                  {draft ? (
+                            {workContent.docs.map(
+                              ({ _id, name, proof, draft }) => (
+                                <Flex alignItems='baseline'>
+                                  {!draft && (
+                                    <BsCheck
+                                      fontSize='1rem'
+                                      className='text-green-500 text-lg'
+                                    />
+                                  )}
+                                  <Box
+                                    as='p'
+                                    textAlign='left'
+                                    wordBreak='break-all'
+                                  >
                                     <a
                                       href={proof}
                                       target='_blank'
                                       rel='noreferrer'
                                       className='underline'
+                                      onContextMenu={(e) => {
+                                        e.preventDefault();
+
+                                        if (draft) {
+                                          onOpen();
+                                          setSelectedInfo({
+                                            workContentId: workContent._id,
+                                            workDiaryId,
+                                            docId: _id,
+                                          });
+                                        }
+                                      }}
                                     >
                                       {name}
                                     </a>
-                                  ) : (
-                                    <p>{name}</p>
-                                  )}
-                                </Box>
-                              </Flex>
-                            ))}
+                                  </Box>
+                                </Flex>
+                              ),
+                            )}
                           </>
                         ))}
                       </Td>
@@ -267,6 +283,10 @@ function Upload() {
                   </Tr>
                 ),
               )}
+
+              <UploadOfficialProof
+                {...{ isOpen, onClose, onOpen, selectedInfo }}
+              />
             </tbody>
           </Table>
         </TableContainer>

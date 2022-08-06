@@ -165,7 +165,7 @@ const AddDiary = ({ children }) => {
     workContents[index].docs.push({
       ...doc,
       proof: null,
-      draft: false,
+      draft: true,
     });
     setWorkContents(workContents);
 
@@ -196,7 +196,7 @@ const AddDiary = ({ children }) => {
         {
           ...getFirstForm(name),
           proof: null,
-          draft: false,
+          draft: true,
         },
       ],
     };
@@ -266,7 +266,7 @@ const AddDiary = ({ children }) => {
     let val;
 
     if (name === 'draft') {
-      val = checked;
+      val = !checked;
     } else if (name === 'proof') {
       val = files[0];
     } else {
@@ -516,7 +516,7 @@ const AddDiary = ({ children }) => {
                           <Input
                             id={`proof-${index}-${docIndex}`}
                             type='file'
-                            accept='.xls,.xlsx'
+                            accept='.pdf, .jpg, .jpeg, .png, .webp'
                             display='none'
                             name='proof'
                             onChange={(e) => onChange(e, index, docIndex)}
