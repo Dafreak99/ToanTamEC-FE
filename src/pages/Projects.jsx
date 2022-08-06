@@ -68,7 +68,7 @@ function Projects() {
           <Spinner />
         ) : (
           <>
-            <TableContainer>
+            <TableContainer height='65vh'>
               <Table size='sm' variant='striped'>
                 <Thead>
                   <Tr textTransform='lowercase'>

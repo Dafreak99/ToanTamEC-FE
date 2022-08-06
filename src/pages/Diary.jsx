@@ -1,20 +1,23 @@
 import {
   Box,
   Button,
+  Flex,
   Table,
   TableContainer,
   Td,
   Th,
   Thead,
-  Tooltip,
   Tr,
 } from '@chakra-ui/react';
 import { add, format, sub } from 'date-fns';
 import viLocale from 'date-fns/locale/vi';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { BsCheck } from 'react-icons/bs';
 import { IoAdd } from 'react-icons/io5';
 import Layout from '../components/Layout';
 import AddDiary from '../components/modals/AddDiary';
+import Spinner from '../components/Spinner';
+import { useWorkDiaries } from '../hooks/useWorkDiaries';
 import Datepicker from '../partials/actions/Datepicker';
 
 function Upload() {
@@ -42,8 +45,6 @@ function Upload() {
     return getDates(sub(new Date(), { days: 9 }), new Date());
   });
 
-  const [logs, setLogs] = useState([]);
-
   const getClassNames = (i) => {
     return {
       color: 'black',
@@ -51,215 +52,21 @@ function Upload() {
     };
   };
 
-  useEffect(() => {
-    const dairyLogs = [
-      {
-        workingDate: dates[0],
-        shift: ['morning'],
-        projectId: '001',
-        status: 'red',
-        workContents: [
-          {
-            name: 'workContent1',
-            docs: [
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-          {
-            name: 'workContent3',
-            docs: [
-              {
-                name: 'formType3a',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType3b',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[1],
-        shift: ['morning', 'afternoon'],
-        projectId: '002',
-        status: 'green',
-        workContents: [
-          {
-            name: 'workContent2',
-            docs: [
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType2',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[2],
-        shift: [],
-        projectId: '003',
-        status: 'red',
-        workContents: [],
-      },
-      {
-        workingDate: dates[3],
-        shift: [],
-        projectId: '004',
-        status: 'yellow',
-        workContents: [
-          {
-            name: 'workContent1',
-            docs: [
-              {
-                name: 'formType3',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[4],
-        shift: ['morning', 'afternoon'],
-        projectId: '004',
-        status: 'green',
-        workContents: [
-          {
-            name: 'workContent2',
-            docs: [
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType2',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[5],
-        shift: ['morning', 'afternoon'],
-        status: 'green',
-        projectId: '005',
-        workContents: [
-          {
-            name: 'workContent2',
-            docs: [
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType2',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[6],
-        shift: ['morning', 'afternoon'],
-        projectId: '005',
-        status: 'green',
-        workContents: [
-          {
-            name: 'workContent2',
-            docs: [
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType2',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[7],
-        shift: ['morning', 'afternoon'],
-        projectId: '005',
-        status: 'green',
-        workContents: [
-          {
-            name: 'workContent2',
-            docs: [
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType2',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[8],
-        shift: ['morning', 'afternoon'],
-        projectId: '005',
-        status: 'green',
-        workContents: [
-          {
-            name: 'workContent2',
-            docs: [
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType2',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-    ];
+  const { data: logs, isFetching } = useWorkDiaries();
 
-    setLogs(dairyLogs);
-  }, []);
+  if (isFetching) {
+    return (
+      <Layout>
+        <div className='w-full bg-white shadow-lg p-4'>
+          <h3 className='h3'>Nhật ký công việc</h3>
+          <hr className='mb-6' />
+          <Spinner />
+        </div>
+      </Layout>
+    );
+  }
 
-  const renderCheckMark = (i, calDay, currDay, shift, status) => {
+  const renderCheckMark = (i, calDay, currDay, shift, status = 'green') => {
     let style;
     if (status === 'green') {
       style = { background: 'green.100', color: 'green.800' };
@@ -270,8 +77,8 @@ function Upload() {
       style = { background: 'yellow.100', color: 'yellow.800' };
     }
 
-    const morning = calDay === currDay && shift.includes('morning');
-    const afternoon = calDay === currDay && shift.includes('afternoon');
+    const morning = calDay === currDay && (shift === 0 || shift === 2);
+    const afternoon = calDay === currDay && (shift === 1 || shift === 2);
 
     return (
       <>
@@ -304,20 +111,6 @@ function Upload() {
     );
   };
 
-  const onSubmitDiary = (data) => {
-    if (typeof data.shift === 'string') {
-      data.shift = [data.shift];
-    }
-
-    const [dateInW, day] = format(data.workingDate, 'EEEEE-dd', {
-      locale: viLocale,
-    }).split('-');
-
-    data.workingDate = { dateInW, day };
-
-    setLogs([...logs, data]);
-  };
-
   return (
     <Layout>
       <div className='w-full bg-white shadow-lg p-4'>
@@ -328,18 +121,19 @@ function Upload() {
 
           <Box ml='auto'>
             <Button>Xuất nhật kí</Button>
-            <AddDiary onSubmit={onSubmitDiary}>
+            <AddDiary>
               <Button
                 className='ml-4'
                 leftIcon={<IoAdd color='#fff' />}
                 variant='primary'
               >
-                Tạo dự án
+                Tạo nhật ký
               </Button>
             </AddDiary>
           </Box>
         </div>
-        <TableContainer marginTop={6}>
+
+        <TableContainer marginTop={6} height='65vh'>
           <Table size='sm'>
             <Thead>
               <Tr>
@@ -347,10 +141,10 @@ function Upload() {
                   <Th w='100px' maxW='100px' className='border-none'>
                     MSCT
                   </Th>
-                  <Th w='200px' maxW='200px' className='border-none'>
+                  <Th w='250px' maxW='250px' className='border-none'>
                     Nội dung công việc
                   </Th>
-                  <Th w='100px' maxW='100px' className='border-none'>
+                  <Th w='250px' maxW='250px' className='border-none'>
                     Biễu mẫu
                   </Th>
                 </Th>
@@ -363,6 +157,7 @@ function Upload() {
                   );
                 })}
               </Tr>
+
               <Tr className='z-20'>
                 {dates.map((_, i) => (
                   <>
@@ -380,40 +175,78 @@ function Upload() {
             <tbody>
               {logs.map(
                 (
-                  { projectId, workContents, workingDate, shift, status },
+                  {
+                    projectId,
+                    workDiaryDetail: { workContents },
+                    workingDate,
+                    shift,
+                    status,
+                  },
                   i,
                 ) => (
                   <Tr className='cursor-pointer' key={i}>
                     <Td
-                      className='sticky left-0'
+                      className='sticky left-0 pl-0'
                       {...getClassNames(i)}
                       display='flex'
                       justifyContent='space-between'
-                      alignItems='center'
+                      minH='50px'
                     >
-                      <Td className='border-none' maxW='100px' p='0' pr='2'>
+                      <Td
+                        className='border-none'
+                        w='100px'
+                        maxW='100px'
+                        p='0'
+                        pr='2'
+                      >
                         {projectId}
                       </Td>
                       <Td
-                        className='border-none'
-                        w='200px'
-                        maxW='200px'
+                        className='border-none whitespace-pre-line '
+                        w='250px'
+                        maxW='250px'
                         p='0'
                         pr='2'
                       >
                         {workContents.map((workContent) => (
-                          <Tooltip label={workContent.name}>
-                            <p>{`${workContent.name.slice(0, 10)}...`}</p>
-                          </Tooltip>
+                          <p>{workContent.name}</p>
                         ))}
                       </Td>
-                      <Td className='border-none' maxW='100px' p='0'>
+                      <Td
+                        className='border-none whitespace-pre-line'
+                        w='250px'
+                        maxW='250px'
+                        p='0'
+                      >
                         {workContents.map((workContent) => (
                           <>
-                            {workContent.docs.map((doc) => (
-                              <Tooltip label={doc.name}>
-                                <p>{doc.name.slice(0, 10)}...</p>
-                              </Tooltip>
+                            {workContent.docs.map(({ name, proof, draft }) => (
+                              <Flex alignItems='baseline'>
+                                {draft && (
+                                  <BsCheck
+                                    fontSize='1rem'
+                                    className='text-green-500 text-lg'
+                                  />
+                                )}
+                                <Box
+                                  as='p'
+                                  textAlign='left'
+                                  wordBreak='break-all'
+                                >
+                                  {draft ? (
+                                    <a
+                                      href={proof}
+                                      target='_blank'
+                                      rel='noreferrer'
+                                      className='underline'
+                                    >
+                                      {name}
+                                    </a>
+                                  ) : (
+                                    <p>{name}</p>
+                                  )}
+                                </Box>
+                              </Flex>
                             ))}
                           </>
                         ))}

@@ -22,6 +22,7 @@ import {
   ModalHeader,
   ModalOverlay,
   Select,
+  Spinner,
   Stack,
   Text,
   Tooltip,
@@ -29,18 +30,26 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import { IoAdd } from 'react-icons/io5';
+import { useQueryClient } from 'react-query';
+import { useSelector } from 'react-redux';
+import { useProjects } from '../../hooks/useProjects';
+import { useWorkContents } from '../../hooks/useWorkContents';
+import { useAddWorkDiary } from '../../hooks/useWorkDiaries';
 import Datepicker from '../../partials/actions/Datepicker';
+import { axios } from '../../utils/axios';
 import ErrorMessage from '../../utils/ErrorMessage';
+import { showToast } from '../../utils/toast';
+
 /**
  *
  * @children Pass in the button
  */
 
-const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
+const AddDiary = ({ children }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const {
@@ -48,6 +57,7 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
     handleSubmit,
     control,
     getValues,
+    setValue,
     setError,
     clearErrors,
     reset,
@@ -58,41 +68,47 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
   const [step1Content, setStep1Content] = useState(null);
   const [workContents, setWorkContents] = useState([]);
   const [, setNum] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const {
+    auth: { _id, fullName },
+  } = useSelector((state) => state.user);
 
   const initialRef = React.useRef();
   const finalRef = React.useRef();
+  const queryClient = useQueryClient();
 
-  const WORK_CONTENT = [
-    {
-      title: 'Khảo sát công trường (cho TK, cho HSDT)',
-      forms: ['Báo cáo khảo sát công trường'],
-    },
-    {
-      title: 'Tham gia lập hồ sơ dự toán',
-      forms: [
-        'Danh mục VTTB',
-        'BPTCTC',
-        'Tiến độ, Biểu đồ nhân lực',
-        'KHTC tổng thể',
-      ],
-    },
-    {
-      title: 'Lập hồ sơ khởi công công trình',
-      forms: [
-        'Lệnh khởi công',
-        'CV thông báo khởi công',
-        'QĐ phân công nhiệm vụ BCHCT',
-        'Danh sách Công nhân, CNKT, KTV',
-        'Danh sách phương tiện, thiết bị thi công',
-        'Biện pháp tổ chức thi công',
-        'KHTC theo đoạn tuyến',
-        'KHTC theo thời gian',
-      ],
-    },
-  ];
+  const onSuccess = (data) => {
+    setLoading(false);
+    queryClient.setQueryData('work-diaries', (oldData) => {
+      return { data: [...oldData.data, data.data] };
+    });
+
+    setStep(1);
+    onClose();
+    reset({
+      user: fullName,
+    });
+    setWorkContents([]);
+  };
+
+  const onError = (err) => {
+    setLoading(false);
+    console.log('Error', err);
+    showToast('error', 'Lỗi khi thêm nhật ký');
+  };
+
+  const { data: WORK_CONTENT } = useWorkContents(null, onError);
+
+  const { data: projects } = useProjects();
+  const { mutate: addWorkDiary } = useAddWorkDiary(onSuccess, onError);
+
+  useEffect(() => {
+    setValue('user', fullName);
+  }, [fullName]);
 
   const getFirstForm = (workTitle) => {
-    return WORK_CONTENT.find((content) => content.title === workTitle).forms[0];
+    return WORK_CONTENT.find((content) => content.name === workTitle).docs[0];
   };
 
   const checkRequired = () => {
@@ -104,40 +120,62 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
     }
 
     workContents.forEach((workContent, workIndex) => {
-      workContent.forms.forEach((form, formIndex) => {
-        if (!form.attachedFile) {
-          setError(
-            `workContents[${workIndex}].forms[${formIndex}].attachedFile`,
-            { type: 'required' },
-          );
+      workContent.docs.forEach((doc, docIndex) => {
+        if (!doc.proof) {
+          setError(`workContents[${workIndex}].docs[${docIndex}].proof`, {
+            type: 'required',
+          });
         }
       });
     });
   };
 
-  const getForms = (title) => {
+  const getForms = (name) => {
     const matchedContent = WORK_CONTENT.find(
-      (content) => content.title === title,
+      (content) => content.name === name,
     );
 
-    return matchedContent.forms.map((eachContent) => {
-      const belongTo = workContents.find((work) => work.title === title);
+    return matchedContent.docs.map((eachContent) => {
+      const belongTo = workContents.find((work) => work.name === name);
 
       const existed =
-        belongTo.forms.findIndex((form) => form.formType === eachContent) !==
+        belongTo.docs.findIndex((form) => form.name === eachContent.name) !==
         -1;
 
       return {
-        title: eachContent,
+        ...eachContent,
         existed,
       };
     });
   };
 
+  const addNewForm = (workTitle, doc) => {
+    const forms = getForms(workTitle);
+
+    if (forms.length === 1) {
+      toast({
+        status: 'warning',
+        description: 'Nội dung công việc này chỉ có 1 loại biểu mẫu!',
+        position: 'top-right',
+      });
+      return;
+    }
+    const index = workContents.findIndex((work) => work.name === workTitle);
+
+    workContents[index].docs.push({
+      ...doc,
+      proof: null,
+      draft: false,
+    });
+    setWorkContents(workContents);
+
+    setNum(Math.random());
+  };
+
   const addNewWorkRow = () => {
-    const title = getValues('workContent');
+    const name = getValues('workContent');
     const existed = workContents.find(
-      (workContent) => workContent.title === title,
+      (workContent) => workContent.name === name,
     );
 
     if (existed) {
@@ -149,57 +187,63 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
       return;
     }
 
+    const { _id: workId } = WORK_CONTENT.find((work) => work.name === name);
+
     const newWorkContent = {
-      title,
-      forms: [
+      name,
+      _id: workId,
+      docs: [
         {
-          formType: getFirstForm(title),
-          attachedFile: null,
-          isOfficialFile: false,
+          ...getFirstForm(name),
+          proof: null,
+          draft: false,
         },
       ],
     };
     setWorkContents([...workContents, newWorkContent]);
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     if (step === 1) {
       setStep1Content(data);
       setStep(step + 1);
     } else if (step === 2) {
       checkRequired();
 
+      setLoading(true);
       if (Object.keys(errors).length === 0) {
-        // Change status here
-        parentOnSubmit({ ...step1Content, workContents, status: 'green' });
-        onClose();
-        reset();
-        setWorkContents([]);
-        setStep(1);
+        const works = await Promise.all(
+          workContents.map(async (workContent) => {
+            return {
+              ...workContent,
+              docs: await Promise.all(
+                workContent.docs.map(async (doc) => {
+                  const formData = new FormData();
+                  formData.append('proof', doc.proof);
+                  const {
+                    data: { Location },
+                  } = await axios.post('/upload', formData);
+
+                  return {
+                    ...doc,
+                    proof: Location,
+                  };
+                }),
+              ),
+            };
+          }),
+        );
+
+        addWorkDiary({
+          ...step1Content,
+          workingDate: format(step1Content.workingDate, 'yyyy-MM-dd'),
+          workDiaryDetail: { workContents: works },
+          user: _id,
+          shift:
+            typeof step1Content.shift === 'object' ? 2 : +step1Content.shift,
+        });
       }
     }
-  };
-
-  const addNewForm = (workTitle, formTitle) => {
-    const forms = getForms(workTitle);
-
-    if (forms.length === 1) {
-      toast({
-        status: 'warning',
-        description: 'Nội dung công việc này chỉ có 1 loại biểu mẫu!',
-        position: 'top-right',
-      });
-      return;
-    }
-    const index = workContents.findIndex((work) => work.title === workTitle);
-
-    workContents[index].forms.push({
-      formType: formTitle,
-      attachedFile: null,
-      isOfficialFile: false,
-    });
-    setWorkContents(workContents);
-    setNum(Math.random());
   };
 
   const childrenWithProps = React.Children.map(children, (child) => {
@@ -219,18 +263,17 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
 
   const onChange = (e, workIndex, formIndex) => {
     const { name, value, checked, files } = e.target;
-
     let val;
 
-    if (name === 'isOfficialFile') {
+    if (name === 'draft') {
       val = checked;
-    } else if (name === 'attachedFile') {
+    } else if (name === 'proof') {
       val = files[0];
     } else {
       val = value;
     }
 
-    workContents[workIndex].forms[formIndex][name] = val;
+    workContents[workIndex].docs[formIndex][name] = val;
     setNum(Math.random());
     setWorkContents(workContents);
   };
@@ -241,8 +284,8 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
     newContent.splice(index, 1);
     setWorkContents(newContent);
 
-    for (let i = 0; i < workContents[index].forms.length; i++) {
-      clearErrors(`workContents[${index}].forms[${i}].attachedFile`, {
+    for (let i = 0; i < workContents[index].docs.length; i++) {
+      clearErrors(`workContents[${index}].docs[${i}].proof`, {
         type: 'required',
       });
     }
@@ -251,11 +294,11 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
   const removeForm = (workIndex, formIndex) => {
     const newContent = [...workContents];
 
-    newContent[workIndex].forms.splice(formIndex, 1);
+    newContent[workIndex].docs.splice(formIndex, 1);
 
-    newContent[workIndex].forms = [
-      ...newContent[workIndex].forms.slice(0, formIndex),
-      ...newContent[workIndex].forms.slice(formIndex),
+    newContent[workIndex].docs = [
+      ...newContent[workIndex].docs.slice(0, formIndex),
+      ...newContent[workIndex].docs.slice(formIndex),
     ];
     setWorkContents(newContent);
     setNum(Math.random());
@@ -271,10 +314,11 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
             </FormLabel>
             <Input
               ref={initialRef}
-              placeholder='Tự fill???'
-              {...register('name', { required: true })}
+              disabled
+              placeholder={fullName}
+              {...register('user', { required: true })}
             />
-            {renderError('name')}
+            {renderError('user')}
           </FormControl>
 
           <FormControl mt={4}>
@@ -302,8 +346,9 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
               Buổi làm việc <span className='text-red-500'>*</span>
             </FormLabel>
             <Controller
-              name='workingSession'
-              defaultValue='morning'
+              name='shift'
+              defaultValue='0'
+              value='0'
               control={control}
               rules={{
                 required: true,
@@ -311,8 +356,8 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
               render={({ field }) => (
                 <CheckboxGroup {...field}>
                   <Stack direction='row'>
-                    <Checkbox value='morning'>Sáng</Checkbox>
-                    <Checkbox value='afternoon'>Chiều</Checkbox>
+                    <Checkbox value='0'>Sáng</Checkbox>
+                    <Checkbox value='1'>Chiều</Checkbox>
                   </Stack>
                 </CheckboxGroup>
               )}
@@ -324,17 +369,19 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
               Công trình<span className='text-red-500'>*</span>
             </FormLabel>
             <Controller
-              name='workingLocation'
+              name='project'
               control={control}
-              defaultValue='workingLocation1'
               rules={{
                 required: true,
               }}
               render={({ field }) => (
                 <Select {...field}>
-                  <option value='workingLocation1'>Công trình 1</option>
-                  <option value='1'>Two</option>
-                  <option value='1'>Three</option>
+                  <option value={null} disabled selected>
+                    Chọn công trình
+                  </option>
+                  {projects?.map(({ _id, name }) => (
+                    <option value={_id}>{name}</option>
+                  ))}
                 </Select>
               )}
             />
@@ -355,9 +402,10 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
             </Alert>
           </Box>
         )}
-        {workContents.length > 0 && (
+
+        {workContents.length > 0 && WORK_CONTENT.length > 0 && (
           <Box maxH='400px' overflow='scroll' mb='2rem' px='0.5rem'>
-            {workContents.map(({ title, forms }, index) => (
+            {workContents.map(({ name, docs }, index) => (
               <Box
                 bg='#F8FAFC'
                 border='1px solid #CBD5E0'
@@ -371,7 +419,7 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
                   borderBottom='1px solid #CBD5E0'
                 >
                   <Text fontSize='xs'>
-                    {index + 1}. {title}
+                    {index + 1}. {name}
                   </Text>
                   <Flex>
                     <Menu>
@@ -379,13 +427,13 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
                         <FaPlus className='mr-3' />
                       </MenuButton>
                       <MenuList>
-                        {getForms(title).map((form) => (
+                        {getForms(name).map((doc) => (
                           <MenuItem
-                            isDisabled={form.existed}
+                            isDisabled={doc.existed}
                             // Thêm biểu mẫu
-                            onClick={() => addNewForm(title, form.title)}
+                            onClick={() => addNewForm(name, doc)}
                           >
-                            {form.title}
+                            {doc.name}
                           </MenuItem>
                         ))}
                       </MenuList>
@@ -395,7 +443,7 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
                   </Flex>
                 </Flex>
 
-                {forms.map((form, formIndex) => {
+                {docs.map((doc, docIndex) => {
                   return (
                     <Flex
                       p='0.5rem 1rem'
@@ -405,39 +453,36 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
                     >
                       <Box className='flex-auto w-full md:w-4/12'>
                         <FormControl>
-                          <FormLabel htmlFor='formType' className=''>
+                          <FormLabel htmlFor='name' className=''>
                             Loại biểu mẫu *
                           </FormLabel>
 
                           <Select
                             maxW='md'
                             bg='#fff'
-                            name='formType'
-                            defaultValue={form.formType}
-                            value={form.formType}
-                            className={form.formType}
-                            onChange={(e) => onChange(e, index, formIndex)}
+                            name='name'
+                            defaultValue={doc.name}
+                            value={doc.name}
+                            className={doc.name}
+                            onChange={(e) => onChange(e, index, docIndex)}
                           >
-                            {getForms(title).map((formOption) => (
+                            {getForms(name).map((formOption) => (
                               <option
-                                value={formOption.title}
-                                className={formOption.formType}
+                                value={formOption.name}
+                                className={formOption.name}
                               >
-                                {form.formOption}
+                                {formOption.name}
                               </option>
                             ))}
-                            {form.formType}
                           </Select>
                         </FormControl>
                       </Box>
                       <Box className='flex-auto w-full md:w-4/12'>
                         <FormControl>
-                          <FormLabel
-                            htmlFor={`attachedFile-${index}-${formIndex}`}
-                          >
+                          <FormLabel htmlFor={`proof-${index}-${docIndex}`}>
                             Tệp đính kèm *
                           </FormLabel>
-                          <label htmlFor={`attachedFile-${index}-${formIndex}`}>
+                          <label htmlFor={`proof-${index}-${docIndex}`}>
                             <Flex
                               alignItems='center'
                               bg='#fff'
@@ -445,9 +490,8 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
                               borderRadius='md'
                               border='1px solid'
                               borderColor={
-                                errors?.workContents?.[index]?.forms?.[
-                                  formIndex
-                                ]?.attachedFile?.type === 'required'
+                                errors?.workContents?.[index]?.docs?.[docIndex]
+                                  ?.proof?.type === 'required'
                                   ? 'red.500'
                                   : '#CBD5E0'
                               }
@@ -461,26 +505,24 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
                               >
                                 Tải tệp lên
                               </Box>
-                              <Tooltip label={form.attachedFile?.name}>
+                              <Tooltip label={doc.proof?.name}>
                                 <Text>
-                                  {form.attachedFile?.name.slice(0, 20)}{' '}
-                                  {form.attachedFile?.name && '...'}
+                                  {doc.proof?.name.slice(0, 20)}{' '}
+                                  {doc.proof?.name && '...'}
                                 </Text>
                               </Tooltip>
                             </Flex>
                           </label>
                           <Input
-                            id={`attachedFile-${index}-${formIndex}`}
+                            id={`proof-${index}-${docIndex}`}
                             type='file'
                             accept='.xls,.xlsx'
                             display='none'
-                            name='attachedFile'
-                            onChange={(e) => onChange(e, index, formIndex)}
+                            name='proof'
+                            onChange={(e) => onChange(e, index, docIndex)}
                           />
-                          {errors?.workContents?.[index]?.forms?.[formIndex]
-                            ?.attachedFile?.type === 'required' && (
-                            <ErrorMessage />
-                          )}
+                          {errors?.workContents?.[index]?.docs?.[docIndex]
+                            ?.proof?.type === 'required' && <ErrorMessage />}
                         </FormControl>
                       </Box>
                       <Flex
@@ -489,12 +531,12 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
                         alignItems='center'
                       >
                         <Checkbox
-                          name='isOfficialFile'
-                          onChange={(e) => onChange(e, index, formIndex)}
+                          name='draft'
+                          onChange={(e) => onChange(e, index, docIndex)}
                         >
                           Bản chính
                         </Checkbox>
-                        <FaTrash onClick={() => removeForm(index, formIndex)} />
+                        <FaTrash onClick={() => removeForm(index, docIndex)} />
                       </Flex>
                     </Flex>
                   );
@@ -504,41 +546,43 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
           </Box>
         )}
 
-        <Flex
-          justifyContent='center'
-          alignItems='center'
-          bg='#F8FAFC'
-          p={{ base: '46px', md: '46px 0' }}
-          border='1px dashed #CBD5E0'
-          borderRadius='md'
-          flexDirection={{ base: 'column', md: 'row' }}
-        >
-          <Controller
-            name='workContent'
-            control={control}
-            defaultValue={WORK_CONTENT[0].title}
-            rules={{
-              required: true,
-            }}
-            render={({ field }) => (
-              <Select maxW='md' bg='#fff' {...field}>
-                {WORK_CONTENT.map((content) => (
-                  <option value={content.title}>{content.title}</option>
-                ))}
-              </Select>
-            )}
-          />
-
-          <Button
-            marginLeft={{ base: 0, md: 4 }}
-            marginTop={{ base: 4, md: 0 }}
-            leftIcon={<IoAdd color='#fff' />}
-            variant='primary'
-            onClick={addNewWorkRow}
+        {WORK_CONTENT?.length > 0 && (
+          <Flex
+            justifyContent='center'
+            alignItems='center'
+            bg='#F8FAFC'
+            p={{ base: '46px', md: '46px 0' }}
+            border='1px dashed #CBD5E0'
+            borderRadius='md'
+            flexDirection={{ base: 'column', md: 'row' }}
           >
-            Thêm công việc
-          </Button>
-        </Flex>
+            <Controller
+              name='workContent'
+              control={control}
+              defaultValue={WORK_CONTENT[0].name}
+              rules={{
+                required: true,
+              }}
+              render={({ field }) => (
+                <Select maxW='md' bg='#fff' {...field}>
+                  {WORK_CONTENT.map((content) => (
+                    <option value={content.name}>{content.name}</option>
+                  ))}
+                </Select>
+              )}
+            />
+
+            <Button
+              marginLeft={{ base: 0, md: 4 }}
+              marginTop={{ base: 4, md: 0 }}
+              leftIcon={<IoAdd color='#fff' />}
+              variant='primary'
+              onClick={addNewWorkRow}
+            >
+              Thêm công việc
+            </Button>
+          </Flex>
+        )}
       </Box>
     );
   };
@@ -547,7 +591,6 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
     <>
       {/* Button */}
       {childrenWithProps}
-
       <Modal
         initialFocusRef={initialRef}
         finalFocusRef={finalRef}
@@ -588,8 +631,8 @@ const AddDiary = ({ children, onSubmit: parentOnSubmit }) => {
                 <Button onClick={() => setStep(step - 1)} mr={3}>
                   Trở về
                 </Button>
-                <Button variant='primary' onClick={onSubmit}>
-                  Lưu
+                <Button variant='primary' disabled={loading} onClick={onSubmit}>
+                  {loading && <Spinner fontSize='1rem' mr='8px' />} Lưu
                 </Button>
               </>
             )}
