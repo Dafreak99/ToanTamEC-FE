@@ -61,6 +61,7 @@ const AddDiary = ({ children }) => {
     setError,
     clearErrors,
     reset,
+    unregister,
     formState: { errors },
   } = useForm();
 
@@ -203,15 +204,20 @@ const AddDiary = ({ children }) => {
     setWorkContents([...workContents, newWorkContent]);
   };
 
+  console.log(errors);
+
   const onSubmit = async (data) => {
     if (step === 1) {
+      console.log(data.shift);
+
       setStep1Content(data);
       setStep(step + 1);
     } else if (step === 2) {
       checkRequired();
 
-      setLoading(true);
       if (Object.keys(errors).length === 0) {
+        setLoading(true);
+
         const works = await Promise.all(
           workContents.map(async (workContent) => {
             return {
@@ -220,6 +226,7 @@ const AddDiary = ({ children }) => {
                 workContent.docs.map(async (doc) => {
                   const formData = new FormData();
                   formData.append('proof', doc.proof);
+                  formData.append('projectId', step1Content.project);
                   const {
                     data: { Location },
                   } = await axios.post('/upload', formData);
@@ -240,7 +247,10 @@ const AddDiary = ({ children }) => {
           workDiaryDetail: { workContents: works },
           user: _id,
           shift:
-            typeof step1Content.shift === 'object' ? 2 : +step1Content.shift,
+            typeof step1Content.shift === 'object' &&
+            step1Content.shift.length === 2
+              ? 2
+              : +step1Content.shift,
         });
       }
     }
@@ -628,7 +638,13 @@ const AddDiary = ({ children }) => {
               </>
             ) : (
               <>
-                <Button onClick={() => setStep(step - 1)} mr={3}>
+                <Button
+                  onClick={() => {
+                    setStep(step - 1);
+                    unregister('workContents');
+                  }}
+                  mr={3}
+                >
                   Trở về
                 </Button>
                 <Button variant='primary' disabled={loading} onClick={onSubmit}>

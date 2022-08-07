@@ -1,20 +1,26 @@
 import {
   Box,
   Button,
-  Flex,
+  List,
+  ListIcon,
+  ListItem,
   Table,
   TableContainer,
   Td,
+  Text,
   Th,
   Thead,
+  Tooltip,
   Tr,
   useDisclosure,
 } from '@chakra-ui/react';
 import { add, format, sub } from 'date-fns';
 import viLocale from 'date-fns/locale/vi';
 import React, { useState } from 'react';
+import { AiFillWarning } from 'react-icons/ai';
 import { BsCheck } from 'react-icons/bs';
 import { IoAdd } from 'react-icons/io5';
+import { useSelector } from 'react-redux';
 import Layout from '../components/Layout';
 import AddDiary from '../components/modals/AddDiary';
 import UploadOfficialProof from '../components/modals/UploadOfficialProof';
@@ -25,6 +31,8 @@ import Datepicker from '../partials/actions/Datepicker';
 function Upload() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedInfo, setSelectedInfo] = useState(null);
+  const [endDate, setEndDate] = useState(new Date());
+  const { fullName } = useSelector((state) => state.user.auth);
 
   const [dates] = useState(() => {
     Date.prototype.addDays = (days) => {
@@ -57,14 +65,30 @@ function Upload() {
     };
   };
 
-  const { data: logs, isFetching } = useWorkDiaries();
+  const { data: logs, isFetching } = useWorkDiaries(endDate);
 
   if (isFetching) {
     return (
       <Layout>
         <div className='w-full bg-white shadow-lg p-4'>
-          <h3 className='h3'>Nhật ký công việc</h3>
+          <h3 className='h3'>Nhật ký công việc - {fullName}</h3>
           <hr className='mb-6' />
+          <div className='flex'>
+            <Datepicker onChange={setEndDate} />
+
+            <Box ml='auto'>
+              <Button>Xuất nhật kí</Button>
+              <AddDiary>
+                <Button
+                  className='ml-4'
+                  leftIcon={<IoAdd color='#fff' />}
+                  variant='primary'
+                >
+                  Tạo nhật ký
+                </Button>
+              </AddDiary>
+            </Box>
+          </div>
           <Spinner />
         </div>
       </Layout>
@@ -119,10 +143,10 @@ function Upload() {
   return (
     <Layout>
       <div className='w-full bg-white shadow-lg p-4'>
-        <h3 className='h3'>Nhật ký công việc</h3>
+        <h3 className='h3'>Nhật ký công việc - {fullName}</h3>
         <hr className='mb-6' />
         <div className='flex'>
-          <Datepicker onChange={null} />
+          <Datepicker onChange={setEndDate} />
 
           <Box ml='auto'>
             <Button>Xuất nhật kí</Button>
@@ -143,14 +167,11 @@ function Upload() {
             <Thead>
               <Tr>
                 <Th rowSpan='2' className='sticky top-0 left-0 z-10'>
-                  <Th w='100px' maxW='100px' className='border-none'>
+                  <Th w='150px' maxW='150px' className='border-none'>
                     MSCT
                   </Th>
-                  <Th w='250px' maxW='250px' className='border-none'>
-                    Nội dung công việc
-                  </Th>
-                  <Th w='250px' maxW='250px' className='border-none'>
-                    Biễu mẫu
+                  <Th w='350px' maxW='350px' className='border-none'>
+                    Nội dung công việc <br /> Biễu mẫu
                   </Th>
                 </Th>
 
@@ -200,71 +221,86 @@ function Upload() {
                     >
                       <Td
                         className='border-none'
-                        w='100px'
-                        maxW='100px'
+                        w='150px'
+                        maxW='150px'
                         p='0'
                         pr='2'
                       >
                         {projectId}
                       </Td>
                       <Td
-                        className='border-none whitespace-pre-line '
-                        w='250px'
-                        maxW='250px'
+                        className='border-none whitespace-pre-line text-left'
+                        w='350px'
+                        maxW='350px'
                         p='0'
                         pr='2'
                       >
                         {workContents.map((workContent) => (
-                          <p>{workContent.name}</p>
-                        ))}
-                      </Td>
-                      <Td
-                        className='border-none whitespace-pre-line'
-                        w='250px'
-                        maxW='250px'
-                        p='0'
-                      >
-                        {workContents.map((workContent) => (
-                          <>
-                            {workContent.docs.map(
-                              ({ _id, name, proof, draft }) => (
-                                <Flex alignItems='baseline'>
-                                  {!draft && (
-                                    <BsCheck
-                                      fontSize='1rem'
-                                      className='text-green-500 text-lg'
-                                    />
-                                  )}
-                                  <Box
-                                    as='p'
-                                    textAlign='left'
-                                    wordBreak='break-all'
+                          <Box>
+                            <Text>{workContent.name}</Text>
+                            <List>
+                              {workContent.docs.map(
+                                ({ _id, name, proof, draft }) => (
+                                  <Tooltip
+                                    label={
+                                      draft
+                                        ? 'Chưa cập nhật bản chính'
+                                        : 'Đã cập nhật bản chính'
+                                    }
                                   >
-                                    <a
-                                      href={proof}
-                                      target='_blank'
-                                      rel='noreferrer'
-                                      className='underline'
-                                      onContextMenu={(e) => {
-                                        e.preventDefault();
-
-                                        if (draft) {
-                                          onOpen();
-                                          setSelectedInfo({
-                                            workContentId: workContent._id,
-                                            workDiaryId,
-                                            docId: _id,
-                                          });
-                                        }
-                                      }}
+                                    <ListItem
+                                      display='flex'
+                                      alignItems='center'
+                                      as='li'
+                                      listStyleType='inherit'
+                                      pl='1rem'
                                     >
-                                      {name}
-                                    </a>
-                                  </Box>
-                                </Flex>
-                              ),
-                            )}
-                          </>
+                                      {!draft ? (
+                                        <ListIcon
+                                          as={BsCheck}
+                                          color='green.500'
+                                          fontSize='1.2rem'
+                                        />
+                                      ) : (
+                                        <ListIcon
+                                          as={AiFillWarning}
+                                          color='yellow.500'
+                                          fontSize='1.2rem'
+                                        />
+                                      )}
+
+                                      <Box
+                                        as='p'
+                                        textAlign='left'
+                                        wordBreak='break-all'
+                                      >
+                                        <a
+                                          href={proof}
+                                          target='_blank'
+                                          rel='noreferrer'
+                                          className='underline'
+                                          onContextMenu={(e) => {
+                                            e.preventDefault();
+
+                                            if (draft) {
+                                              onOpen();
+                                              setSelectedInfo({
+                                                workContentId: workContent._id,
+                                                workDiaryId,
+                                                docId: _id,
+                                              });
+                                            }
+                                          }}
+                                        >
+                                          {name}
+                                        </a>
+                                      </Box>
+                                    </ListItem>
+                                  </Tooltip>
+                                ),
+                              )}
+                            </List>
+                          </Box>
                         ))}
                       </Td>
                     </Td>

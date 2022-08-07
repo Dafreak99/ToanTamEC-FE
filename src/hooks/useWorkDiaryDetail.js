@@ -10,5 +10,8 @@ const updateDraftDoc = async (data) => {
 };
 
 export const useUpdateDraftDoc = (onSuccess, onError) => {
-  return useMutation('add-work-dairy', updateDraftDoc, { onSuccess, onError });
+  return useMutation('update-work-dairy', updateDraftDoc, {
+    onSuccess,
+    onError,
+  });
 };
