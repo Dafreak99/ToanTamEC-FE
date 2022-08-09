@@ -64,6 +64,7 @@ const AddDiary = ({ children }) => {
     unregister,
     formState: { errors },
   } = useForm();
+  const { endDate } = useSelector((state) => state.date);
 
   const [step, setStep] = useState(1);
   const [step1Content, setStep1Content] = useState(null);
@@ -81,7 +82,7 @@ const AddDiary = ({ children }) => {
 
   const onSuccess = (data) => {
     setLoading(false);
-    queryClient.setQueryData('work-diaries', (oldData) => {
+    queryClient.setQueryData(['work-diaries', endDate], (oldData) => {
       return { data: [...oldData.data, data.data] };
     });
 
@@ -203,8 +204,6 @@ const AddDiary = ({ children }) => {
     };
     setWorkContents([...workContents, newWorkContent]);
   };
-
-  console.log(errors);
 
   const onSubmit = async (data) => {
     if (step === 1) {

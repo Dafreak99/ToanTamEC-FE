@@ -17,6 +17,7 @@ import {
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { useSelector } from 'react-redux';
 import { useUpdateDraftDoc } from '../../hooks/useWorkDiaryDetail';
 import ErrorMessage from '../../utils/ErrorMessage';
 import { showToast } from '../../utils/toast';
@@ -32,6 +33,8 @@ const UploadOfficialProof = ({ isOpen, onOpen, onClose, selectedInfo }) => {
 
   const [proof, setProof] = useState(null);
   const [error, setError] = useState(false);
+  const { endDate } = useSelector((state) => state.date);
+
   const queryClient = useQueryClient();
 
   const onError = (err) => {
@@ -40,7 +43,7 @@ const UploadOfficialProof = ({ isOpen, onOpen, onClose, selectedInfo }) => {
   };
 
   const onSuccess = ({ data }) => {
-    queryClient.setQueryData('work-diaries', (oldData) => {
+    queryClient.setQueryData(['work-diaries', endDate], (oldData) => {
       const index = oldData.data.findIndex(
         (workDiary) => workDiary._id === data._id,
       );

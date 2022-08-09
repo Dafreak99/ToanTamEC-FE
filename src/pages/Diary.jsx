@@ -1,4 +1,6 @@
 import {
+  Alert,
+  AlertIcon,
   Box,
   Button,
   List,
@@ -14,49 +16,27 @@ import {
   Tr,
   useDisclosure,
 } from '@chakra-ui/react';
-import { add, format, sub } from 'date-fns';
-import viLocale from 'date-fns/locale/vi';
 import React, { useState } from 'react';
 import { AiFillWarning } from 'react-icons/ai';
 import { BsCheck } from 'react-icons/bs';
 import { IoAdd } from 'react-icons/io5';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Layout from '../components/Layout';
 import AddDiary from '../components/modals/AddDiary';
 import UploadOfficialProof from '../components/modals/UploadOfficialProof';
 import Spinner from '../components/Spinner';
+import { setEndDate } from '../features/date/dateSlice';
 import { useWorkDiaries } from '../hooks/useWorkDiaries';
 import Datepicker from '../partials/actions/Datepicker';
 
 function Upload() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedInfo, setSelectedInfo] = useState(null);
-  const [endDate, setEndDate] = useState(new Date());
   const { fullName } = useSelector((state) => state.user.auth);
 
-  const [dates] = useState(() => {
-    Date.prototype.addDays = (days) => {
-      const dat = new Date(this.valueOf());
-      dat.setDate(dat.getDate() + days);
-      return dat;
-    };
+  const { endDate, dates } = useSelector((state) => state.date);
 
-    function getDates(startDate, stopDate) {
-      const dateArray = [];
-      let currentDate = startDate;
-
-      while (currentDate <= stopDate) {
-        const [dateInW, day] = format(currentDate, 'EEEEE-dd', {
-          locale: viLocale,
-        }).split('-');
-        dateArray.push({ dateInW, day });
-        currentDate = add(currentDate, { days: 1 });
-      }
-
-      return dateArray;
-    }
-    return getDates(sub(new Date(), { days: 9 }), new Date());
-  });
+  const dispatch = useDispatch();
 
   const getClassNames = (i) => {
     return {
@@ -74,11 +54,11 @@ function Upload() {
           <h3 className='h3'>Nhật ký công việc - {fullName}</h3>
           <hr className='mb-6' />
           <div className='flex'>
-            <Datepicker onChange={setEndDate} />
+            <Datepicker onChange={(e) => dispatch(setEndDate(e))} />
 
             <Box ml='auto'>
               <Button>Xuất nhật kí</Button>
-              <AddDiary>
+              <AddDiary {...{ endDate }}>
                 <Button
                   className='ml-4'
                   leftIcon={<IoAdd color='#fff' />}
@@ -146,7 +126,7 @@ function Upload() {
         <h3 className='h3'>Nhật ký công việc - {fullName}</h3>
         <hr className='mb-6' />
         <div className='flex'>
-          <Datepicker onChange={setEndDate} />
+          <Datepicker onChange={(e) => dispatch(setEndDate(e))} />
 
           <Box ml='auto'>
             <Button>Xuất nhật kí</Button>
@@ -162,170 +142,178 @@ function Upload() {
           </Box>
         </div>
 
-        <TableContainer marginTop={6} height='65vh'>
-          <Table size='sm'>
-            <Thead>
-              <Tr>
-                <Th rowSpan='2' className='sticky top-0 left-0 z-10'>
-                  <Th w='150px' maxW='150px' className='border-none'>
-                    MSCT
-                  </Th>
-                  <Th w='350px' maxW='350px' className='border-none'>
-                    Nội dung công việc <br /> Biễu mẫu
-                  </Th>
-                </Th>
-
-                {dates.map(({ dateInW, day }) => {
-                  return (
-                    <Th colSpan='2'>
-                      {dateInW} <br /> {day}
+        {logs?.length === 0 ? (
+          <Alert status='warning' mt='2rem' w='35rem'>
+            <AlertIcon />
+            Không có dữ liệu để hiển thị! Vui lòng chọn ngày khác
+          </Alert>
+        ) : (
+          <TableContainer marginTop={6} height='65vh'>
+            <Table size='sm'>
+              <Thead>
+                <Tr>
+                  <Th rowSpan='2' className='sticky top-0 left-0 z-10'>
+                    <Th w='150px' maxW='150px' className='border-none'>
+                      MSCT
                     </Th>
-                  );
-                })}
-              </Tr>
+                    <Th w='350px' maxW='350px' className='border-none'>
+                      Nội dung công việc <br /> Biễu mẫu
+                    </Th>
+                  </Th>
 
-              <Tr className='z-20'>
-                {dates.map((_, i) => (
-                  <>
-                    <Td className='sticky top-18' {...getClassNames(i)}>
-                      S
-                    </Td>
-                    <Td className='sticky top-18' {...getClassNames(i)}>
-                      C
-                    </Td>
-                  </>
-                ))}
-              </Tr>
-            </Thead>
+                  {dates.map(({ dateInW, day }) => {
+                    return (
+                      <Th colSpan='2'>
+                        {dateInW} <br /> {day}
+                      </Th>
+                    );
+                  })}
+                </Tr>
 
-            <tbody>
-              {logs.map(
-                (
-                  {
-                    _id: workDiaryId,
-                    projectId,
-                    workDiaryDetail: { workContents },
-                    workingDate,
-                    shift,
-                    status,
-                  },
-                  i,
-                ) => (
-                  <Tr className='cursor-pointer' key={i}>
-                    <Td
-                      className='sticky left-0 pl-0'
-                      {...getClassNames(i)}
-                      display='flex'
-                      justifyContent='space-between'
-                      minH='50px'
-                    >
-                      <Td
-                        className='border-none'
-                        w='150px'
-                        maxW='150px'
-                        p='0'
-                        pr='2'
-                      >
-                        {projectId}
+                <Tr className='z-20'>
+                  {dates.map((_, i) => (
+                    <>
+                      <Td className='sticky top-18' {...getClassNames(i)}>
+                        S
                       </Td>
+                      <Td className='sticky top-18' {...getClassNames(i)}>
+                        C
+                      </Td>
+                    </>
+                  ))}
+                </Tr>
+              </Thead>
+
+              <tbody>
+                {logs.map(
+                  (
+                    {
+                      _id: workDiaryId,
+                      projectId,
+                      workDiaryDetail: { workContents },
+                      workingDate,
+                      shift,
+                      status,
+                    },
+                    i,
+                  ) => (
+                    <Tr className='cursor-pointer' key={i}>
                       <Td
-                        className='border-none whitespace-pre-line text-left'
-                        w='350px'
-                        maxW='350px'
-                        p='0'
-                        pr='2'
+                        className='sticky left-0 pl-0'
+                        {...getClassNames(i)}
+                        display='flex'
+                        justifyContent='space-between'
+                        minH='50px'
                       >
-                        {workContents.map((workContent) => (
-                          <Box>
-                            <Text>{workContent.name}</Text>
-                            <List>
-                              {workContent.docs.map(
-                                ({ _id, name, proof, draft }) => (
-                                  <Tooltip
-                                    label={
-                                      draft
-                                        ? 'Chưa cập nhật bản chính'
-                                        : 'Đã cập nhật bản chính'
-                                    }
-                                  >
-                                    <ListItem
-                                      display='flex'
-                                      alignItems='center'
-                                      as='li'
-                                      listStyleType='inherit'
-                                      pl='1rem'
+                        <Td
+                          className='border-none'
+                          w='150px'
+                          maxW='150px'
+                          p='0'
+                          pr='2'
+                        >
+                          {projectId}
+                        </Td>
+                        <Td
+                          className='border-none whitespace-pre-line text-left'
+                          w='350px'
+                          maxW='350px'
+                          p='0'
+                          pr='2'
+                        >
+                          {workContents.map((workContent) => (
+                            <Box>
+                              <Text>{workContent.name}</Text>
+                              <List>
+                                {workContent.docs.map(
+                                  ({ _id, name, proof, draft }) => (
+                                    <Tooltip
+                                      label={
+                                        draft
+                                          ? 'Chưa cập nhật bản chính'
+                                          : 'Đã cập nhật bản chính'
+                                      }
                                     >
-                                      {!draft ? (
-                                        <ListIcon
-                                          as={BsCheck}
-                                          color='green.500'
-                                          fontSize='1.2rem'
-                                        />
-                                      ) : (
-                                        <ListIcon
-                                          as={AiFillWarning}
-                                          color='yellow.500'
-                                          fontSize='1.2rem'
-                                        />
-                                      )}
-
-                                      <Box
-                                        as='p'
-                                        textAlign='left'
-                                        wordBreak='break-all'
+                                      <ListItem
+                                        display='flex'
+                                        alignItems='center'
+                                        as='li'
+                                        listStyleType='inherit'
+                                        pl='1rem'
                                       >
-                                        <a
-                                          href={proof}
-                                          target='_blank'
-                                          rel='noreferrer'
-                                          className='underline'
-                                          onContextMenu={(e) => {
-                                            e.preventDefault();
+                                        {!draft ? (
+                                          <ListIcon
+                                            as={BsCheck}
+                                            color='green.500'
+                                            fontSize='1.2rem'
+                                          />
+                                        ) : (
+                                          <ListIcon
+                                            as={AiFillWarning}
+                                            color='yellow.500'
+                                            fontSize='1.2rem'
+                                          />
+                                        )}
 
-                                            if (draft) {
-                                              onOpen();
-                                              setSelectedInfo({
-                                                workContentId: workContent._id,
-                                                workDiaryId,
-                                                docId: _id,
-                                              });
-                                            }
-                                          }}
+                                        <Box
+                                          as='p'
+                                          textAlign='left'
+                                          wordBreak='break-all'
                                         >
-                                          {name}
-                                        </a>
-                                      </Box>
-                                    </ListItem>
-                                  </Tooltip>
-                                ),
-                              )}
-                            </List>
-                          </Box>
-                        ))}
+                                          <a
+                                            href={proof}
+                                            target='_blank'
+                                            rel='noreferrer'
+                                            className='underline'
+                                            onContextMenu={(e) => {
+                                              e.preventDefault();
+
+                                              if (draft) {
+                                                onOpen();
+                                                setSelectedInfo({
+                                                  workContentId:
+                                                    workContent._id,
+                                                  workDiaryId,
+                                                  docId: _id,
+                                                });
+                                              }
+                                            }}
+                                          >
+                                            {name}
+                                          </a>
+                                        </Box>
+                                      </ListItem>
+                                    </Tooltip>
+                                  ),
+                                )}
+                              </List>
+                            </Box>
+                          ))}
+                        </Td>
                       </Td>
-                    </Td>
 
-                    {dates.map((date, ii) => (
-                      <>
-                        {renderCheckMark(
-                          ii,
-                          date.day,
-                          workingDate.day,
-                          shift,
-                          status,
-                        )}
-                      </>
-                    ))}
-                  </Tr>
-                ),
-              )}
+                      {dates.map((date, ii) => (
+                        <>
+                          {renderCheckMark(
+                            ii,
+                            date.day,
+                            workingDate.day,
+                            shift,
+                            status,
+                          )}
+                        </>
+                      ))}
+                    </Tr>
+                  ),
+                )}
 
-              <UploadOfficialProof
-                {...{ isOpen, onClose, onOpen, selectedInfo }}
-              />
-            </tbody>
-          </Table>
-        </TableContainer>
+                <UploadOfficialProof
+                  {...{ isOpen, onClose, onOpen, selectedInfo, endDate }}
+                />
+              </tbody>
+            </Table>
+          </TableContainer>
+        )}
       </div>
     </Layout>
   );
