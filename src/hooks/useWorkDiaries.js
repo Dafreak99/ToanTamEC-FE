@@ -38,6 +38,7 @@ export const useWorkDiaries = (endDate) => {
     staleTime: 30000000,
     select: ({ data }) => {
       const accreditedDates = [];
+      const iteratedDates = {};
 
       const logs = data.map((workDiary, i) => {
         const wDate = workDiary.workingDate;
@@ -48,8 +49,6 @@ export const useWorkDiaries = (endDate) => {
         let missingDraft = false;
         let excelDate = false;
         let status;
-
-        accreditedDates.push(null);
 
         workDiary.workDiaryDetail.workContents.forEach((workContent) => {
           if (missingDraft) return;
@@ -81,13 +80,28 @@ export const useWorkDiaries = (endDate) => {
             },
           ).split('-');
 
-          accreditedDates[i] = {
-            workingDate: {
-              dateInW,
-              day,
-            },
-            shift: workDiary.shift,
-          };
+          // Update shift when having multiple work diaries with same working date
+          if (day in iteratedDates) {
+            if (
+              workDiary.shift === 2 ||
+              workDiary.shift + iteratedDates[day].shift === 1
+            ) {
+              accreditedDates[iteratedDates[day].location].shift = 2;
+            }
+          } else {
+            iteratedDates[day] = {
+              location: i,
+              shift: workDiary.shift,
+            };
+
+            accreditedDates[i] = {
+              workingDate: {
+                dateInW,
+                day,
+              },
+              shift: workDiary.shift,
+            };
+          }
         }
 
         return {
@@ -122,10 +136,10 @@ export const useCountActualWorkingDate = (currentDate) => {
   return useQuery(['actual-working-dates', month], getActualWorkingDate, {
     staleTime: 30000000,
     select: ({ data }) => {
-      let total = 0;
-      let iteratedDates = {};
+      const iteratedDates = {};
+      const accreditedDates = [];
 
-      data.forEach((workDiary) => {
+      data.forEach((workDiary, i) => {
         const wDate = workDiary.workingDate;
         let missingDraft = false;
         let excelDate = false;
@@ -153,23 +167,30 @@ export const useCountActualWorkingDate = (currentDate) => {
         }
 
         if (status === 'green') {
-          const point = workDiary.shift === 2 ? 1 : 0.5;
+          const { shift, workingDate } = workDiary;
+          const existed = workingDate in iteratedDates;
 
-          if (
-            workDiary.workingDate in iteratedDates &&
-            iteratedDates[workDiary.workingDate] === 0.5 &&
-            point === 1
-          ) {
-            // If iterated this day but the val can be updated
-            total += -0.5 + 1;
-          } else if (!(workDiary.workingDate in iteratedDates)) {
-            total += point;
-            iteratedDates[workDiary.workingDate] = point;
+          if (existed) {
+            if (shift === 2 || shift + iteratedDates[workingDate].shift === 1) {
+              accreditedDates[iteratedDates[workingDate].location].shift = 2;
+            }
+          } else {
+            iteratedDates[workingDate] = {
+              location: i,
+              shift,
+            };
+
+            accreditedDates[i] = {
+              workingDate,
+              shift,
+            };
           }
         }
       });
 
-      return total;
+      return accreditedDates.reduce((initial, accum) => {
+        return initial + (accum.shift === 2 ? 1 : 0.5);
+      }, 0);
     },
   });
 };
