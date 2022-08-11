@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { add, format, sub } from 'date-fns';
+import { add, endOfMonth, format, startOfMonth, sub } from 'date-fns';
 import viLocale from 'date-fns/locale/vi';
 
 function getDates(startDate, stopDate) {
@@ -20,6 +20,8 @@ function getDates(startDate, stopDate) {
 const initialState = {
   endDate: format(new Date(), 'yyyy-MM-dd'),
   dates: getDates(sub(new Date(), { days: 9 }), new Date()),
+  startMonth: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+  endMonth: format(endOfMonth(new Date()), 'yyyy-MM-dd'),
 };
 
 export const dateSlice = createSlice({
@@ -32,6 +34,8 @@ export const dateSlice = createSlice({
         sub(new Date(payload), { days: 9 }),
         new Date(payload),
       );
+      state.startMonth = format(startOfMonth(new Date(payload)), 'yyyy-MM-dd');
+      state.endMonth = format(endOfMonth(new Date(payload)), 'yyyy-MM-dd');
     },
   },
 });

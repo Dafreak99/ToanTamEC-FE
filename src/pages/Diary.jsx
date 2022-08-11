@@ -16,6 +16,7 @@ import {
   Tr,
   useDisclosure,
 } from '@chakra-ui/react';
+import { format } from 'date-fns';
 import React, { useState } from 'react';
 import { AiFillWarning } from 'react-icons/ai';
 import { BsCheck } from 'react-icons/bs';
@@ -26,7 +27,10 @@ import AddDiary from '../components/modals/AddDiary';
 import UploadOfficialProof from '../components/modals/UploadOfficialProof';
 import Spinner from '../components/Spinner';
 import { setEndDate } from '../features/date/dateSlice';
-import { useWorkDiaries } from '../hooks/useWorkDiaries';
+import {
+  useCountActualWorkingDate,
+  useWorkDiaries,
+} from '../hooks/useWorkDiaries';
 import Datepicker from '../partials/actions/Datepicker';
 
 function Upload() {
@@ -34,7 +38,9 @@ function Upload() {
   const [selectedInfo, setSelectedInfo] = useState(null);
   const { fullName } = useSelector((state) => state.user.auth);
 
-  const { endDate, dates } = useSelector((state) => state.date);
+  const { endDate, dates, startMonth, endMonth } = useSelector(
+    (state) => state.date,
+  );
 
   const dispatch = useDispatch();
 
@@ -45,9 +51,11 @@ function Upload() {
     };
   };
 
-  const { data: logs, isFetching } = useWorkDiaries(endDate);
+  const { data, isLoading } = useWorkDiaries(endDate);
 
-  if (isFetching) {
+  const { data: total } = useCountActualWorkingDate(endDate);
+
+  if (isLoading) {
     return (
       <Layout>
         <div className='w-full bg-white shadow-lg p-4'>
@@ -120,6 +128,37 @@ function Upload() {
     );
   };
 
+  const renderCheckMarkForLastRow = (i, iterateDate) => {
+    const exist = data.accreditedDates.find((date) => {
+      if (!date) return false;
+
+      return date.workingDate.day === iterateDate;
+    });
+
+    const morning = exist && (exist.shift === 0 || exist.shift === 2);
+    const afternoon = exist && (exist.shift === 1 || exist.shift === 2);
+
+    return (
+      <>
+        {morning ? (
+          <Td {...getClassNames(i)} zIndex='inherit'>
+            x
+          </Td>
+        ) : (
+          <Td {...getClassNames(i)} zIndex='inherit' />
+        )}
+
+        {afternoon ? (
+          <Td {...getClassNames(i)} zIndex='inherit'>
+            x
+          </Td>
+        ) : (
+          <Td {...getClassNames(i)} zIndex='inherit' />
+        )}
+      </>
+    );
+  };
+
   return (
     <Layout>
       <div className='w-full bg-white shadow-lg p-4'>
@@ -142,7 +181,7 @@ function Upload() {
           </Box>
         </div>
 
-        {logs?.length === 0 ? (
+        {data.logs.length === 0 ? (
           <Alert status='warning' mt='2rem' w='35rem'>
             <AlertIcon />
             Không có dữ liệu để hiển thị! Vui lòng chọn ngày khác
@@ -185,11 +224,11 @@ function Upload() {
               </Thead>
 
               <tbody>
-                {logs.map(
+                {data.logs.map(
                   (
                     {
                       _id: workDiaryId,
-                      projectId,
+                      project: { name, _id: projectId },
                       workDiaryDetail: { workContents },
                       workingDate,
                       shift,
@@ -212,7 +251,7 @@ function Upload() {
                           p='0'
                           pr='2'
                         >
-                          {projectId}
+                          {projectId?.slice(18)}
                         </Td>
                         <Td
                           className='border-none whitespace-pre-line text-left'
@@ -306,6 +345,29 @@ function Upload() {
                     </Tr>
                   ),
                 )}
+
+                <Tr className='cursor-pointer'>
+                  <Td
+                    className='sticky left-0 pl-0'
+                    {...getClassNames(2)}
+                    display='flex'
+                    justifyContent='center'
+                    alignItems='center'
+                    minH='50px'
+                  >
+                    Ngày công thực tế trong tháng (
+                    {format(new Date(startMonth), 'dd/MM')} -
+                    {format(new Date(endMonth), 'dd/MM')}): {total}
+                  </Td>
+
+                  {dates.map((date, i) => (
+                    <>{renderCheckMarkForLastRow(i, date.day)}</>
+                  ))}
+
+                  {/* TODO: Render x x for last row */}
+
+                  {}
+                </Tr>
 
                 <UploadOfficialProof
                   {...{ isOpen, onClose, onOpen, selectedInfo, endDate }}

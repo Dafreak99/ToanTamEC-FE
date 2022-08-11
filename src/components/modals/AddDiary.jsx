@@ -29,7 +29,7 @@ import {
   useDisclosure,
   useToast,
 } from '@chakra-ui/react';
-import { format } from 'date-fns';
+import { format, getMonth, isAfter, sub } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaPlus, FaTrash } from 'react-icons/fa';
@@ -80,11 +80,20 @@ const AddDiary = ({ children }) => {
   const finalRef = React.useRef();
   const queryClient = useQueryClient();
 
-  const onSuccess = (data) => {
+  const onSuccess = ({ data }) => {
     setLoading(false);
-    queryClient.setQueryData(['work-diaries', endDate], (oldData) => {
-      return { data: [...oldData.data, data.data] };
-    });
+
+    queryClient.invalidateQueries([
+      'actual-working-dates',
+      getMonth(new Date(endDate)),
+    ]);
+
+    // Ignore if a new work diary belong to the previous timeframe
+    if (
+      isAfter(new Date(data.workingDate), sub(new Date(endDate), { days: 10 }))
+    ) {
+      queryClient.invalidateQueries(['work-diaries', endDate]);
+    }
 
     setStep(1);
     onClose();
@@ -207,8 +216,6 @@ const AddDiary = ({ children }) => {
 
   const onSubmit = async (data) => {
     if (step === 1) {
-      console.log(data.shift);
-
       setStep1Content(data);
       setStep(step + 1);
     } else if (step === 2) {
