@@ -13,11 +13,13 @@ import {
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
+import { useSelector } from 'react-redux';
 import Layout from '../components/Layout';
 
 function Profile() {
   const [show, setShow] = useState(false);
   const { control } = useForm();
+  const user = useSelector((state) => state.user.auth);
 
   return (
     <Layout>
@@ -42,7 +44,7 @@ function Profile() {
                   <FormLabel htmlFor='userName'>Tên người dùng:</FormLabel>
                 </div>
                 <div className='col col-span-3'>
-                  <Input id='text' type='text' placeholder='Tên người dùng' />
+                  <Input id='text' type='text' placeholder='Tên người dùng' value={user.username} contentEditable />
                 </div>
               </div>
               <div className='grid grid-cols-12 mt-4'>
@@ -53,7 +55,8 @@ function Profile() {
                   <InputGroup size='md'>
                     <Input
                       id='oldPassword'
-                      defaultValue='toantamec'
+                      // defaultValue='toantamec'
+                      placeholder='Nhập mật khẩu hiện tại'
                       type={show ? 'text' : 'password'}
                     />
                     <InputRightElement width='4.5rem'>
@@ -105,37 +108,40 @@ function Profile() {
             <div className=''>
               <div className='grid grid-cols-12 mt-4'>
                 <div className='col col-span-3'>
-                  <FormLabel htmlFor='userName'>Họ và tên:</FormLabel>
+                  <FormLabel htmlFor='fullName'>Họ và tên:</FormLabel>
                 </div>
                 <div className='col col-span-3'>
                   <Input
-                    id='text'
+                    id='fullName'
                     type='text'
-                    placeholder='Nguyễn Hoàng Phúc'
+                    placeholder='Họ và tên'
+                    value={user.fullName}
                   />
                 </div>
               </div>
               <div className='grid grid-cols-12 mt-4'>
                 <div className='col col-span-3'>
-                  <FormLabel htmlFor='oldPassword'>Số điện thoại:</FormLabel>
+                  <FormLabel htmlFor='phoneNumber'>Số điện thoại:</FormLabel>
                 </div>
                 <div className='col col-span-3'>
                   <Input
-                    id='oldPassword'
-                    type='password'
-                    placeholder='0987654321'
+                    id='phoneNumber'
+                    type='text'
+                    placeholder='Số điện thoại'
+                    value={user.phoneNumber}
                   />
                 </div>
               </div>
               <div className='grid grid-cols-12 mt-4'>
                 <div className='col col-span-3'>
-                  <FormLabel htmlFor='newPassword'>Email:</FormLabel>
+                  <FormLabel htmlFor='email'>Email:</FormLabel>
                 </div>
                 <div className='col col-span-3'>
                   <Input
-                    id='newPassword'
-                    type='password'
-                    placeholder='hoangphuc@example.com'
+                    id='email'
+                    type='text'
+                    placeholder='Email'
+                    value={user.email}
                   />
                 </div>
               </div>

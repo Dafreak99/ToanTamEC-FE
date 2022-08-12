@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 import { clearLogin } from '../../features/user/userSlice';
@@ -11,6 +11,7 @@ function UserMenu() {
   const dispatch = useDispatch();
   const trigger = useRef(null);
   const dropdown = useRef(null);
+  const user = useSelector((state) => state.user.auth);
 
   // close on click outside
   useEffect(() => {
@@ -48,7 +49,7 @@ function UserMenu() {
       >
         <div className='flex items-center truncate'>
           <span className='truncate ml-2 text-sm font-medium group-hover:text-slate-800'>
-            Admin.
+            {user.username}
           </span>
           <svg
             className='w-3 h-3 shrink-0 ml-1 fill-current text-slate-400'
@@ -75,8 +76,8 @@ function UserMenu() {
           onBlur={() => setDropdownOpen(false)}
         >
           <div className='pt-0.5 pb-2 px-3 mb-1 border-b border-slate-200'>
-            <div className='font-medium text-slate-800'>Admin.</div>
-            <div className='text-xs text-slate-500 italic'>Administrator</div>
+            <div className='font-medium text-slate-800'>{user.fullName}.</div>
+            <div className='text-xs text-slate-500 italic'>{user.jobTitle}</div>
           </div>
           <ul>
             <li>
