@@ -1,4 +1,11 @@
-import { format, sub } from 'date-fns';
+import {
+  endOfMonth,
+  format,
+  getMonth,
+  isBefore,
+  startOfMonth,
+  sub,
+} from 'date-fns';
 import vi from 'date-fns/locale/vi';
 import { useMutation, useQuery } from 'react-query';
 import { store } from '../features/store';
@@ -7,10 +14,22 @@ import { axios } from '../utils/axios';
 const getWorkDiaries = ({ queryKey }) => {
   const endDate = queryKey[1];
   const startDate = sub(new Date(endDate), { days: 10 });
-  const userId = store.getState().user.auth._id;
+  const { _id } = store.getState().user.auth;
 
   return axios(
-    `/work-diary?startDate=${startDate}&endDate=${endDate}&userId=${userId}`,
+    `/work-diary?startDate=${startDate}&endDate=${endDate}&userId=${_id}`,
+  );
+};
+
+const getActualWorkingDate = () => {
+  const { endDate } = store.getState().date;
+  const { _id } = store.getState().user.auth;
+
+  const begining = format(startOfMonth(new Date(endDate)), 'yyyy-MM-dd');
+  const end = format(endOfMonth(new Date(endDate)), 'yyyy-MM-dd');
+
+  return axios(
+    `/work-diary?startDate=${begining}&endDate=${end}&userId=${_id}`,
   );
 };
 
@@ -18,22 +37,87 @@ export const useWorkDiaries = (endDate) => {
   return useQuery(['work-diaries', endDate], getWorkDiaries, {
     staleTime: 30000000,
     select: ({ data }) => {
-      return data.map((workDiary) => {
-        const [dateInW, day] = format(
-          new Date(workDiary.workingDate),
-          'EEEEE-dd',
-          {
-            locale: vi,
-          },
-        ).split('-');
+      const accreditedDates = [];
+      const iteratedDates = {};
+
+      const logs = data.map((workDiary, i) => {
+        const wDate = workDiary.workingDate;
+        const [dateInW, day] = format(new Date(wDate), 'EEEEE-dd', {
+          locale: vi,
+        }).split('-');
+
+        let missingDraft = false;
+        let excelDate = false;
+        let status;
+
+        workDiary.workDiaryDetail.workContents.forEach((workContent) => {
+          if (missingDraft) return;
+          workContent.docs.forEach((doc) => {
+            if (doc.draft) {
+              missingDraft = true;
+              return;
+            }
+          });
+        });
+
+        const limit = sub(new Date(), { days: 10 });
+        excelDate = isBefore(new Date(wDate), limit);
+
+        if (missingDraft && excelDate) {
+          status = 'red';
+        } else if (missingDraft) {
+          status = 'yellow';
+        } else {
+          status = 'green';
+        }
+
+        if (status === 'green') {
+          const [dateInW, day] = format(
+            new Date(workDiary.workingDate),
+            'EEEEE-dd',
+            {
+              locale: vi,
+            },
+          ).split('-');
+
+          // Update shift when having multiple work diaries with same working date
+          if (day in iteratedDates) {
+            if (
+              workDiary.shift === 2 ||
+              workDiary.shift + iteratedDates[day].shift === 1
+            ) {
+              accreditedDates[iteratedDates[day].location].shift = 2;
+            }
+          } else {
+            iteratedDates[day] = {
+              location: i,
+              shift: workDiary.shift,
+            };
+
+            accreditedDates[i] = {
+              workingDate: {
+                dateInW,
+                day,
+              },
+              shift: workDiary.shift,
+            };
+          }
+        }
+
         return {
           ...workDiary,
+          status,
           workingDate: {
             dateInW,
             day,
           },
         };
       });
+
+      return {
+        logs,
+        accreditedDates,
+      };
     },
   });
 };
@@ -44,4 +128,69 @@ export const useAddWorkDiary = (onSuccess, onError) => {
     (data) => axios.post('/work-diary/', data),
     { onSuccess, onError },
   );
+};
+
+export const useCountActualWorkingDate = (currentDate) => {
+  const month = getMonth(new Date(currentDate));
+
+  return useQuery(['actual-working-dates', month], getActualWorkingDate, {
+    staleTime: 30000000,
+    select: ({ data }) => {
+      const iteratedDates = {};
+      const accreditedDates = [];
+
+      data.forEach((workDiary, i) => {
+        const wDate = workDiary.workingDate;
+        let missingDraft = false;
+        let excelDate = false;
+        let status;
+
+        workDiary.workDiaryDetail.workContents.forEach((workContent) => {
+          if (missingDraft) return;
+          workContent.docs.forEach((doc) => {
+            if (doc.draft) {
+              missingDraft = true;
+              return;
+            }
+          });
+        });
+
+        const limit = sub(new Date(), { days: 10 });
+        excelDate = isBefore(new Date(wDate), limit);
+
+        if (missingDraft && excelDate) {
+          status = 'red';
+        } else if (missingDraft) {
+          status = 'yellow';
+        } else {
+          status = 'green';
+        }
+
+        if (status === 'green') {
+          const { shift, workingDate } = workDiary;
+          const existed = workingDate in iteratedDates;
+
+          if (existed) {
+            if (shift === 2 || shift + iteratedDates[workingDate].shift === 1) {
+              accreditedDates[iteratedDates[workingDate].location].shift = 2;
+            }
+          } else {
+            iteratedDates[workingDate] = {
+              location: i,
+              shift,
+            };
+
+            accreditedDates[i] = {
+              workingDate,
+              shift,
+            };
+          }
+        }
+      });
+
+      return accreditedDates.reduce((initial, accum) => {
+        return initial + (accum.shift === 2 ? 1 : 0.5);
+      }, 0);
+    },
+  });
 };

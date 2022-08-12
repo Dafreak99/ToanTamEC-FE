@@ -15,6 +15,7 @@ import {
   Spinner,
   Text,
 } from '@chakra-ui/react';
+import { getMonth } from 'date-fns';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useSelector } from 'react-redux';
@@ -43,6 +44,11 @@ const UploadOfficialProof = ({ isOpen, onOpen, onClose, selectedInfo }) => {
   };
 
   const onSuccess = ({ data }) => {
+    queryClient.invalidateQueries([
+      'actual-working-dates',
+      getMonth(new Date(endDate)),
+    ]);
+
     queryClient.setQueryData(['work-diaries', endDate], (oldData) => {
       const index = oldData.data.findIndex(
         (workDiary) => workDiary._id === data._id,
