@@ -228,7 +228,7 @@ function Upload() {
                   (
                     {
                       _id: workDiaryId,
-                      project: { name, _id: projectId },
+                      project: { code, _id: projectId },
                       workDiaryDetail: { workContents },
                       workingDate,
                       shift,
@@ -251,7 +251,7 @@ function Upload() {
                           p='0'
                           pr='2'
                         >
-                          {projectId?.slice(18)}
+                          {code}
                         </Td>
                         <Td
                           className='border-none whitespace-pre-line text-left'
