@@ -79,7 +79,7 @@ function Projects() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {projects.map(({ _id, code, name, updatedAt }) => (
+                  {projects.map(({ _id, code, name, updatedAt, updatedBy }) => (
                     <Tr
                       onClick={() => navigate(`/du-an/${_id}`)}
                       className='cursor-pointer'
@@ -87,7 +87,7 @@ function Projects() {
                       <Td>{code}</Td>
                       <Td>{name}</Td>
                       <Td>{format(new Date(updatedAt), 'dd/MM/yyyy')}</Td>
-                      <Td>hoangphuc</Td>
+                      <Td>{updatedBy.username}</Td>
                     </Tr>
                   ))}
                 </Tbody>
