@@ -29,7 +29,7 @@ import {
   useDisclosure,
   useToast,
 } from '@chakra-ui/react';
-import { format, getMonth, isAfter, sub } from 'date-fns';
+import { format, getMonth } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FaPlus, FaTrash } from 'react-icons/fa';
@@ -76,6 +76,8 @@ const AddDiary = ({ children }) => {
     auth: { _id, fullName },
   } = useSelector((state) => state.user);
 
+  const { cacheDates } = useSelector((state) => state.date);
+
   const initialRef = React.useRef();
   const finalRef = React.useRef();
   const queryClient = useQueryClient();
@@ -83,17 +85,19 @@ const AddDiary = ({ children }) => {
   const onSuccess = ({ data }) => {
     setLoading(false);
 
+    for (const date of cacheDates) {
+      queryClient.removeQueries(['work-diaries', date]);
+    }
+
     queryClient.invalidateQueries([
       'actual-working-dates',
-      getMonth(new Date(endDate)),
+      getMonth(new Date(endDate)) + 1,
     ]);
 
-    // Ignore if a new work diary belong to the previous timeframe
-    if (
-      isAfter(new Date(data.workingDate), sub(new Date(endDate), { days: 10 }))
-    ) {
-      queryClient.invalidateQueries(['work-diaries', endDate]);
-    }
+    queryClient.invalidateQueries([
+      'actual-working-dates',
+      getMonth(new Date(data.workingDate)) + 1,
+    ]);
 
     setStep(1);
     onClose();

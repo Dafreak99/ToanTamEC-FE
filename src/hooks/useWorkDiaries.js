@@ -35,14 +35,12 @@ const getActualWorkingDate = () => {
 
 export const useWorkDiaries = (endDate) => {
   return useQuery(['work-diaries', endDate], getWorkDiaries, {
-    staleTime: 30000000,
     select: ({ data }) => {
       const accreditedDates = [];
       const iteratedDates = {};
-
       const logs = data.map((workDiary, i) => {
         const wDate = workDiary.workingDate;
-        const [dateInW, day] = format(new Date(wDate), 'EEEEE-dd', {
+        const [dateInW, dayMonth] = format(new Date(wDate), 'EEEEE-d/M', {
           locale: vi,
         }).split('-');
 
@@ -62,7 +60,6 @@ export const useWorkDiaries = (endDate) => {
 
         const limit = sub(new Date(), { days: 10 });
         excelDate = isBefore(new Date(wDate), limit);
-
         if (missingDraft && excelDate) {
           status = 'red';
         } else if (missingDraft) {
@@ -72,44 +69,34 @@ export const useWorkDiaries = (endDate) => {
         }
 
         if (status === 'green') {
-          const [dateInW, day] = format(
-            new Date(workDiary.workingDate),
-            'EEEEE-dd',
-            {
-              locale: vi,
-            },
-          ).split('-');
-
           // Update shift when having multiple work diaries with same working date
-          if (day in iteratedDates) {
+          if (dayMonth in iteratedDates) {
             if (
               workDiary.shift === 2 ||
-              workDiary.shift + iteratedDates[day].shift === 1
+              workDiary.shift + iteratedDates[dayMonth].shift === 1
             ) {
-              accreditedDates[iteratedDates[day].location].shift = 2;
+              accreditedDates[iteratedDates[dayMonth].location].shift = 2;
             }
           } else {
-            iteratedDates[day] = {
+            iteratedDates[dayMonth] = {
               location: i,
               shift: workDiary.shift,
             };
-
             accreditedDates[i] = {
               workingDate: {
                 dateInW,
-                day,
+                dayMonth,
               },
               shift: workDiary.shift,
             };
           }
         }
-
         return {
           ...workDiary,
           status,
           workingDate: {
             dateInW,
-            day,
+            dayMonth,
           },
         };
       });
@@ -131,10 +118,9 @@ export const useAddWorkDiary = (onSuccess, onError) => {
 };
 
 export const useCountActualWorkingDate = (currentDate) => {
-  const month = getMonth(new Date(currentDate));
+  const month = getMonth(new Date(currentDate)) + 1;
 
   return useQuery(['actual-working-dates', month], getActualWorkingDate, {
-    staleTime: 30000000,
     select: ({ data }) => {
       const iteratedDates = {};
       const accreditedDates = [];

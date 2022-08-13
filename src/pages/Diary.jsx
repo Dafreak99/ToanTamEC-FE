@@ -132,7 +132,7 @@ function Upload() {
     const exist = data.accreditedDates.find((date) => {
       if (!date) return false;
 
-      return date.workingDate.day === iterateDate;
+      return date.workingDate.dayMonth === iterateDate;
     });
 
     const morning = exist && (exist.shift === 0 || exist.shift === 2);
@@ -181,7 +181,7 @@ function Upload() {
           </Box>
         </div>
 
-        {data.logs.length === 0 ? (
+        {data?.logs.length === 0 ? (
           <Alert status='warning' mt='2rem' w='35rem'>
             <AlertIcon />
             Không có dữ liệu để hiển thị! Vui lòng chọn ngày khác
@@ -200,10 +200,10 @@ function Upload() {
                     </Th>
                   </Th>
 
-                  {dates.map(({ dateInW, day }) => {
+                  {dates.map(({ dateInW, dayMonth }) => {
                     return (
                       <Th colSpan='2'>
-                        {dateInW} <br /> {day}
+                        {dateInW} <br /> {dayMonth}
                       </Th>
                     );
                   })}
@@ -224,7 +224,7 @@ function Upload() {
               </Thead>
 
               <tbody>
-                {data.logs.map(
+                {data?.logs.map(
                   (
                     {
                       _id: workDiaryId,
@@ -335,8 +335,8 @@ function Upload() {
                         <>
                           {renderCheckMark(
                             ii,
-                            date.day,
-                            workingDate.day,
+                            date.dayMonth,
+                            workingDate.dayMonth,
                             shift,
                             status,
                           )}
@@ -361,7 +361,7 @@ function Upload() {
                   </Td>
 
                   {dates.map((date, i) => (
-                    <>{renderCheckMarkForLastRow(i, date.day)}</>
+                    <>{renderCheckMarkForLastRow(i, date.dayMonth)}</>
                   ))}
 
                   {/* TODO: Render x x for last row */}

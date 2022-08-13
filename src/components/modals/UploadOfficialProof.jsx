@@ -40,13 +40,18 @@ const UploadOfficialProof = ({ isOpen, onOpen, onClose, selectedInfo }) => {
 
   const onError = (err) => {
     console.log(err);
-    showToast('Lỗi khi tải bản chính lên!');
+    showToast('Lỗi khi tải bản chính lên!', err.response.data.message);
   };
 
   const onSuccess = ({ data }) => {
     queryClient.invalidateQueries([
       'actual-working-dates',
-      getMonth(new Date(endDate)),
+      getMonth(new Date(endDate)) + 1,
+    ]);
+
+    queryClient.invalidateQueries([
+      'actual-working-dates',
+      getMonth(new Date(data.workingDate)) + 1,
     ]);
 
     queryClient.setQueryData(['work-diaries', endDate], (oldData) => {

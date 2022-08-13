@@ -1,16 +1,18 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { add, endOfMonth, format, startOfMonth, sub } from 'date-fns';
 import viLocale from 'date-fns/locale/vi';
+import { genericFormat } from '../../utils/Utils';
 
 function getDates(startDate, stopDate) {
   const dateArray = [];
   let currentDate = startDate;
 
   while (currentDate <= stopDate) {
-    const [dateInW, day] = format(currentDate, 'EEEEE-dd', {
+    const [dateInW, dayMonth] = format(currentDate, 'EEEEE-d/M', {
       locale: viLocale,
     }).split('-');
-    dateArray.push({ dateInW, day });
+
+    dateArray.push({ dateInW, dayMonth });
     currentDate = add(currentDate, { days: 1 });
   }
 
@@ -18,10 +20,11 @@ function getDates(startDate, stopDate) {
 }
 
 const initialState = {
-  endDate: format(new Date(), 'yyyy-MM-dd'),
+  endDate: genericFormat(new Date()),
   dates: getDates(sub(new Date(), { days: 9 }), new Date()),
-  startMonth: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
-  endMonth: format(endOfMonth(new Date()), 'yyyy-MM-dd'),
+  startMonth: genericFormat(startOfMonth(new Date())),
+  endMonth: genericFormat(endOfMonth(new Date())),
+  cacheDates: [genericFormat(new Date())],
 };
 
 export const dateSlice = createSlice({
@@ -29,13 +32,14 @@ export const dateSlice = createSlice({
   initialState,
   reducers: {
     setEndDate: (state, { payload }) => {
-      state.endDate = format(new Date(payload), 'yyyy-MM-dd');
-      state.dates = getDates(
-        sub(new Date(payload), { days: 9 }),
-        new Date(payload),
-      );
-      state.startMonth = format(startOfMonth(new Date(payload)), 'yyyy-MM-dd');
-      state.endMonth = format(endOfMonth(new Date(payload)), 'yyyy-MM-dd');
+      state.endDate = genericFormat(payload);
+      state.dates = getDates(sub(payload, { days: 9 }), payload);
+      state.startMonth = genericFormat(startOfMonth(payload));
+      state.endMonth = genericFormat(endOfMonth(payload));
+
+      if (!state.cacheDates.includes(genericFormat(payload))) {
+        state.cacheDates.push(genericFormat(payload));
+      }
     },
   },
 });
