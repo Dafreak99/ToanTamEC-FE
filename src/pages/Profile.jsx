@@ -19,7 +19,7 @@ import Layout from '../components/Layout';
 function Profile() {
   const [show, setShow] = useState(false);
   const { control } = useForm();
-  const user = useSelector((state) => state.user.auth);
+  const { username, fullName, phoneNumber, email, jobTitle, role } = useSelector((state) => state.user.auth);
 
   return (
     <Layout>
@@ -44,7 +44,7 @@ function Profile() {
                   <FormLabel htmlFor='userName'>Tên người dùng:</FormLabel>
                 </div>
                 <div className='col col-span-3'>
-                  <Input id='text' type='text' placeholder='Tên người dùng' value={user.username} contentEditable />
+                  <Input id='text' type='text' placeholder='Tên người dùng' value={username} contentEditable />
                 </div>
               </div>
               <div className='grid grid-cols-12 mt-4'>
@@ -115,7 +115,7 @@ function Profile() {
                     id='fullName'
                     type='text'
                     placeholder='Họ và tên'
-                    value={user.fullName}
+                    value={fullName}
                   />
                 </div>
               </div>
@@ -128,7 +128,7 @@ function Profile() {
                     id='phoneNumber'
                     type='text'
                     placeholder='Số điện thoại'
-                    value={user.phoneNumber}
+                    value={phoneNumber}
                   />
                 </div>
               </div>
@@ -141,16 +141,16 @@ function Profile() {
                     id='email'
                     type='text'
                     placeholder='Email'
-                    value={user.email}
+                    value={email}
                   />
                 </div>
               </div>
               <div className='grid grid-cols-12 mt-4'>
                 <div className='col col-span-3'>
-                  <FormLabel htmlFor='reNewPassword'>Chức vụ:</FormLabel>
+                  <FormLabel htmlFor='jobTitle'>Chức vụ:</FormLabel>
                 </div>
                 <div className='col col-span-3'>
-                  <Controller
+                  {/* <Controller
                     name='jobTitle'
                     control={control}
                     rules={{
@@ -165,12 +165,38 @@ function Profile() {
                         <option value='option3'>Giám sát viên</option>
                       </Select>
                     )}
+                  /> */}
+                  <Input
+                    id='jobTitle'
+                    type='text'
+                    placeholder='Chức vụ'
+                    value={jobTitle}
+                  />
+                </div>
+              </div>
+              <div className='grid grid-cols-12 mt-4'>
+                <div className='col col-span-3'>
+                  <FormLabel htmlFor='role'>Loại tài khoản:</FormLabel>
+                </div>
+                <div className='col col-span-3'>
+                  <Controller
+                    name='role'
+                    control={control}
+                    rules={{
+                      required: true,
+                    }}
+                    render={({ field }) => (
+                      <Select {...field} placeholder='Chọn loại tài khoản'>
+                        <option value='option2'>Manager</option>
+                        <option value='option3'>User</option>
+                      </Select>
+                    )}
                   />
                 </div>
               </div>
 
               <div className='flex justify-end items-center mt-10'>
-                <Button variant='primary'>Cập nhật</Button>
+                <Button variant='primary' type='submit'>Cập nhật</Button>
               </div>
             </div>
           </div>
