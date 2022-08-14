@@ -31,6 +31,7 @@ import { IoAdd } from 'react-icons/io5';
 import { MdModeEdit } from 'react-icons/md';
 import { useDispatch } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
+import { format } from 'date-fns';
 import {
   deleteMember,
   deleteProject,
@@ -59,6 +60,7 @@ function InfoPanel({ detail }) {
     comment,
     startedAt,
     name,
+    code,
     members,
     _id: projectId,
   } = detail;
@@ -275,6 +277,10 @@ function InfoPanel({ detail }) {
     <>
       <div className='flex justify-between items-start'>
         <Box>
+        <p className='mb-3'>
+            <strong>Mã dự án: </strong>
+            {code}
+          </p>
           <p className='mb-3'>
             <strong>Tên dự án: </strong>
             {name}
@@ -285,7 +291,7 @@ function InfoPanel({ detail }) {
           </p>
           <p className='mb-3'>
             <strong>Thời gian khởi công: </strong>
-            {startedAt}
+            {format(new Date(startedAt), 'dd-MM-yyyy')}
           </p>
           <p className='mb-3'>
             <strong>Căn chứ nghiệm thu: </strong>{' '}
