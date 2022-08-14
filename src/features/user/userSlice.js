@@ -52,7 +52,7 @@ export const userSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(login.fulfilled, (state, { payload }) => {
       state.isLoading = false;
-      state.auth = payload;
+      state.auth = payload.user;
     });
     builder.addCase(getMe.fulfilled, (state, { payload }) => {
       state.isLoading = false;
