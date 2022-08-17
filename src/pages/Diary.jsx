@@ -65,7 +65,7 @@ function Upload() {
             <Datepicker onChange={(e) => dispatch(setEndDate(e))} />
 
             <Box ml='auto'>
-              <Button>Xuất nhật kí</Button>
+              {/* <Button>Xuất nhật kí</Button> */}
               <AddDiary {...{ endDate }}>
                 <Button
                   className='ml-4'
@@ -168,7 +168,7 @@ function Upload() {
           <Datepicker onChange={(e) => dispatch(setEndDate(e))} />
 
           <Box ml='auto'>
-            <Button>Xuất nhật kí</Button>
+            {/* <Button>Xuất nhật kí</Button> */}
             <AddDiary>
               <Button
                 className='ml-4'
