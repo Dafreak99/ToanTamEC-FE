@@ -94,6 +94,7 @@ export const useWorkDiaries = (endDate) => {
         return {
           ...workDiary,
           status,
+          originalWorkingDate: wDate,
           workingDate: {
             dateInW,
             dayMonth,

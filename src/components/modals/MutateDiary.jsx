@@ -49,7 +49,7 @@ import { showToast } from '../../utils/toast';
  * @children Pass in the button
  */
 
-const AddDiary = ({ children }) => {
+const MutateDiary = ({ children, editLog }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const {
@@ -73,7 +73,8 @@ const AddDiary = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   const {
-    auth: { _id, fullName },
+    auth: { _id: userId, fullName, role },
+    systemUsers,
   } = useSelector((state) => state.user);
 
   const { cacheDates } = useSelector((state) => state.date);
@@ -119,8 +120,28 @@ const AddDiary = ({ children }) => {
   const { mutate: addWorkDiary } = useAddWorkDiary(onSuccess, onError);
 
   useEffect(() => {
-    setValue('user', fullName);
-  }, [fullName]);
+    if (editLog) {
+      const {
+        shift,
+        originalWorkingDate,
+        project: { _id: projectId },
+        user: { fullName },
+        workDiaryDetail: { workContents: addedWorkContents },
+      } = editLog;
+
+      setStep1Content({
+        workingDate: new Date(originalWorkingDate),
+      });
+
+      setWorkContents(addedWorkContents);
+
+      reset({
+        user: fullName,
+        shift: shift === 2 ? ['0', '1'] : shift.toString(),
+        project: projectId,
+      });
+    }
+  }, [editLog]);
 
   const getFirstForm = (workTitle) => {
     return WORK_CONTENT.find((content) => content.name === workTitle).docs[0];
@@ -251,7 +272,7 @@ const AddDiary = ({ children }) => {
           }),
         );
 
-        addWorkDiary({
+        const workDiaryLog = {
           ...step1Content,
           workingDate: format(step1Content.workingDate, 'yyyy-MM-dd'),
           workDiaryDetail: { workContents: works },
@@ -261,14 +282,27 @@ const AddDiary = ({ children }) => {
             step1Content.shift.length === 2
               ? 2
               : +step1Content.shift,
-        });
+        };
+
+        if (editLog) {
+          // TODO: Call update here when API is ready
+        } else {
+          addWorkDiary(workDiaryLog);
+        }
       }
     }
   };
 
   const childrenWithProps = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
-      return React.cloneElement(child, { onClick: onOpen });
+      return React.cloneElement(child, {
+        onClick: () => {
+          if (child.props.onClick) {
+            child.props.onClick();
+          }
+          onOpen();
+        },
+      });
     }
     return child;
   });
@@ -281,19 +315,22 @@ const AddDiary = ({ children }) => {
     return null;
   };
 
-  const onChange = (e, workIndex, formIndex) => {
+  const onChange = (e, workIndex, docIndex) => {
     const { name, value, checked, files } = e.target;
-    let val;
+    const val = { ...workContents[workIndex].docs[docIndex] };
 
     if (name === 'draft') {
-      val = !checked;
+      val.draft = !checked;
     } else if (name === 'proof') {
-      val = files[0];
-    } else {
-      val = value;
+      val.proof = files[0];
+    } else if (name === 'name') {
+      const [name, _id] = value.split('-');
+
+      val.name = name;
+      val._id = _id;
     }
 
-    workContents[workIndex].docs[formIndex][name] = val;
+    workContents[workIndex].docs[docIndex] = val;
     setNum(Math.random());
     setWorkContents(workContents);
   };
@@ -332,11 +369,25 @@ const AddDiary = ({ children }) => {
             <FormLabel>
               Họ và tên <span className='text-red-500'>*</span>
             </FormLabel>
-            <Input
-              ref={initialRef}
-              disabled
-              placeholder={fullName}
-              {...register('user', { required: true })}
+
+            <Controller
+              name='user'
+              control={control}
+              defaultValue={userId}
+              value={userId}
+              rules={{
+                required: true,
+              }}
+              render={({ field }) => (
+                <Select {...field} disabled={role === 3}>
+                  <option value={null} disabled selected>
+                    Chọn nhân viên
+                  </option>
+                  {systemUsers?.map(({ _id, fullName }) => (
+                    <option value={_id}>{fullName}</option>
+                  ))}
+                </Select>
+              )}
             />
             {renderError('user')}
           </FormControl>
@@ -355,7 +406,7 @@ const AddDiary = ({ children }) => {
               render={({ field }) => (
                 <Datepicker
                   onChange={field.onChange}
-                  defaultDate={step1Content?.workingDate || new Date()}
+                  defaultDate={step1Content?.workingDate}
                 />
               )}
             />
@@ -481,14 +532,12 @@ const AddDiary = ({ children }) => {
                             maxW='md'
                             bg='#fff'
                             name='name'
-                            defaultValue={doc.name}
-                            value={doc.name}
                             className={doc.name}
                             onChange={(e) => onChange(e, index, docIndex)}
                           >
                             {getForms(name).map((formOption) => (
                               <option
-                                value={formOption.name}
+                                value={`${formOption.name}-${formOption._id}`}
                                 className={formOption.name}
                               >
                                 {formOption.name}
@@ -522,13 +571,18 @@ const AddDiary = ({ children }) => {
                                 p='2px 5px'
                                 bg='#E9EAEC'
                                 borderRadius='md'
+                                minW='max-content'
                               >
                                 Tải tệp lên
                               </Box>
                               <Tooltip label={doc.proof?.name}>
-                                <Text>
-                                  {doc.proof?.name.slice(0, 20)}{' '}
-                                  {doc.proof?.name && '...'}
+                                <Text wordBreak='break-all' fontSize='sm'>
+                                  {/* Either File or String (S3 url) */}
+                                  {typeof doc.proof === 'object'
+                                    ? doc.proof?.name.slice(0, 20)
+                                    : doc.proof.split('/')[
+                                        doc.proof.split('/').length - 1
+                                      ]}
                                 </Text>
                               </Tooltip>
                             </Flex>
@@ -622,13 +676,14 @@ const AddDiary = ({ children }) => {
         <ModalContent as='form' onSubmit={handleSubmit(onSubmit)}>
           <ModalHeader textAlign='center' fontSize='lg'>
             {step === 1 ? (
-              'Thêm nhật ký công việc'
+              `${editLog ? 'Sửa' : 'Thêm'} nhật ký công việc`
             ) : (
               <>
                 Công trình {getValues('workingLocation')}
                 <Text fontSize='sm' fontWeight='normal'>
-                  Ngày: {format(getValues('workingDate'), 'dd/MM/yyyy')} -{' '}
-                  {getValues('name')}
+                  Ngày:{' '}
+                  {format(getValues('workingDate') || new Date(), 'dd/MM/yyyy')}{' '}
+                  - {getValues('name')}
                 </Text>
               </>
             )}
@@ -669,4 +724,4 @@ const AddDiary = ({ children }) => {
   );
 };
 
-export default AddDiary;
+export default MutateDiary;

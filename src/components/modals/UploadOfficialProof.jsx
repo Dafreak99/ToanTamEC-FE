@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Checkbox,
   Flex,
   FormControl,
   FormLabel,
@@ -16,7 +17,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { getMonth } from 'date-fns';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useSelector } from 'react-redux';
 import { useUpdateDraftDoc } from '../../hooks/useWorkDiaryDetail';
@@ -34,9 +35,19 @@ const UploadOfficialProof = ({ isOpen, onOpen, onClose, selectedInfo }) => {
 
   const [proof, setProof] = useState(null);
   const [error, setError] = useState(false);
+  const [draft, setDraft] = useState(false);
+
   const { endDate } = useSelector((state) => state.date);
 
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (selectedInfo) {
+      const splitted = selectedInfo?.proof.split('/');
+      setProof({ name: splitted[splitted.length - 1] });
+      setDraft(selectedInfo.draft);
+    }
+  }, [selectedInfo]);
 
   const onError = (err) => {
     console.log(err);
@@ -82,7 +93,11 @@ const UploadOfficialProof = ({ isOpen, onOpen, onClose, selectedInfo }) => {
       return;
     }
 
-    mutate({ ...selectedInfo, proof });
+    mutate({
+      ...selectedInfo,
+      proof: typeof proof === 'object' ? proof : proof.name,
+      draft,
+    });
   };
 
   return (
@@ -92,10 +107,13 @@ const UploadOfficialProof = ({ isOpen, onOpen, onClose, selectedInfo }) => {
         finalFocusRef={finalRef}
         isOpen={isOpen}
         onClose={onClose}
+        size='xl'
       >
         <ModalOverlay />
         <ModalContent as='form' onSubmit={onSubmit}>
-          <ModalHeader textAlign='center'>Tải lên bản chính</ModalHeader>
+          <ModalHeader textAlign='center'>
+            Tải lên bằng chứng công việc
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl>
@@ -115,10 +133,13 @@ const UploadOfficialProof = ({ isOpen, onOpen, onClose, selectedInfo }) => {
                     p='2px 5px'
                     bg='#E9EAEC'
                     borderRadius='md'
+                    minW='max-content'
                   >
                     Tải tệp lên
                   </Box>
-                  <Text>{proof?.name}</Text>
+                  <Text wordBreak='break-all' fontSize='sm'>
+                    {proof?.name}
+                  </Text>
                 </Flex>
               </label>
               <Input
@@ -133,6 +154,15 @@ const UploadOfficialProof = ({ isOpen, onOpen, onClose, selectedInfo }) => {
                 }}
               />
               {error && <ErrorMessage />}
+            </FormControl>
+
+            <FormControl mt={4}>
+              <Checkbox
+                onChange={(e) => setDraft(!e.target.checked)}
+                defaultChecked={!draft}
+              >
+                Bản chính
+              </Checkbox>
             </FormControl>
           </ModalBody>
 

@@ -3,6 +3,8 @@ import {
   AlertIcon,
   Box,
   Button,
+  Flex,
+  Icon,
   List,
   ListIcon,
   ListItem,
@@ -17,16 +19,18 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AiFillWarning } from 'react-icons/ai';
 import { BsCheck } from 'react-icons/bs';
+import { FaEdit } from 'react-icons/fa';
 import { IoAdd } from 'react-icons/io5';
 import { useDispatch, useSelector } from 'react-redux';
 import Layout from '../components/Layout';
-import AddDiary from '../components/modals/AddDiary';
+import MutateDiary from '../components/modals/MutateDiary';
 import UploadOfficialProof from '../components/modals/UploadOfficialProof';
 import Spinner from '../components/Spinner';
 import { setEndDate } from '../features/date/dateSlice';
+import { getUsers } from '../features/user/userSlice';
 import {
   useCountActualWorkingDate,
   useWorkDiaries,
@@ -36,6 +40,7 @@ import Datepicker from '../partials/actions/Datepicker';
 function Upload() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedInfo, setSelectedInfo] = useState(null);
+  const [editLog, setEditLog] = useState(null);
   const { fullName } = useSelector((state) => state.user.auth);
 
   const { endDate, dates, startMonth, endMonth } = useSelector(
@@ -43,6 +48,10 @@ function Upload() {
   );
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getUsers());
+  }, []);
 
   const getClassNames = (i) => {
     return {
@@ -66,7 +75,7 @@ function Upload() {
 
             <Box ml='auto'>
               <Button>Xuất nhật kí</Button>
-              <AddDiary {...{ endDate }}>
+              <MutateDiary {...{ endDate }}>
                 <Button
                   className='ml-4'
                   leftIcon={<IoAdd color='#fff' />}
@@ -74,7 +83,7 @@ function Upload() {
                 >
                   Tạo nhật ký
                 </Button>
-              </AddDiary>
+              </MutateDiary>
             </Box>
           </div>
           <Spinner />
@@ -169,7 +178,7 @@ function Upload() {
 
           <Box ml='auto'>
             <Button>Xuất nhật kí</Button>
-            <AddDiary>
+            <MutateDiary>
               <Button
                 className='ml-4'
                 leftIcon={<IoAdd color='#fff' />}
@@ -177,7 +186,7 @@ function Upload() {
               >
                 Tạo nhật ký
               </Button>
-            </AddDiary>
+            </MutateDiary>
           </Box>
         </div>
 
@@ -224,18 +233,17 @@ function Upload() {
               </Thead>
 
               <tbody>
-                {data?.logs.map(
-                  (
-                    {
-                      _id: workDiaryId,
-                      project: { name, _id: projectId },
-                      workDiaryDetail: { workContents },
-                      workingDate,
-                      shift,
-                      status,
-                    },
-                    i,
-                  ) => (
+                {data?.logs.map((log, i) => {
+                  const {
+                    _id: workDiaryId,
+                    project: { _id: projectId },
+                    workDiaryDetail: { workContents },
+                    workingDate,
+                    shift,
+                    status,
+                  } = log;
+
+                  return (
                     <Tr className='cursor-pointer' key={i}>
                       <Td
                         className='sticky left-0 pl-0'
@@ -260,74 +268,90 @@ function Upload() {
                           p='0'
                           pr='2'
                         >
-                          {workContents.map((workContent) => (
+                          <Flex
+                            alignItems='center'
+                            justifyContent='space-between'
+                          >
                             <Box>
-                              <Text>{workContent.name}</Text>
-                              <List>
-                                {workContent.docs.map(
-                                  ({ _id, name, proof, draft }) => (
-                                    <Tooltip
-                                      label={
-                                        draft
-                                          ? 'Chưa cập nhật bản chính'
-                                          : 'Đã cập nhật bản chính'
-                                      }
-                                    >
-                                      <ListItem
-                                        display='flex'
-                                        alignItems='center'
-                                        as='li'
-                                        listStyleType='inherit'
-                                        pl='1rem'
-                                      >
-                                        {!draft ? (
-                                          <ListIcon
-                                            as={BsCheck}
-                                            color='green.500'
-                                            fontSize='1.2rem'
-                                          />
-                                        ) : (
-                                          <ListIcon
-                                            as={AiFillWarning}
-                                            color='yellow.500'
-                                            fontSize='1.2rem'
-                                          />
-                                        )}
-
-                                        <Box
-                                          as='p'
-                                          textAlign='left'
-                                          wordBreak='break-all'
+                              {workContents.map((workContent) => (
+                                <Box>
+                                  <Text>{workContent.name}</Text>
+                                  <List>
+                                    {workContent.docs.map(
+                                      ({ _id, name, proof, draft }) => (
+                                        <Tooltip
+                                          label={
+                                            draft
+                                              ? 'Chưa cập nhật bản chính'
+                                              : 'Đã cập nhật bản chính'
+                                          }
                                         >
-                                          <a
-                                            href={proof}
-                                            target='_blank'
-                                            rel='noreferrer'
-                                            className='underline'
-                                            onContextMenu={(e) => {
-                                              e.preventDefault();
-
-                                              if (draft) {
-                                                onOpen();
-                                                setSelectedInfo({
-                                                  workContentId:
-                                                    workContent._id,
-                                                  workDiaryId,
-                                                  docId: _id,
-                                                });
-                                              }
-                                            }}
+                                          <ListItem
+                                            display='flex'
+                                            alignItems='center'
+                                            as='li'
+                                            listStyleType='inherit'
+                                            pl='1rem'
                                           >
-                                            {name}
-                                          </a>
-                                        </Box>
-                                      </ListItem>
-                                    </Tooltip>
-                                  ),
-                                )}
-                              </List>
+                                            {!draft ? (
+                                              <ListIcon
+                                                as={BsCheck}
+                                                color='green.500'
+                                                fontSize='1.2rem'
+                                              />
+                                            ) : (
+                                              <ListIcon
+                                                as={AiFillWarning}
+                                                color='yellow.500'
+                                                fontSize='1.2rem'
+                                              />
+                                            )}
+
+                                            <Box
+                                              as='p'
+                                              textAlign='left'
+                                              wordBreak='break-all'
+                                            >
+                                              <a
+                                                href={proof}
+                                                target='_blank'
+                                                rel='noreferrer'
+                                                className='underline'
+                                                onContextMenu={(e) => {
+                                                  e.preventDefault();
+
+                                                  onOpen();
+                                                  setSelectedInfo({
+                                                    workContentId:
+                                                      workContent._id,
+                                                    workDiaryId,
+                                                    docId: _id,
+                                                    proof,
+                                                    draft,
+                                                  });
+                                                }}
+                                              >
+                                                {name}
+                                              </a>
+                                            </Box>
+                                          </ListItem>
+                                        </Tooltip>
+                                      ),
+                                    )}
+                                  </List>
+                                </Box>
+                              ))}
                             </Box>
-                          ))}
+
+                            <MutateDiary {...{ edit: true, editLog }}>
+                              {/* Edit icon */}
+                              <Icon
+                                as={FaEdit}
+                                mr='-2'
+                                onClick={() => setEditLog(log)}
+                              />
+                            </MutateDiary>
+                          </Flex>
                         </Td>
                       </Td>
 
@@ -343,9 +367,8 @@ function Upload() {
                         </>
                       ))}
                     </Tr>
-                  ),
-                )}
-
+                  );
+                })}
                 <Tr className='cursor-pointer'>
                   <Td
                     className='sticky left-0 pl-0'
