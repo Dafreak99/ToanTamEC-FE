@@ -51,7 +51,10 @@ const UploadOfficialProof = ({ isOpen, onOpen, onClose, selectedInfo }) => {
 
   const onError = (err) => {
     console.log(err);
-    showToast('Lỗi khi tải bản chính lên!', err.response.data.message);
+    // showToast('Lỗi khi tải bản chính lên!', err.response.data.message);
+    showToast('error', 'Quá thời gian tải bản chính!');
+    setProof(null);
+    onClose();
   };
 
   const onSuccess = ({ data }) => {

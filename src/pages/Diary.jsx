@@ -74,7 +74,7 @@ function Upload() {
             <Datepicker onChange={(e) => dispatch(setEndDate(e))} />
 
             <Box ml='auto'>
-              <Button>Xuất nhật kí</Button>
+              {/* <Button>Xuất nhật kí</Button> */}
               <MutateDiary {...{ endDate }}>
                 <Button
                   className='ml-4'
@@ -177,7 +177,7 @@ function Upload() {
           <Datepicker onChange={(e) => dispatch(setEndDate(e))} />
 
           <Box ml='auto'>
-            <Button>Xuất nhật kí</Button>
+            {/* <Button>Xuất nhật kí</Button> */}
             <MutateDiary>
               <Button
                 className='ml-4'
@@ -236,7 +236,7 @@ function Upload() {
                 {data?.logs.map((log, i) => {
                   const {
                     _id: workDiaryId,
-                    project: { _id: projectId },
+                    project: { code },
                     workDiaryDetail: { workContents },
                     workingDate,
                     shift,
@@ -259,7 +259,7 @@ function Upload() {
                           p='0'
                           pr='2'
                         >
-                          {projectId?.slice(18)}
+                          {code}
                         </Td>
                         <Td
                           className='border-none whitespace-pre-line text-left'

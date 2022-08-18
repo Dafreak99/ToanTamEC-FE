@@ -14,12 +14,14 @@ function ProjectDetail() {
   const tabs = ['Thông tin', 'Tổng kê', 'Biên bản'];
   const dispatch = useDispatch();
   const { detail } = useSelector((state) => state.project);
+  const { role } = useSelector((state) => state.user.auth);
 
   const { id } = useParams();
 
   const getData = async () => {
     await dispatch(getProject(id));
-    await dispatch(getUsers());
+    if (role !== 3)
+      await dispatch(getUsers());
   };
 
   useEffect(() => {

@@ -276,7 +276,7 @@ const MutateDiary = ({ children, editLog }) => {
           ...step1Content,
           workingDate: format(step1Content.workingDate, 'yyyy-MM-dd'),
           workDiaryDetail: { workContents: works },
-          user: _id,
+          user: userId,
           shift:
             typeof step1Content.shift === 'object' &&
             step1Content.shift.length === 2
