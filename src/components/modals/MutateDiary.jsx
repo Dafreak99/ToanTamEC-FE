@@ -606,6 +606,7 @@ const MutateDiary = ({ children, editLog }) => {
                       >
                         <Checkbox
                           name='draft'
+                          defaultChecked={!doc.draft}
                           onChange={(e) => onChange(e, index, docIndex)}
                         >
                           Bản chính
