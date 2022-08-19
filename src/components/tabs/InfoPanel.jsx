@@ -23,13 +23,14 @@ import {
   useDisclosure,
   useToast,
 } from '@chakra-ui/react';
+import { format } from 'date-fns';
 import React, { useState } from 'react';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { CgCloseO } from 'react-icons/cg';
 import { FaTrash } from 'react-icons/fa';
 import { IoAdd } from 'react-icons/io5';
 import { MdModeEdit } from 'react-icons/md';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   deleteMember,
@@ -53,12 +54,14 @@ function InfoPanel({ detail }) {
   const dispatch = useDispatch();
   const { id } = useParams();
   const navigate = useNavigate();
+  const { role } = useSelector((state) => state.user.auth);
 
   const {
     location,
     comment,
     startedAt,
     name,
+    code,
     members,
     _id: projectId,
   } = detail;
@@ -99,16 +102,20 @@ function InfoPanel({ detail }) {
           <img src={solution} alt='solution' className='h-56 mb-10' />
           <p>Chưa có thành viên</p>
           <EmployeeModal>
-            <Button
-              className='mt-3'
-              leftIcon={<IoAdd color='#fff' />}
-              background='primary'
-              color='white'
-              variant='solid'
-              size='md'
-            >
-              Thêm thành viên
-            </Button>
+            {role !== 3 ? (
+              <Button
+                className='mt-3'
+                leftIcon={<IoAdd color='#fff' />}
+                background='primary'
+                color='white'
+                variant='solid'
+                size='md'
+              >
+                Thêm thành viên
+              </Button>
+            ) : (
+              <></>
+            )}
           </EmployeeModal>
         </Flex>
       );
@@ -117,16 +124,23 @@ function InfoPanel({ detail }) {
     return (
       <>
         <EmployeeModal>
-          <Button
-            className='mt-3'
-            leftIcon={<IoAdd color='#fff' />}
-            background='primary'
-            color='white'
-            variant='solid'
-            size='md'
-          >
-            Thêm thành viên
-          </Button>
+          {
+            // TODO: ? Co nen cho phep thanh vien du an chinh sua ds thanh vien
+            role !== 3 ? (
+              <Button
+                className='mt-3'
+                leftIcon={<IoAdd color='#fff' />}
+                background='primary'
+                color='white'
+                variant='solid'
+                size='md'
+              >
+                Thêm thành viên
+              </Button>
+            ) : (
+              <></>
+            )
+          }
         </EmployeeModal>
 
         <TableContainer marginTop={6}>
@@ -276,6 +290,10 @@ function InfoPanel({ detail }) {
       <div className='flex justify-between items-start'>
         <Box>
           <p className='mb-3'>
+            <strong>Mã dự án: </strong>
+            {code}
+          </p>
+          <p className='mb-3'>
             <strong>Tên dự án: </strong>
             {name}
           </p>
@@ -285,7 +303,7 @@ function InfoPanel({ detail }) {
           </p>
           <p className='mb-3'>
             <strong>Thời gian khởi công: </strong>
-            {startedAt}
+            {format(new Date(startedAt), 'dd-MM-yyyy')}
           </p>
           <p className='mb-3'>
             <strong>Căn chứ nghiệm thu: </strong>{' '}

@@ -2,6 +2,7 @@ import {
   Button,
   FormControl,
   FormLabel,
+  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -105,8 +106,8 @@ const EmployeeModal = ({ children, _id, fullname, userId, role, edit }) => {
                       <option value selected hidden>
                         Chọn tài khoản người dùng
                       </option>
-                      {systemUsers.map(({ username, _id }) => (
-                        <option value={_id}>{username}</option>
+                      {systemUsers.map(({ username, _id, fullName }) => (
+                        <option value={_id}>{username}. {fullName}</option>
                       ))}
                     </Select>
                   )}
@@ -118,6 +119,19 @@ const EmployeeModal = ({ children, _id, fullname, userId, role, edit }) => {
                 )}
               </FormControl>
             )}
+
+            <FormControl mt={4}>
+              <FormLabel>
+                Đơn vị <span className='text-red-500'>*</span>
+              </FormLabel>
+
+              <Input
+                  id='unit'
+                  type='text'
+                  placeholder='Nhập tên đơn vị'
+                  defaultValue='Công ty TNHH Toàn Tâm'
+              />
+            </FormControl>
 
             <FormControl mt={4}>
               <FormLabel>
