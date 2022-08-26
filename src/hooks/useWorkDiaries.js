@@ -14,27 +14,24 @@ import { axios } from '../utils/axios';
 const getWorkDiaries = ({ queryKey }) => {
   const endDate = queryKey[1];
   const startDate = sub(new Date(endDate), { days: 10 });
-  const { _id } = store.getState().user.auth;
 
   return axios(
-    `/work-diary?startDate=${startDate}&endDate=${endDate}&userId=${_id}`,
+    `/work-diary?startDate=${startDate}&endDate=${endDate}&userId=${queryKey[2]}`,
   );
 };
 
-const getActualWorkingDate = () => {
+const getActualWorkingDate = ({ queryKey }) => {
   const { endDate } = store.getState().date;
-  const { _id } = store.getState().user.auth;
-
   const begining = format(startOfMonth(new Date(endDate)), 'yyyy-MM-dd');
   const end = format(endOfMonth(new Date(endDate)), 'yyyy-MM-dd');
 
   return axios(
-    `/work-diary?startDate=${begining}&endDate=${end}&userId=${_id}`,
+    `/work-diary?startDate=${begining}&endDate=${end}&userId=${queryKey[2]}`,
   );
 };
 
-export const useWorkDiaries = (endDate) => {
-  return useQuery(['work-diaries', endDate], getWorkDiaries, {
+export const useWorkDiaries = (endDate, userId) => {
+  return useQuery(['work-diaries', endDate, userId], getWorkDiaries, {
     select: ({ data }) => {
       const accreditedDates = [];
       const iteratedDates = {};
@@ -118,66 +115,73 @@ export const useAddWorkDiary = (onSuccess, onError) => {
   );
 };
 
-export const useCountActualWorkingDate = (currentDate) => {
+export const useCountActualWorkingDate = (currentDate, userId) => {
   const month = getMonth(new Date(currentDate)) + 1;
 
-  return useQuery(['actual-working-dates', month], getActualWorkingDate, {
-    select: ({ data }) => {
-      const iteratedDates = {};
-      const accreditedDates = [];
+  return useQuery(
+    ['actual-working-dates', month, userId],
+    getActualWorkingDate,
+    {
+      select: ({ data }) => {
+        const iteratedDates = {};
+        const accreditedDates = [];
 
-      data.forEach((workDiary, i) => {
-        const wDate = workDiary.workingDate;
-        let missingDraft = false;
-        let excelDate = false;
-        let status;
+        data.forEach((workDiary, i) => {
+          const wDate = workDiary.workingDate;
+          let missingDraft = false;
+          let excelDate = false;
+          let status;
 
-        workDiary.workDiaryDetail.workContents.forEach((workContent) => {
-          if (missingDraft) return;
-          workContent.docs.forEach((doc) => {
-            if (doc.draft) {
-              missingDraft = true;
-              return;
-            }
+          workDiary.workDiaryDetail.workContents.forEach((workContent) => {
+            if (missingDraft) return;
+            workContent.docs.forEach((doc) => {
+              if (doc.draft) {
+                missingDraft = true;
+                return;
+              }
+            });
           });
+
+          const limit = sub(new Date(), { days: 10 });
+          excelDate = isBefore(new Date(wDate), limit);
+
+          if (missingDraft && excelDate) {
+            status = 'red';
+          } else if (missingDraft) {
+            status = 'yellow';
+          } else {
+            status = 'green';
+          }
+
+          if (status === 'green') {
+            const { shift, workingDate } = workDiary;
+            const existed = workingDate in iteratedDates;
+
+            if (existed) {
+              if (
+                shift === 2 ||
+                shift + iteratedDates[workingDate].shift === 1
+              ) {
+                accreditedDates[iteratedDates[workingDate].location].shift = 2;
+              }
+            } else {
+              iteratedDates[workingDate] = {
+                location: i,
+                shift,
+              };
+
+              accreditedDates[i] = {
+                workingDate,
+                shift,
+              };
+            }
+          }
         });
 
-        const limit = sub(new Date(), { days: 10 });
-        excelDate = isBefore(new Date(wDate), limit);
-
-        if (missingDraft && excelDate) {
-          status = 'red';
-        } else if (missingDraft) {
-          status = 'yellow';
-        } else {
-          status = 'green';
-        }
-
-        if (status === 'green') {
-          const { shift, workingDate } = workDiary;
-          const existed = workingDate in iteratedDates;
-
-          if (existed) {
-            if (shift === 2 || shift + iteratedDates[workingDate].shift === 1) {
-              accreditedDates[iteratedDates[workingDate].location].shift = 2;
-            }
-          } else {
-            iteratedDates[workingDate] = {
-              location: i,
-              shift,
-            };
-
-            accreditedDates[i] = {
-              workingDate,
-              shift,
-            };
-          }
-        }
-      });
-
-      return accreditedDates.reduce((initial, accum) => {
-        return initial + (accum.shift === 2 ? 1 : 0.5);
-      }, 0);
+        return accreditedDates.reduce((initial, accum) => {
+          return initial + (accum.shift === 2 ? 1 : 0.5);
+        }, 0);
+      },
     },
-  });
+  );
 };

@@ -30,7 +30,7 @@ const AddProject = ({ children, project }) => {
   const initialRef = React.useRef();
   const finalRef = React.useRef();
 
-  const { _id } = useSelector(state=> state.user.auth);
+  const { _id } = useSelector((state) => state.user.auth);
 
   const {
     register,
@@ -57,14 +57,13 @@ const AddProject = ({ children, project }) => {
   }, [project]);
 
   const onSubmit = async (formData) => {
-    console.log(formData);
     setLoading(true);
 
     if (project) {
       await dispatch(updateProject({ id: project._id, formData }));
     } else {
       console.log('er');
-      await dispatch(addProject({...formData, updatedBy: _id}));
+      await dispatch(addProject({ ...formData, updatedBy: _id }));
     }
 
     setLoading(false);
@@ -153,6 +152,7 @@ const AddProject = ({ children, project }) => {
                   <Datepicker
                     defaultDate={project?.startedAt || new Date()}
                     onChange={field.onChange}
+                    limitDate={false}
                   />
                 )}
               />

@@ -5,7 +5,8 @@ import { showToast } from '../../utils/toast';
 const initialState = {
   isLoading: true,
   auth: null,
-  systemUsers: null,
+  systemUsers: [],
+  detail: null,
 };
 
 export const login = createAsyncThunk('login', async (formData, thunkAPI) => {
@@ -36,6 +37,28 @@ export const getUsers = createAsyncThunk('getUsers', async (_, thunkAPI) => {
     return thunkAPI.rejectWithValue({ error: error.response.data.error });
   }
 });
+
+export const getUser = createAsyncThunk('getUser', async (id, thunkAPI) => {
+  try {
+    const { data } = await axios(`user?id=${id}`);
+    return data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue({ error: error.response.data.error });
+  }
+});
+
+export const createUser = createAsyncThunk(
+  'createUser',
+  async (formData, thunkAPI) => {
+    try {
+      const { data } = await axios.post(`user/register`, formData);
+      return data;
+    } catch (error) {
+      console.log(error);
+      return thunkAPI.rejectWithValue({ error: error.response.data.message });
+    }
+  },
+);
 
 export const userSlice = createSlice({
   name: 'user',
@@ -68,6 +91,21 @@ export const userSlice = createSlice({
     builder.addCase(getUsers.rejected, (_, { payload }) => {
       console.log(payload);
       showToast('error', 'Lỗi khi tải thành viên!');
+    });
+    builder.addCase(getUser.fulfilled, (state, { payload }) => {
+      state.detail = payload.user;
+    });
+    builder.addCase(getUser.rejected, (_, { payload }) => {
+      console.log(payload);
+      showToast('error', 'Lỗi khi tải thành viên!');
+    });
+    builder.addCase(createUser.rejected, (_, { payload }) => {
+      showToast(
+        'error',
+        `Lỗi khi tạo thành viên! ${
+          payload.error.includes('E11000') && 'Trùng username'
+        }`,
+      );
     });
   },
 });

@@ -36,6 +36,7 @@ import { FaPlus, FaTrash } from 'react-icons/fa';
 import { IoAdd } from 'react-icons/io5';
 import { useQueryClient } from 'react-query';
 import { useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import { useProjects } from '../../hooks/useProjects';
 import { useWorkContents } from '../../hooks/useWorkContents';
 import { useAddWorkDiary } from '../../hooks/useWorkDiaries';
@@ -53,11 +54,9 @@ const MutateDiary = ({ children, editLog }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const {
-    register,
     handleSubmit,
     control,
     getValues,
-    setValue,
     setError,
     clearErrors,
     reset,
@@ -72,8 +71,11 @@ const MutateDiary = ({ children, editLog }) => {
   const [, setNum] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  const params = useParams();
+  const userId = params.id || useSelector((state) => state.user.auth._id);
+
   const {
-    auth: { _id: userId, fullName, role },
+    auth: { fullName, role },
     systemUsers,
   } = useSelector((state) => state.user);
 
@@ -87,17 +89,20 @@ const MutateDiary = ({ children, editLog }) => {
     setLoading(false);
 
     for (const date of cacheDates) {
-      queryClient.removeQueries(['work-diaries', date]);
+      console.log(['work-diaries', date, userId]);
+      queryClient.removeQueries(['work-diaries', date, userId]);
     }
 
     queryClient.invalidateQueries([
       'actual-working-dates',
       getMonth(new Date(endDate)) + 1,
+      userId,
     ]);
 
     queryClient.invalidateQueries([
       'actual-working-dates',
       getMonth(new Date(data.workingDate)) + 1,
+      userId,
     ]);
 
     setStep(1);
@@ -242,6 +247,7 @@ const MutateDiary = ({ children, editLog }) => {
   const onSubmit = async (data) => {
     if (step === 1) {
       setStep1Content(data);
+      console.log(data);
       setStep(step + 1);
     } else if (step === 2) {
       checkRequired();
@@ -292,20 +298,6 @@ const MutateDiary = ({ children, editLog }) => {
       }
     }
   };
-
-  const childrenWithProps = React.Children.map(children, (child) => {
-    if (React.isValidElement(child)) {
-      return React.cloneElement(child, {
-        onClick: () => {
-          if (child.props.onClick) {
-            child.props.onClick();
-          }
-          onOpen();
-        },
-      });
-    }
-    return child;
-  });
 
   const renderError = (name, type = 'required') => {
     if (name in errors && errors[name].type === type) {
@@ -360,6 +352,24 @@ const MutateDiary = ({ children, editLog }) => {
     setWorkContents(newContent);
     setNum(Math.random());
   };
+
+  const getSelectedName = () => {
+    return systemUsers.find((user) => user._id === step1Content.user)?.fullName;
+  };
+
+  const childrenWithProps = React.Children.map(children, (child) => {
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, {
+        onClick: () => {
+          if (child.props.onClick) {
+            child.props.onClick();
+          }
+          onOpen();
+        },
+      });
+    }
+    return child;
+  });
 
   const renderStep = () => {
     if (step === 1) {
@@ -684,7 +694,7 @@ const MutateDiary = ({ children, editLog }) => {
                 <Text fontSize='sm' fontWeight='normal'>
                   Ngày:{' '}
                   {format(getValues('workingDate') || new Date(), 'dd/MM/yyyy')}{' '}
-                  - {getValues('name')}
+                  - {getSelectedName()}
                 </Text>
               </>
             )}
