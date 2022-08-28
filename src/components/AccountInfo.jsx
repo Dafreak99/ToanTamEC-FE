@@ -1,19 +1,30 @@
 import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   Box,
   Button,
+  Flex,
   FormLabel,
   Input,
   InputGroup,
   InputRightElement,
+  useDisclosure,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
+import { CgCloseO } from 'react-icons/cg';
+import { FaTrash } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
-import { updateUser } from '../features/user/userSlice';
+import { useNavigate, useParams } from 'react-router-dom';
+import { deleteUser, updateUser } from '../features/user/userSlice';
 import ErrorMessage from '../utils/ErrorMessage';
 
-const AccountInfo = ({ data }) => {
+const AccountInfo = ({ data, status }) => {
   const {
     register,
     handleSubmit,
@@ -21,6 +32,8 @@ const AccountInfo = ({ data }) => {
     setValue,
     formState: { errors },
   } = useForm();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef();
 
   const [showOldPw, setShowOldPw] = useState(false);
   const [showNewPw, setShowNewPw] = useState(false);
@@ -29,6 +42,8 @@ const AccountInfo = ({ data }) => {
   const { role: currAccountRole } = useSelector((state) => state.user.auth);
 
   const dispatch = useDispatch();
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setValue('username', data, { shouldValidate: true });
@@ -38,11 +53,64 @@ const AccountInfo = ({ data }) => {
     dispatch(updateUser(formData));
   };
 
+  const delAccount = async () => {
+    await dispatch(deleteUser(id));
+    navigate('/nguoi-dung');
+  };
+
+  // eslint-disable-next-line react/no-unstable-nested-components
+  const DeleteAccountConfirmation = () => {
+    return (
+      <AlertDialog
+        isOpen={isOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+              Xóa tài khoản
+            </AlertDialogHeader>
+
+            <AlertDialogBody textAlign='center'>
+              <CgCloseO
+                className='mx-auto mb-4'
+                fontSize='3rem'
+                color='#DE3B33'
+              />
+              Bạn thật sự muốn xóa tài khoản này?
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onClose}>
+                Hủy
+              </Button>
+              <Button colorScheme='red' onClick={delAccount} ml={3}>
+                Xóa
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+    );
+  };
+
   return (
     <>
       {/* Thông tin tài khoản */}
       <Box as='form' onSubmit={handleSubmit(onSubmitPassword)}>
-        <h4 className='h4 mt-2'>Thông tin tài khoản</h4>
+        <DeleteAccountConfirmation />
+
+        <Flex justifyContent='space-between'>
+          <h4 className='h4 mt-2'>Thông tin tài khoản</h4>
+          <Button
+            variant='ghost'
+            disabled={status === 'inactive'}
+            onClick={onOpen}
+          >
+            <FaTrash />
+          </Button>
+        </Flex>
         <hr className='mb-6' />
         <div>
           <div className='grid grid-cols-12 mt-4'>

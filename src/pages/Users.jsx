@@ -1,4 +1,5 @@
 import {
+  Badge,
   Button,
   Input,
   InputGroup,
@@ -76,6 +77,7 @@ const Users = () => {
                     <Th className='border-none'>Điện thoại</Th>
                     <Th className='border-none'>Email</Th>
                     <Th className='border-none'>Tên tài khoản</Th>
+                    <Th className='border-none'>Trạng thái</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
@@ -87,6 +89,7 @@ const Users = () => {
                       phoneNumber,
                       email,
                       jobTitle,
+                      status,
                     }) => (
                       <Tr
                         onClick={(e) => {
@@ -101,6 +104,13 @@ const Users = () => {
                         <Td>{phoneNumber}</Td>
                         <Td>{email}</Td>
                         <Td>{username}</Td>
+                        <Td>
+                          <Badge
+                            colorScheme={status === 'active' ? 'green' : 'red'}
+                          >
+                            {status}
+                          </Badge>
+                        </Td>
                       </Tr>
                     ),
                   )}

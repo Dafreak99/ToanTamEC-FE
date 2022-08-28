@@ -5,12 +5,12 @@ import AccountInfo from '../AccountInfo';
 import ProfileInfo from '../ProfileInfo';
 
 const Profile = ({ self = false }) => {
-  const { username, fullName, phoneNumber, email, jobTitle, role } =
+  const { username, fullName, phoneNumber, email, jobTitle, role, status } =
     useSelector((state) => (self ? state.user.auth : state.user.detail));
 
   return (
     <Box>
-      <AccountInfo data={username} />
+      <AccountInfo data={username} status={status} />
       <ProfileInfo
         data={{ username, fullName, phoneNumber, email, jobTitle, role }}
       />

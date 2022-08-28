@@ -71,6 +71,18 @@ export const updateUser = createAsyncThunk(
   },
 );
 
+export const deleteUser = createAsyncThunk(
+  'deleteUser',
+  async (id, thunkAPI) => {
+    try {
+      const { data } = await axios.delete(`user/${id}`);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue({ error: error.response.data.message });
+    }
+  },
+);
+
 export const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -130,6 +142,15 @@ export const userSlice = createSlice({
     });
     builder.addCase(updateUser.rejected, (_, { payload }) => {
       showToast('error', `Lỗi khi cập nhật! ${payload.error}`);
+    });
+    builder.addCase(deleteUser.fulfilled, (state, { payload }) => {
+      state.systemUsers = state.systemUsers.filter(
+        (user) => user._id !== payload.user._id,
+      );
+      showToast('success', 'Xoá tài khoản thành công!');
+    });
+    builder.addCase(deleteUser.rejected, (_, { payload }) => {
+      showToast('error', `Lỗi khi xoá tài khoản! ${payload.error}`);
     });
   },
 });
