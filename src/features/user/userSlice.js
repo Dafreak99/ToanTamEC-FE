@@ -54,7 +54,18 @@ export const createUser = createAsyncThunk(
       const { data } = await axios.post(`user/register`, formData);
       return data;
     } catch (error) {
-      console.log(error);
+      return thunkAPI.rejectWithValue({ error: error.response.data.message });
+    }
+  },
+);
+
+export const updateUser = createAsyncThunk(
+  'updateUser',
+  async (formData, thunkAPI) => {
+    try {
+      const { data } = await axios.put(`user/profile`, formData);
+      return data;
+    } catch (error) {
       return thunkAPI.rejectWithValue({ error: error.response.data.message });
     }
   },
@@ -106,6 +117,19 @@ export const userSlice = createSlice({
           payload.error.includes('E11000') && 'Trùng username'
         }`,
       );
+    });
+    builder.addCase(updateUser.fulfilled, (state, { payload }) => {
+      state.detail = payload.user;
+
+      // This account was being updated itself
+      if (payload.user._id === state.auth._id) {
+        state.auth = { ...state.auth, ...payload.user };
+      }
+
+      showToast('success', 'Cập nhật thành công!');
+    });
+    builder.addCase(updateUser.rejected, (_, { payload }) => {
+      showToast('error', `Lỗi khi cập nhật! ${payload.error}`);
     });
   },
 });
