@@ -9,14 +9,16 @@ import {
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateUser } from '../features/user/userSlice';
 import ErrorMessage from '../utils/ErrorMessage';
 
 const AccountInfo = ({ data }) => {
   const {
     register,
     handleSubmit,
-    reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm();
 
@@ -26,13 +28,15 @@ const AccountInfo = ({ data }) => {
 
   const { role: currAccountRole } = useSelector((state) => state.user.auth);
 
-  const onSubmitPassword = (data) => {
-    console.log(data);
-  };
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    reset(data);
+    setValue('username', data, { shouldValidate: true });
   }, [data]);
+
+  const onSubmitPassword = (formData) => {
+    dispatch(updateUser(formData));
+  };
 
   return (
     <>
@@ -156,6 +160,13 @@ const AccountInfo = ({ data }) => {
                     maxLength: {
                       value: 255,
                       message: 'Mật khẩu dài 12-255 ký tự',
+                    },
+                    validate: (val) => {
+                      if (watch('newPassword') !== val) {
+                        return 'Mật khẩu không trùng khớp';
+                      }
+
+                      return null;
                     },
                   })}
                 />

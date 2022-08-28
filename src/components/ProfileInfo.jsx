@@ -1,7 +1,8 @@
 import { Box, Button, FormLabel, Input, Select } from '@chakra-ui/react';
 import React, { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateUser } from '../features/user/userSlice';
 import ErrorMessage from '../utils/ErrorMessage';
 
 const ProfileInfo = ({ data }) => {
@@ -9,15 +10,15 @@ const ProfileInfo = ({ data }) => {
     control,
     register,
     handleSubmit,
-    watch,
     reset,
     formState: { errors },
   } = useForm();
 
   const { role: currAccountRole } = useSelector((state) => state.user.auth);
+  const dispatch = useDispatch();
 
-  const onSubmitProfile = (data) => {
-    console.log(data);
+  const onSubmitProfile = (formData) => {
+    dispatch(updateUser(formData));
   };
 
   useEffect(() => {
@@ -101,7 +102,7 @@ const ProfileInfo = ({ data }) => {
                   required: true,
                 }}
                 render={({ field }) => (
-                  <Select {...field}>
+                  <Select {...field} disabled={currAccountRole === 3}>
                     <option value={1}>Admin</option>
                     <option value={2}>Quản lý</option>
                     <option value={3}>Nhân viên</option>

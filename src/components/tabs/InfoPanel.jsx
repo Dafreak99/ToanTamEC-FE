@@ -21,7 +21,6 @@ import {
   Thead,
   Tr,
   useDisclosure,
-  useToast,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import React, { useState } from 'react';
@@ -30,6 +29,7 @@ import { CgCloseO } from 'react-icons/cg';
 import { FaTrash } from 'react-icons/fa';
 import { IoAdd } from 'react-icons/io5';
 import { MdModeEdit } from 'react-icons/md';
+import { useQueryClient } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -37,11 +37,11 @@ import {
   deleteProject,
 } from '../../features/project/projectSlice';
 import solution from '../../images/solution.svg';
+import { showToast } from '../../utils/toast';
 import AddProject from '../modals/AddProject';
 import EmployeeModal from '../modals/Employee';
 
 function InfoPanel({ detail }) {
-  const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef();
   const {
@@ -54,6 +54,7 @@ function InfoPanel({ detail }) {
   const dispatch = useDispatch();
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { role } = useSelector((state) => state.user.auth);
 
   const {
@@ -69,23 +70,15 @@ function InfoPanel({ detail }) {
   const delMember = async () => {
     await dispatch(deleteMember({ projectId: id, memberId: deleteId }));
 
-    toast({
-      description: 'Đã xóa thành viên',
-      status: 'success',
-      isClosable: true,
-      position: 'top-right',
-    });
+    showToast('success', 'Đã xoá thành viên');
     onClose2();
   };
 
   const delProject = async () => {
     await dispatch(deleteProject(projectId));
-    toast({
-      description: 'Đã xóa dự án',
-      status: 'success',
-      isClosable: true,
-      position: 'top-right',
-    });
+    queryClient.invalidateQueries(['projects']);
+
+    showToast('success', 'Đã xóa dự án');
     onClose();
     navigate('/du-an');
   };
