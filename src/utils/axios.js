@@ -4,7 +4,7 @@ import Cookies from 'universal-cookie';
 export const axios = Axios.create({
   baseURL:
     process.env.NODE_ENV === 'production'
-      ? 'http://54.204.72.174/api/v1'
+      ? 'https://toantam.tk/api/v1'
       : 'http://localhost:8080/api/v1',
   headers: { 'Content-type': 'application/json' },
 });
