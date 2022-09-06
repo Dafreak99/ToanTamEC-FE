@@ -1,48 +1,57 @@
 import {
+  Alert,
+  AlertIcon,
   Box,
   Button,
+  Flex,
+  Icon,
+  List,
+  ListIcon,
+  ListItem,
   Table,
   TableContainer,
   Td,
+  Text,
   Th,
   Thead,
   Tooltip,
   Tr,
+  useDisclosure,
 } from '@chakra-ui/react';
-import { add, format, sub } from 'date-fns';
-import viLocale from 'date-fns/locale/vi';
+import { format } from 'date-fns';
 import React, { useEffect, useState } from 'react';
+import { AiFillWarning } from 'react-icons/ai';
+import { BsCheck } from 'react-icons/bs';
+import { FaEdit } from 'react-icons/fa';
 import { IoAdd } from 'react-icons/io5';
+import { useDispatch, useSelector } from 'react-redux';
 import Layout from '../components/Layout';
-import AddDiary from '../components/modals/AddDiary';
+import MutateDiary from '../components/modals/MutateDiary';
+import UploadOfficialProof from '../components/modals/UploadOfficialProof';
+import Spinner from '../components/Spinner';
+import { setEndDate } from '../features/date/dateSlice';
+import { getUsers } from '../features/user/userSlice';
+import {
+  useCountActualWorkingDate,
+  useWorkDiaries,
+} from '../hooks/useWorkDiaries';
 import Datepicker from '../partials/actions/Datepicker';
 
 function Upload() {
-  const [dates] = useState(() => {
-    Date.prototype.addDays = (days) => {
-      const dat = new Date(this.valueOf());
-      dat.setDate(dat.getDate() + days);
-      return dat;
-    };
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedInfo, setSelectedInfo] = useState(null);
+  const [editLog, setEditLog] = useState(null);
+  const { fullName } = useSelector((state) => state.user.auth);
 
-    function getDates(startDate, stopDate) {
-      const dateArray = [];
-      let currentDate = startDate;
+  const { endDate, dates, startMonth, endMonth } = useSelector(
+    (state) => state.date,
+  );
 
-      while (currentDate <= stopDate) {
-        const [dateInW, day] = format(currentDate, 'EEEEE-dd', {
-          locale: viLocale,
-        }).split('-');
-        dateArray.push({ dateInW, day });
-        currentDate = add(currentDate, { days: 1 });
-      }
+  const dispatch = useDispatch();
 
-      return dateArray;
-    }
-    return getDates(sub(new Date(), { days: 9 }), new Date());
-  });
-
-  const [logs, setLogs] = useState([]);
+  useEffect(() => {
+    dispatch(getUsers());
+  }, []);
 
   const getClassNames = (i) => {
     return {
@@ -51,215 +60,39 @@ function Upload() {
     };
   };
 
-  useEffect(() => {
-    const dairyLogs = [
-      {
-        workingDate: dates[0],
-        shift: ['morning'],
-        projectId: '001',
-        status: 'red',
-        workContents: [
-          {
-            name: 'workContent1',
-            docs: [
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-          {
-            name: 'workContent3',
-            docs: [
-              {
-                name: 'formType3a',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType3b',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[1],
-        shift: ['morning', 'afternoon'],
-        projectId: '002',
-        status: 'green',
-        workContents: [
-          {
-            name: 'workContent2',
-            docs: [
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType2',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[2],
-        shift: [],
-        projectId: '003',
-        status: 'red',
-        workContents: [],
-      },
-      {
-        workingDate: dates[3],
-        shift: [],
-        projectId: '004',
-        status: 'yellow',
-        workContents: [
-          {
-            name: 'workContent1',
-            docs: [
-              {
-                name: 'formType3',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[4],
-        shift: ['morning', 'afternoon'],
-        projectId: '004',
-        status: 'green',
-        workContents: [
-          {
-            name: 'workContent2',
-            docs: [
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType2',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[5],
-        shift: ['morning', 'afternoon'],
-        status: 'green',
-        projectId: '005',
-        workContents: [
-          {
-            name: 'workContent2',
-            docs: [
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType2',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[6],
-        shift: ['morning', 'afternoon'],
-        projectId: '005',
-        status: 'green',
-        workContents: [
-          {
-            name: 'workContent2',
-            docs: [
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType2',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[7],
-        shift: ['morning', 'afternoon'],
-        projectId: '005',
-        status: 'green',
-        workContents: [
-          {
-            name: 'workContent2',
-            docs: [
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType2',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        workingDate: dates[8],
-        shift: ['morning', 'afternoon'],
-        projectId: '005',
-        status: 'green',
-        workContents: [
-          {
-            name: 'workContent2',
-            docs: [
-              {
-                name: 'formType1',
-                proof: File,
-                draft: false,
-              },
-              {
-                name: 'formType2',
-                proof: File,
-                draft: false,
-              },
-            ],
-          },
-        ],
-      },
-    ];
+  const { data, isLoading } = useWorkDiaries(endDate);
 
-    setLogs(dairyLogs);
-  }, []);
+  const { data: total } = useCountActualWorkingDate(endDate);
 
-  const renderCheckMark = (i, calDay, currDay, shift, status) => {
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className='w-full bg-white shadow-lg p-4'>
+          <h3 className='h3'>Nhật ký công việc - {fullName}</h3>
+          <hr className='mb-6' />
+          <div className='flex'>
+            <Datepicker onChange={(e) => dispatch(setEndDate(e))} />
+
+            <Box ml='auto'>
+              {/* <Button>Xuất nhật kí</Button> */}
+              <MutateDiary {...{ endDate }}>
+                <Button
+                  className='ml-4'
+                  leftIcon={<IoAdd color='#fff' />}
+                  variant='primary'
+                >
+                  Tạo nhật ký
+                </Button>
+              </MutateDiary>
+            </Box>
+          </div>
+          <Spinner />
+        </div>
+      </Layout>
+    );
+  }
+
+  const renderCheckMark = (i, calDay, currDay, shift, status = 'green') => {
     let style;
     if (status === 'green') {
       style = { background: 'green.100', color: 'green.800' };
@@ -270,8 +103,8 @@ function Upload() {
       style = { background: 'yellow.100', color: 'yellow.800' };
     }
 
-    const morning = calDay === currDay && shift.includes('morning');
-    const afternoon = calDay === currDay && shift.includes('afternoon');
+    const morning = calDay === currDay && (shift === 0 || shift === 2);
+    const afternoon = calDay === currDay && (shift === 1 || shift === 2);
 
     return (
       <>
@@ -304,139 +137,268 @@ function Upload() {
     );
   };
 
-  const onSubmitDiary = (data) => {
-    if (typeof data.shift === 'string') {
-      data.shift = [data.shift];
-    }
+  const renderCheckMarkForLastRow = (i, iterateDate) => {
+    const exist = data.accreditedDates.find((date) => {
+      if (!date) return false;
 
-    const [dateInW, day] = format(data.workingDate, 'EEEEE-dd', {
-      locale: viLocale,
-    }).split('-');
+      return date.workingDate.dayMonth === iterateDate;
+    });
 
-    data.workingDate = { dateInW, day };
+    const morning = exist && (exist.shift === 0 || exist.shift === 2);
+    const afternoon = exist && (exist.shift === 1 || exist.shift === 2);
 
-    setLogs([...logs, data]);
+    return (
+      <>
+        {morning ? (
+          <Td {...getClassNames(i)} zIndex='inherit'>
+            x
+          </Td>
+        ) : (
+          <Td {...getClassNames(i)} zIndex='inherit' />
+        )}
+
+        {afternoon ? (
+          <Td {...getClassNames(i)} zIndex='inherit'>
+            x
+          </Td>
+        ) : (
+          <Td {...getClassNames(i)} zIndex='inherit' />
+        )}
+      </>
+    );
   };
 
   return (
     <Layout>
       <div className='w-full bg-white shadow-lg p-4'>
-        <h3 className='h3'>Nhật ký công việc</h3>
+        <h3 className='h3'>Nhật ký công việc - {fullName}</h3>
         <hr className='mb-6' />
         <div className='flex'>
-          <Datepicker onChange={null} />
+          <Datepicker onChange={(e) => dispatch(setEndDate(e))} />
 
           <Box ml='auto'>
-            <Button>Xuất nhật kí</Button>
-            <AddDiary onSubmit={onSubmitDiary}>
+            {/* <Button>Xuất nhật kí</Button> */}
+            <MutateDiary>
               <Button
                 className='ml-4'
                 leftIcon={<IoAdd color='#fff' />}
                 variant='primary'
               >
-                Tạo dự án
+                Tạo nhật ký
               </Button>
-            </AddDiary>
+            </MutateDiary>
           </Box>
         </div>
-        <TableContainer marginTop={6}>
-          <Table size='sm'>
-            <Thead>
-              <Tr>
-                <Th rowSpan='2' className='sticky top-0 left-0 z-10'>
-                  <Th w='100px' maxW='100px' className='border-none'>
-                    MSCT
-                  </Th>
-                  <Th w='200px' maxW='200px' className='border-none'>
-                    Nội dung công việc
-                  </Th>
-                  <Th w='100px' maxW='100px' className='border-none'>
-                    Biễu mẫu
-                  </Th>
-                </Th>
 
-                {dates.map(({ dateInW, day }) => {
-                  return (
-                    <Th colSpan='2'>
-                      {dateInW} <br /> {day}
+        {data?.logs.length === 0 ? (
+          <Alert status='warning' mt='2rem' w='35rem'>
+            <AlertIcon />
+            Không có dữ liệu để hiển thị! Vui lòng chọn ngày khác
+          </Alert>
+        ) : (
+          <TableContainer marginTop={6} height='65vh'>
+            <Table size='sm'>
+              <Thead>
+                <Tr>
+                  <Th rowSpan='2' className='sticky top-0 left-0 z-10'>
+                    <Th w='150px' maxW='150px' className='border-none'>
+                      MSCT
                     </Th>
+                    <Th w='350px' maxW='350px' className='border-none'>
+                      Nội dung công việc <br /> Biễu mẫu
+                    </Th>
+                  </Th>
+
+                  {dates.map(({ dateInW, dayMonth }) => {
+                    return (
+                      <Th colSpan='2'>
+                        {dateInW} <br /> {dayMonth}
+                      </Th>
+                    );
+                  })}
+                </Tr>
+
+                <Tr className='z-20'>
+                  {dates.map((_, i) => (
+                    <>
+                      <Td className='sticky top-18' {...getClassNames(i)}>
+                        S
+                      </Td>
+                      <Td className='sticky top-18' {...getClassNames(i)}>
+                        C
+                      </Td>
+                    </>
+                  ))}
+                </Tr>
+              </Thead>
+
+              <tbody>
+                {data?.logs.map((log, i) => {
+                  const {
+                    _id: workDiaryId,
+                    project: { code },
+                    workDiaryDetail: { workContents },
+                    workingDate,
+                    shift,
+                    status,
+                  } = log;
+
+                  return (
+                    <Tr className='cursor-pointer' key={i}>
+                      <Td
+                        className='sticky left-0 pl-0'
+                        {...getClassNames(i)}
+                        display='flex'
+                        justifyContent='space-between'
+                        minH='50px'
+                      >
+                        <Td
+                          className='border-none'
+                          w='150px'
+                          maxW='150px'
+                          p='0'
+                          pr='2'
+                        >
+                          {code}
+                        </Td>
+                        <Td
+                          className='border-none whitespace-pre-line text-left'
+                          w='350px'
+                          maxW='350px'
+                          p='0'
+                          pr='2'
+                        >
+                          <Flex
+                            alignItems='center'
+                            justifyContent='space-between'
+                          >
+                            <Box>
+                              {workContents.map((workContent) => (
+                                <Box>
+                                  <Text>{workContent.name}</Text>
+                                  <List>
+                                    {workContent.docs.map(
+                                      ({ _id, name, proof, draft }) => (
+                                        <Tooltip
+                                          label={
+                                            draft
+                                              ? 'Chưa cập nhật bản chính'
+                                              : 'Đã cập nhật bản chính'
+                                          }
+                                        >
+                                          <ListItem
+                                            display='flex'
+                                            alignItems='center'
+                                            as='li'
+                                            listStyleType='inherit'
+                                            pl='1rem'
+                                          >
+                                            {!draft ? (
+                                              <ListIcon
+                                                as={BsCheck}
+                                                color='green.500'
+                                                fontSize='1.2rem'
+                                              />
+                                            ) : (
+                                              <ListIcon
+                                                as={AiFillWarning}
+                                                color='yellow.500'
+                                                fontSize='1.2rem'
+                                              />
+                                            )}
+
+                                            <Box
+                                              as='p'
+                                              textAlign='left'
+                                              wordBreak='break-all'
+                                            >
+                                              <a
+                                                href={proof}
+                                                target='_blank'
+                                                rel='noreferrer'
+                                                className='underline'
+                                                onContextMenu={(e) => {
+                                                  e.preventDefault();
+
+                                                  onOpen();
+                                                  setSelectedInfo({
+                                                    workContentId:
+                                                      workContent._id,
+                                                    workDiaryId,
+                                                    docId: _id,
+                                                    proof,
+                                                    draft,
+                                                  });
+                                                }}
+                                              >
+                                                {name}
+                                              </a>
+                                            </Box>
+                                          </ListItem>
+                                        </Tooltip>
+                                      ),
+                                    )}
+                                  </List>
+                                </Box>
+                              ))}
+                            </Box>
+
+                            <MutateDiary {...{ edit: true, editLog }}>
+                              {/* Edit icon */}
+                              <Icon
+                                as={FaEdit}
+                                mr='-2'
+                                onClick={() => setEditLog(log)}
+                              />
+                            </MutateDiary>
+                          </Flex>
+                        </Td>
+                      </Td>
+
+                      {dates.map((date, ii) => (
+                        <>
+                          {renderCheckMark(
+                            ii,
+                            date.dayMonth,
+                            workingDate.dayMonth,
+                            shift,
+                            status,
+                          )}
+                        </>
+                      ))}
+                    </Tr>
                   );
                 })}
-              </Tr>
-              <Tr className='z-20'>
-                {dates.map((_, i) => (
-                  <>
-                    <Td className='sticky top-18' {...getClassNames(i)}>
-                      S
-                    </Td>
-                    <Td className='sticky top-18' {...getClassNames(i)}>
-                      C
-                    </Td>
-                  </>
-                ))}
-              </Tr>
-            </Thead>
+                <Tr className='cursor-pointer'>
+                  <Td
+                    className='sticky left-0 pl-0'
+                    {...getClassNames(2)}
+                    display='flex'
+                    justifyContent='center'
+                    alignItems='center'
+                    minH='50px'
+                  >
+                    Ngày công thực tế trong tháng (
+                    {format(new Date(startMonth), 'dd/MM')} -
+                    {format(new Date(endMonth), 'dd/MM')}): {total}
+                  </Td>
 
-            <tbody>
-              {logs.map(
-                (
-                  { projectId, workContents, workingDate, shift, status },
-                  i,
-                ) => (
-                  <Tr className='cursor-pointer' key={i}>
-                    <Td
-                      className='sticky left-0'
-                      {...getClassNames(i)}
-                      display='flex'
-                      justifyContent='space-between'
-                      alignItems='center'
-                    >
-                      <Td className='border-none' maxW='100px' p='0' pr='2'>
-                        {projectId}
-                      </Td>
-                      <Td
-                        className='border-none'
-                        w='200px'
-                        maxW='200px'
-                        p='0'
-                        pr='2'
-                      >
-                        {workContents.map((workContent) => (
-                          <Tooltip label={workContent.name}>
-                            <p>{`${workContent.name.slice(0, 10)}...`}</p>
-                          </Tooltip>
-                        ))}
-                      </Td>
-                      <Td className='border-none' maxW='100px' p='0'>
-                        {workContents.map((workContent) => (
-                          <>
-                            {workContent.docs.map((doc) => (
-                              <Tooltip label={doc.name}>
-                                <p>{doc.name.slice(0, 10)}...</p>
-                              </Tooltip>
-                            ))}
-                          </>
-                        ))}
-                      </Td>
-                    </Td>
+                  {dates.map((date, i) => (
+                    <>{renderCheckMarkForLastRow(i, date.dayMonth)}</>
+                  ))}
 
-                    {dates.map((date, ii) => (
-                      <>
-                        {renderCheckMark(
-                          ii,
-                          date.day,
-                          workingDate.day,
-                          shift,
-                          status,
-                        )}
-                      </>
-                    ))}
-                  </Tr>
-                ),
-              )}
-            </tbody>
-          </Table>
-        </TableContainer>
+                  {/* TODO: Render x x for last row */}
+
+                  {}
+                </Tr>
+
+                <UploadOfficialProof
+                  {...{ isOpen, onClose, onOpen, selectedInfo, endDate }}
+                />
+              </tbody>
+            </Table>
+          </TableContainer>
+        )}
       </div>
     </Layout>
   );

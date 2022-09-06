@@ -15,7 +15,7 @@ import {
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addProject, updateProject } from '../../features/project/projectSlice';
 import Datepicker from '../../partials/actions/Datepicker';
 import ErrorMessage from '../../utils/ErrorMessage';
@@ -29,6 +29,8 @@ const AddProject = ({ children, project }) => {
   const [loading, setLoading] = useState(false);
   const initialRef = React.useRef();
   const finalRef = React.useRef();
+
+  const { _id } = useSelector(state=> state.user.auth);
 
   const {
     register,
@@ -62,7 +64,7 @@ const AddProject = ({ children, project }) => {
       await dispatch(updateProject({ id: project._id, formData }));
     } else {
       console.log('er');
-      await dispatch(addProject(formData));
+      await dispatch(addProject({...formData, updatedBy: _id}));
     }
 
     setLoading(false);

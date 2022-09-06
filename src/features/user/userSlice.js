@@ -21,7 +21,7 @@ export const login = createAsyncThunk('login', async (formData, thunkAPI) => {
 
 export const getMe = createAsyncThunk('getMe', async (_, thunkAPI) => {
   try {
-    const { data } = await axios('user');
+    const { data } = await axios('/user/me');
     return data;
   } catch (error) {
     return thunkAPI.rejectWithValue({ error: error.response.data.error });
@@ -52,7 +52,7 @@ export const userSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(login.fulfilled, (state, { payload }) => {
       state.isLoading = false;
-      state.auth = payload;
+      state.auth = payload.user;
     });
     builder.addCase(getMe.fulfilled, (state, { payload }) => {
       state.isLoading = false;

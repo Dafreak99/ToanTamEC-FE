@@ -26,6 +26,7 @@ function Projects() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { projects } = useSelector((state) => state.project);
+  const { role } = useSelector((state) => state.user.auth);
 
   const fetchData = async () => {
     await dispatch(getProjects());
@@ -52,7 +53,8 @@ function Projects() {
             </InputGroup>
           </div>
 
-          <AddProject>
+          { role !== 3 ? (
+            <AddProject>
             <Button
               className='ml-auto'
               leftIcon={<IoAdd color='#fff' />}
@@ -62,13 +64,14 @@ function Projects() {
               Tạo dự án
             </Button>
           </AddProject>
+          ) : (<></>)}
         </div>
 
         {projects.length === 0 ? (
           <Spinner />
         ) : (
           <>
-            <TableContainer>
+            <TableContainer height='65vh'>
               <Table size='sm' variant='striped'>
                 <Thead>
                   <Tr textTransform='lowercase'>
@@ -79,7 +82,7 @@ function Projects() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {projects.map(({ _id, code, name, updatedAt }) => (
+                  {projects.map(({ _id, code, name, updatedAt, updatedBy }) => (
                     <Tr
                       onClick={() => navigate(`/du-an/${_id}`)}
                       className='cursor-pointer'
@@ -87,7 +90,7 @@ function Projects() {
                       <Td>{code}</Td>
                       <Td>{name}</Td>
                       <Td>{format(new Date(updatedAt), 'dd/MM/yyyy')}</Td>
-                      <Td>hoangphuc</Td>
+                      <Td>{updatedBy?.username}</Td>
                     </Tr>
                   ))}
                 </Tbody>
