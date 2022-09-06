@@ -389,7 +389,7 @@ const MutateDiary = ({ children, editLog }) => {
                 required: true,
               }}
               render={({ field }) => (
-                <Select {...field} disabled={role === 3}>
+                <Select {...field} disabled>
                   <option value={null} disabled selected>
                     Chọn nhân viên
                   </option>

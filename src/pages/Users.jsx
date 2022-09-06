@@ -24,10 +24,7 @@ import { getUsers } from '../features/user/userSlice';
 
 const Users = () => {
   const navigate = useNavigate();
-  const {
-    auth: { role },
-    systemUsers: users,
-  } = useSelector((state) => state.user);
+  const { systemUsers: users } = useSelector((state) => state.user);
 
   const dispatch = useDispatch();
 
