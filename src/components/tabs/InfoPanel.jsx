@@ -6,9 +6,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogOverlay,
+  Box,
   Button,
   Flex,
-  Heading,
   Menu,
   MenuButton,
   MenuItem,
@@ -21,21 +21,27 @@ import {
   Thead,
   Tr,
   useDisclosure,
-  useToast,
 } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import { format } from 'date-fns';
+import React, { useState } from 'react';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { CgCloseO } from 'react-icons/cg';
 import { FaTrash } from 'react-icons/fa';
 import { IoAdd } from 'react-icons/io5';
 import { MdModeEdit } from 'react-icons/md';
+import { useQueryClient } from 'react-query';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  deleteMember,
+  deleteProject,
+} from '../../features/project/projectSlice';
 import solution from '../../images/solution.svg';
+import { showToast } from '../../utils/toast';
 import AddProject from '../modals/AddProject';
 import EmployeeModal from '../modals/Employee';
-import Spinner from '../Spinner';
 
-function InfoPanel() {
-  const toast = useToast();
+function InfoPanel({ detail }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef();
   const {
@@ -44,29 +50,41 @@ function InfoPanel() {
     onClose: onClose2,
   } = useDisclosure();
   const cancelRef2 = React.useRef();
+  const [deleteId, setDeleteId] = useState(null);
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { role } = useSelector((state) => state.user.auth);
 
-  const [employees, setEmployees] = useState(null);
+  const {
+    location,
+    comment,
+    startedAt,
+    name,
+    code,
+    members,
+    _id: projectId,
+  } = detail;
 
-  const getData = async () => {
-    setTimeout(() => {
-      setEmployees([]);
-    });
+  const delMember = async () => {
+    await dispatch(deleteMember({ projectId: id, memberId: deleteId }));
+
+    showToast('success', 'Đã xoá thành viên');
+    onClose2();
   };
 
-  useEffect(() => {
-    getData();
-  }, []);
+  const delProject = async () => {
+    await dispatch(deleteProject(projectId));
+    queryClient.invalidateQueries(['projects']);
 
-  const onSubmit = (data) => {
-    setEmployees([...employees, data]);
+    showToast('success', 'Đã xóa dự án');
+    onClose();
+    navigate('/du-an');
   };
 
   const renderEmployeesTable = () => {
-    if (!employees) {
-      return <Spinner />;
-    }
-
-    if (employees.length === 0) {
+    if (members.length === 0) {
       return (
         <Flex
           justifyItems='center'
@@ -76,17 +94,21 @@ function InfoPanel() {
         >
           <img src={solution} alt='solution' className='h-56 mb-10' />
           <p>Chưa có thành viên</p>
-          <EmployeeModal onSubmit={onSubmit}>
-            <Button
-              className='mt-3'
-              leftIcon={<IoAdd color='#fff' />}
-              background='primary'
-              color='white'
-              variant='solid'
-              size='md'
-            >
-              Thêm thành viên
-            </Button>
+          <EmployeeModal>
+            {role !== 3 ? (
+              <Button
+                className='mt-3'
+                leftIcon={<IoAdd color='#fff' />}
+                background='primary'
+                color='white'
+                variant='solid'
+                size='md'
+              >
+                Thêm thành viên
+              </Button>
+            ) : (
+              <></>
+            )}
           </EmployeeModal>
         </Flex>
       );
@@ -95,16 +117,23 @@ function InfoPanel() {
     return (
       <>
         <EmployeeModal>
-          <Button
-            className='mt-3'
-            leftIcon={<IoAdd color='#fff' />}
-            background='primary'
-            color='white'
-            variant='solid'
-            size='md'
-          >
-            Thêm thành viên
-          </Button>
+          {
+            // TODO: ? Co nen cho phep thanh vien du an chinh sua ds thanh vien
+            role !== 3 ? (
+              <Button
+                className='mt-3'
+                leftIcon={<IoAdd color='#fff' />}
+                background='primary'
+                color='white'
+                variant='solid'
+                size='md'
+              >
+                Thêm thành viên
+              </Button>
+            ) : (
+              <></>
+            )
+          }
         </EmployeeModal>
 
         <TableContainer marginTop={6}>
@@ -118,35 +147,58 @@ function InfoPanel() {
               </Tr>
             </Thead>
             <Tbody>
-              {Array.from({ length: 8 }, (_, i) => (
-                <Tr className='cursor-pointer' key={i}>
-                  <Td>Trần Văn A</Td>
-                  <Td>Chỉ huy trưởng công trình</Td>
-                  <Td>0987654321</Td>
-                  <Td>
-                    <Menu>
-                      <MenuButton>
-                        <BsThreeDotsVertical />
-                      </MenuButton>
-                      <MenuList>
-                        <AddProject>
-                          <MenuItem icon={<MdModeEdit />}>
-                            Sửa thông tin thành viên
+              {members.map(
+                ({
+                  user: { fullName, username, phoneNumber, email, _id: userId },
+                  role,
+                  _id,
+                }) => (
+                  <Tr className='cursor-pointer' key={_id}>
+                    <Td>{fullName}</Td>
+                    <Td>{role}</Td>
+                    <Td>
+                      {phoneNumber === ''
+                        ? 'Thành viên chưa điền sđt'
+                        : phoneNumber}{' '}
+                      <br />
+                      {email === '' ? 'Thành viên chưa điền email' : email}
+                    </Td>
+                    <Td>
+                      <Menu>
+                        <MenuButton>
+                          <BsThreeDotsVertical />
+                        </MenuButton>
+                        <MenuList>
+                          <EmployeeModal
+                            edit
+                            {...{
+                              _id,
+                              userId,
+                              role,
+                            }}
+                          >
+                            <MenuItem icon={<MdModeEdit />}>
+                              Sửa thông tin thành viên
+                            </MenuItem>
+                          </EmployeeModal>
+                          <MenuItem
+                            icon={<FaTrash />}
+                            color='red.500'
+                            onClick={() => {
+                              onOpen2();
+                              console.log(_id);
+                              setDeleteId(_id);
+                            }}
+                          >
+                            Xóa thông tin thành viên
                           </MenuItem>
-                        </AddProject>
-                        <MenuItem
-                          icon={<FaTrash />}
-                          color='red.500'
-                          onClick={onOpen2}
-                        >
-                          Xóa thông tin thành viên
-                        </MenuItem>
-                        <DeleteEmployeeConfirmation />
-                      </MenuList>
-                    </Menu>
-                  </Td>
-                </Tr>
-              ))}
+                          <DeleteEmployeeConfirmation />
+                        </MenuList>
+                      </Menu>
+                    </Td>
+                  </Tr>
+                ),
+              )}
             </Tbody>
           </Table>
         </TableContainer>
@@ -180,19 +232,7 @@ function InfoPanel() {
               <Button ref={cancelRef} onClick={onClose}>
                 Hủy
               </Button>
-              <Button
-                colorScheme='red'
-                onClick={() => {
-                  toast({
-                    description: 'Đã xóa dự án',
-                    status: 'success',
-                    isClosable: true,
-                    position: 'top-right',
-                  });
-                  onClose();
-                }}
-                ml={3}
-              >
+              <Button colorScheme='red' onClick={delProject} ml={3}>
                 Xóa
               </Button>
             </AlertDialogFooter>
@@ -212,7 +252,7 @@ function InfoPanel() {
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize='lg' fontWeight='bold'>
-              Xóa dự án
+              Xóa thành viên
             </AlertDialogHeader>
 
             <AlertDialogBody textAlign='center'>
@@ -221,26 +261,14 @@ function InfoPanel() {
                 fontSize='3rem'
                 color='#DE3B33'
               />
-              Bạn thật sự muốn xóa dự án này?
+              Bạn thật sự muốn xóa thành viên này?
             </AlertDialogBody>
 
             <AlertDialogFooter>
               <Button ref={cancelRef2} onClick={onClose2}>
                 Hủy
               </Button>
-              <Button
-                colorScheme='red'
-                onClick={() => {
-                  toast({
-                    description: 'Đã xóa thành viên',
-                    status: 'success',
-                    isClosable: true,
-                    position: 'top-right',
-                  });
-                  onClose2();
-                }}
-                ml={3}
-              >
+              <Button colorScheme='red' onClick={delMember} ml={3}>
                 Xóa
               </Button>
             </AlertDialogFooter>
@@ -252,20 +280,45 @@ function InfoPanel() {
 
   return (
     <>
-      <div className='flex justify-between items-center'>
-        <Heading fontSize='xl' marginBottom={3}>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit.{' '}
-        </Heading>
+      <div className='flex justify-between items-start'>
+        <Box>
+          <p className='mb-3'>
+            <strong>Mã dự án: </strong>
+            {code}
+          </p>
+          <p className='mb-3'>
+            <strong>Tên dự án: </strong>
+            {name}
+          </p>
+
+          <p className='mb-3'>
+            <strong>Địa điểm: </strong> {location}
+          </p>
+          <p className='mb-3'>
+            <strong>Thời gian khởi công: </strong>
+            {format(new Date(startedAt), 'dd-MM-yyyy')}
+          </p>
+          <p className='mb-3'>
+            <strong>Căn chứ nghiệm thu: </strong>{' '}
+            {comment === '' ? 'Chưa có dữ liệu' : comment}
+          </p>
+        </Box>
 
         <Menu>
           <MenuButton>
             <BsThreeDotsVertical />
           </MenuButton>
           <MenuList>
-            <AddProject>
+            <AddProject project={detail}>
               <MenuItem icon={<MdModeEdit />}>Sửa thông tin dự án</MenuItem>
             </AddProject>
-            <MenuItem icon={<FaTrash />} color='red.500' onClick={onOpen}>
+            <MenuItem
+              icon={<FaTrash />}
+              color='red.500'
+              onClick={() => {
+                onOpen();
+              }}
+            >
               Xóa thông tin dự án
             </MenuItem>
             <DeleteProjectConfirmation />
@@ -273,16 +326,6 @@ function InfoPanel() {
         </Menu>
       </div>
 
-      <p className='mb-3'>
-        <strong>Địa điểm: </strong>Lorem, ipsum dolor sit amet consectetur
-        adipisicing elit
-      </p>
-      <p className='mb-3'>
-        <strong>Thời gian khởi công: </strong>Chưa có dữ liệu
-      </p>
-      <p className='mb-3'>
-        <strong>Căn chứ nghiệm thu: </strong>Chưa có dữ liệu
-      </p>
       <h3 className='h3 mt-12'>Thành viên tham gia</h3>
       <hr />
 

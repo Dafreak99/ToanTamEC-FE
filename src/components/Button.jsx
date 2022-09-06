@@ -4,11 +4,11 @@ import React from 'react';
 function Button(props) {
   return (
     <ChakraButton
-      {...props}
       background='primary'
       color='white'
       variant='solid'
       size='md'
+      {...props}
     >
       {props.children}
     </ChakraButton>

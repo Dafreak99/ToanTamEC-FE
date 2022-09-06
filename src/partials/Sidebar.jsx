@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Box, Icon, Tooltip } from '@chakra-ui/react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AiOutlineUnorderedList } from 'react-icons/ai';
 import { BiNotepad } from 'react-icons/bi';
+import { FaUsers } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
+import { NavLink, useLocation } from 'react-router-dom';
 
 function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const location = useLocation();
@@ -10,10 +13,9 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const trigger = useRef(null);
   const sidebar = useRef(null);
 
-  const storedSidebarExpanded = localStorage.getItem('sidebar-expanded');
-  const [sidebarExpanded, setSidebarExpanded] = useState(
-    storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true',
-  );
+  const { role } = useSelector((state) => state.user.auth);
+
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
   // close on click outside
   useEffect(() => {
@@ -58,7 +60,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
           sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         aria-hidden='true'
-      ></div>
+      />
 
       {/* Sidebar */}
       <div
@@ -92,13 +94,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
         <div className='space-y-8'>
           <div>
             <h3 className='text-xs uppercase text-slate-500 font-semibold pl-3'>
-              <span
-                className='hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6'
-                aria-hidden='true'
-              >
-                •••
-              </span>
-              <span className='lg:hidden lg:sidebar-expanded:block 2xl:block'>
+              <span className='md:hidden lg:sidebar-expanded:block 2xl:block'>
                 TOAN TAM EC
               </span>
             </h3>
@@ -116,10 +112,20 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
                   }`}
                 >
                   <div className='flex items-center'>
-                    <AiOutlineUnorderedList />
-                    <span className='text-sm font-medium ml-3 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200'>
-                      Dự án
-                    </span>
+                    {!sidebarExpanded ? (
+                      <Tooltip label='Dự án'>
+                        <Box as='span'>
+                          <Icon as={AiOutlineUnorderedList} />
+                        </Box>
+                      </Tooltip>
+                    ) : (
+                      <>
+                        <AiOutlineUnorderedList />
+                        <span className='text-sm font-medium ml-3 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200'>
+                          Dự án
+                        </span>
+                      </>
+                    )}
                   </div>
                 </NavLink>
               </li>
@@ -137,13 +143,56 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
                   }`}
                 >
                   <div className='flex items-center'>
-                    <BiNotepad />
-                    <span className='text-sm font-medium ml-3 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200'>
-                      Nhật ký
-                    </span>
+                    {!sidebarExpanded ? (
+                      <Tooltip label='Nhật ký'>
+                        <Box as='span'>
+                          <Icon as={BiNotepad} />
+                        </Box>
+                      </Tooltip>
+                    ) : (
+                      <>
+                        <BiNotepad />
+                        <span className='text-sm font-medium ml-3 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200'>
+                          Nhật ký
+                        </span>
+                      </>
+                    )}
                   </div>
                 </NavLink>
               </li>
+
+              {role !== 3 && (
+                <li
+                  className={`px-3 py-2 rounded-sm mb-0.5 last:mb-0 ${
+                    pathname.includes('nguoi-dung') && 'bg-slate-900'
+                  }`}
+                >
+                  <NavLink
+                    end
+                    to='/nguoi-dung'
+                    className={`block text-slate-200 hover:text-white truncate transition duration-150 ${
+                      pathname.includes('nguoi-dung') && 'hover:text-slate-200'
+                    }`}
+                  >
+                    <div className='flex items-center'>
+                      {!sidebarExpanded ? (
+                        <Tooltip label='Người dùng'>
+                          <Box as='span'>
+                            <Icon as={FaUsers} />
+                          </Box>
+                        </Tooltip>
+                      ) : (
+                        <>
+                          <FaUsers />
+                          <span className='text-sm font-medium ml-3 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200'>
+                            Người dùng
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </NavLink>
+                </li>
+              )}
             </ul>
           </div>
         </div>

@@ -11,17 +11,33 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import React from 'react';
+import { format } from 'date-fns';
+import React, { useEffect } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { IoAdd } from 'react-icons/io5';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import AddProject from '../components/modals/AddProject';
+import Spinner from '../components/Spinner';
+import { getProjects } from '../features/project/projectSlice';
+import { useProjects } from '../hooks/useProjects';
 
 function Projects() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  // const { projects } = useSelector((state) => state.project);
+  const { role } = useSelector((state) => state.user.auth);
 
-  const TOTAL = 16;
+  const { data: projects, isLoading } = useProjects();
+
+  const fetchData = async () => {
+    await dispatch(getProjects());
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <Layout>
@@ -40,47 +56,56 @@ function Projects() {
             </InputGroup>
           </div>
 
-          <AddProject>
-            <Button
-              className='ml-auto'
-              leftIcon={<IoAdd color='#fff' />}
-              background='primary'
-              color='white'
-            >
-              Tạo dự án
-            </Button>
-          </AddProject>
+          {role !== 3 ? (
+            <AddProject>
+              <Button
+                className='ml-auto'
+                leftIcon={<IoAdd color='#fff' />}
+                background='primary'
+                color='white'
+              >
+                Tạo dự án
+              </Button>
+            </AddProject>
+          ) : (
+            <></>
+          )}
         </div>
 
-        <TableContainer>
-          <Table size='sm' variant='striped'>
-            <Thead>
-              <Tr textTransform='lowercase'>
-                <Th className='border-none'>Mã dự án</Th>
-                <Th className='border-none'>Tên dự án</Th>
-                <Th className='border-none'>Chỉnh sửa lần cuối</Th>
-                <Th className='border-none'>Người chỉnh sửa</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {Array.from({ length: TOTAL }, (_, i) => (
-                <Tr
-                  onClick={() => navigate(`/du-an/${i}`)}
-                  className='cursor-pointer'
-                >
-                  <Td>001</Td>
-                  <Td>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  </Td>
-                  <Td>12/12/2022</Td>
-                  <Td>hoangphuc</Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
-
-        <small className='mt-4 inline-block'>Tổng cộng có {TOTAL} dự án</small>
+        {isLoading ? (
+          <Spinner />
+        ) : (
+          <>
+            <TableContainer height='65vh'>
+              <Table size='sm' variant='striped'>
+                <Thead>
+                  <Tr textTransform='lowercase'>
+                    <Th className='border-none'>Mã dự án</Th>
+                    <Th className='border-none'>Tên dự án</Th>
+                    <Th className='border-none'>Chỉnh sửa lần cuối</Th>
+                    <Th className='border-none'>Người chỉnh sửa</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {projects.map(({ _id, code, name, updatedAt, updatedBy }) => (
+                    <Tr
+                      onClick={() => navigate(`/du-an/${_id}`)}
+                      className='cursor-pointer'
+                    >
+                      <Td>{code}</Td>
+                      <Td>{name}</Td>
+                      <Td>{format(new Date(updatedAt), 'dd/MM/yyyy')}</Td>
+                      <Td>{updatedBy?.username}</Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
+            <small className='mt-4 inline-block'>
+              Tổng cộng có {projects.length} dự án
+            </small>
+          </>
+        )}
       </div>
     </Layout>
   );

@@ -1,32 +1,34 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Spinner from '../components/Spinner';
-import InfoPanel from '../components/tabs/InfoPanel';
+import Diary from '../components/tabs/Diary';
+import ProfileTab from '../components/tabs/Profile';
 import ReportsPanel from '../components/tabs/ReportsPanel';
-import TotalsPanel from '../components/tabs/TotalsPanel';
-import { getProject } from '../features/project/projectSlice';
-import { getUsers } from '../features/user/userSlice';
+import { getUser } from '../features/user/userSlice';
 
-function ProjectDetail() {
-  const tabs = ['Thông tin', 'Tổng kê', 'Biên bản'];
+function UserDetail() {
+  const tabs = ['Thông tin', 'Nhật ký'];
   const dispatch = useDispatch();
-  const { detail } = useSelector((state) => state.project);
+  const navigate = useNavigate();
+  const { detail } = useSelector((state) => state.user);
   const { role } = useSelector((state) => state.user.auth);
 
   const { id } = useParams();
 
   const getData = async () => {
-    await dispatch(getProject(id));
-    if (role !== 3)
-      await dispatch(getUsers());
+    await dispatch(getUser(id));
   };
 
   useEffect(() => {
     getData();
   }, []);
+
+  if (role === 3) {
+    navigate('/');
+  }
 
   return (
     <Layout>
@@ -48,14 +50,10 @@ function ProjectDetail() {
 
           <TabPanels>
             {/* Thông tin */}
-            <TabPanel>
-              {detail ? <InfoPanel {...{ detail }} /> : <Spinner />}
-            </TabPanel>
+            <TabPanel>{detail ? <ProfileTab /> : <Spinner />}</TabPanel>
 
-            {/* Tổng kê */}
-            <TabPanel>
-              <TotalsPanel />
-            </TabPanel>
+            {/* Nhật ký */}
+            <TabPanel>{detail?._id && <Diary userId={detail._id} />}</TabPanel>
 
             {/* Biên bản */}
             <TabPanel>
@@ -68,4 +66,4 @@ function ProjectDetail() {
   );
 }
 
-export default ProjectDetail;
+export default UserDetail;
