@@ -20,6 +20,7 @@ import { getMonth } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import { useUpdateDraftDoc } from '../../hooks/useWorkDiaryDetail';
 import ErrorMessage from '../../utils/ErrorMessage';
 import { showToast } from '../../utils/toast';
@@ -29,9 +30,11 @@ import { showToast } from '../../utils/toast';
  * @children Pass in the button
  */
 
-const UploadOfficialProof = ({ isOpen, onOpen, onClose, selectedInfo }) => {
+const UploadOfficialProof = ({ isOpen, onClose, selectedInfo }) => {
   const initialRef = React.useRef();
   const finalRef = React.useRef();
+  const params = useParams();
+  const userId = params.id || useSelector((state) => state.user.auth._id);
 
   const [proof, setProof] = useState(null);
   const [error, setError] = useState(false);
@@ -61,14 +64,16 @@ const UploadOfficialProof = ({ isOpen, onOpen, onClose, selectedInfo }) => {
     queryClient.invalidateQueries([
       'actual-working-dates',
       getMonth(new Date(endDate)) + 1,
+      userId,
     ]);
 
     queryClient.invalidateQueries([
       'actual-working-dates',
       getMonth(new Date(data.workingDate)) + 1,
+      userId,
     ]);
 
-    queryClient.setQueryData(['work-diaries', endDate], (oldData) => {
+    queryClient.setQueryData(['work-diaries', endDate, userId], (oldData) => {
       const index = oldData.data.findIndex(
         (workDiary) => workDiary._id === data._id,
       );

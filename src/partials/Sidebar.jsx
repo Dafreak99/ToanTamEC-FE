@@ -2,6 +2,8 @@ import { Box, Icon, Tooltip } from '@chakra-ui/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { AiOutlineUnorderedList } from 'react-icons/ai';
 import { BiNotepad } from 'react-icons/bi';
+import { FaUsers } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
 import { NavLink, useLocation } from 'react-router-dom';
 
 function Sidebar({ sidebarOpen, setSidebarOpen }) {
@@ -10,6 +12,8 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
 
   const trigger = useRef(null);
   const sidebar = useRef(null);
+
+  const { role } = useSelector((state) => state.user.auth);
 
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
@@ -156,6 +160,39 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
                   </div>
                 </NavLink>
               </li>
+
+              {role !== 3 && (
+                <li
+                  className={`px-3 py-2 rounded-sm mb-0.5 last:mb-0 ${
+                    pathname.includes('nguoi-dung') && 'bg-slate-900'
+                  }`}
+                >
+                  <NavLink
+                    end
+                    to='/nguoi-dung'
+                    className={`block text-slate-200 hover:text-white truncate transition duration-150 ${
+                      pathname.includes('nguoi-dung') && 'hover:text-slate-200'
+                    }`}
+                  >
+                    <div className='flex items-center'>
+                      {!sidebarExpanded ? (
+                        <Tooltip label='Người dùng'>
+                          <Box as='span'>
+                            <Icon as={FaUsers} />
+                          </Box>
+                        </Tooltip>
+                      ) : (
+                        <>
+                          <FaUsers />
+                          <span className='text-sm font-medium ml-3 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200'>
+                            Người dùng
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </NavLink>
+                </li>
+              )}
             </ul>
           </div>
         </div>
