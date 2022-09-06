@@ -26,7 +26,6 @@ import { useProjects } from '../hooks/useProjects';
 function Projects() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  // const { projects } = useSelector((state) => state.project);
   const { role } = useSelector((state) => state.user.auth);
 
   const { data: projects, isLoading } = useProjects();
