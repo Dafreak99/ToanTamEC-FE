@@ -12,31 +12,21 @@ import {
   Tr,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { IoAdd } from 'react-icons/io5';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import AddProject from '../components/modals/AddProject';
 import Spinner from '../components/Spinner';
-import { getProjects } from '../features/project/projectSlice';
 import { useProjects } from '../hooks/useProjects';
 
 function Projects() {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { role } = useSelector((state) => state.user.auth);
 
   const { data: projects, isLoading } = useProjects();
-
-  const fetchData = async () => {
-    await dispatch(getProjects());
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   return (
     <Layout>
