@@ -29,14 +29,23 @@ export const getMe = createAsyncThunk('getMe', async (_, thunkAPI) => {
   }
 });
 
-export const getUsers = createAsyncThunk('getUsers', async (_, thunkAPI) => {
-  try {
-    const { data } = await axios('user?page=1&pagesize=9999');
-    return data;
-  } catch (error) {
-    return thunkAPI.rejectWithValue({ error: error.response.data.error });
-  }
-});
+export const getUsers = createAsyncThunk(
+  'getUsers',
+  async (keyword, thunkAPI) => {
+    try {
+      let url = `user?page=1&pagesize=9999`;
+
+      if (keyword) {
+        url += `&keyword=${keyword}`;
+      }
+
+      const { data } = await axios(url);
+      return data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue({ error: error.response.data.error });
+    }
+  },
+);
 
 export const getUser = createAsyncThunk('getUser', async (id, thunkAPI) => {
   try {
