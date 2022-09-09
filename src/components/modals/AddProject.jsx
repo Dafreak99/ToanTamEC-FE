@@ -15,8 +15,10 @@ import {
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useQueryClient } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
-import { addProject, updateProject } from '../../features/project/projectSlice';
+import { updateProject } from '../../features/project/projectSlice';
+import { useAddProject } from '../../hooks/useProjects';
 import Datepicker from '../../partials/actions/Datepicker';
 import ErrorMessage from '../../utils/ErrorMessage';
 /**
@@ -30,7 +32,7 @@ const AddProject = ({ children, project }) => {
   const initialRef = React.useRef();
   const finalRef = React.useRef();
 
-  const { _id } = useSelector(state=> state.user.auth);
+  const { _id } = useSelector((state) => state.user.auth);
 
   const {
     register,
@@ -41,6 +43,8 @@ const AddProject = ({ children, project }) => {
   } = useForm();
 
   const dispatch = useDispatch();
+
+  const { mutate: addProject } = useAddProject();
 
   useEffect(() => {
     if (project) {
@@ -56,15 +60,18 @@ const AddProject = ({ children, project }) => {
     }
   }, [project]);
 
+  const queryClient = useQueryClient();
+
   const onSubmit = async (formData) => {
-    console.log(formData);
     setLoading(true);
 
     if (project) {
       await dispatch(updateProject({ id: project._id, formData }));
+
+      queryClient.invalidateQueries(['projects']);
     } else {
-      console.log('er');
-      await dispatch(addProject({...formData, updatedBy: _id}));
+      addProject({ ...formData, updatedBy: _id });
+      reset();
     }
 
     setLoading(false);
@@ -153,6 +160,7 @@ const AddProject = ({ children, project }) => {
                   <Datepicker
                     defaultDate={project?.startedAt || new Date()}
                     onChange={field.onChange}
+                    limitDate={false}
                   />
                 )}
               />

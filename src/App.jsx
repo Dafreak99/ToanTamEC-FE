@@ -11,6 +11,8 @@ import Profile from './pages/Profile';
 import ProjectDetail from './pages/ProjectDetail';
 // Import pages
 import Projects from './pages/Projects';
+import UserDetail from './pages/UserDetail';
+import Users from './pages/Users';
 
 function App() {
   const location = useLocation();
@@ -40,6 +42,8 @@ function App() {
         <Route exact path='/du-an' element={<Projects />} />
         <Route path='/du-an/:id' element={<ProjectDetail />} />
         <Route exact path='/nhat-ky' element={<Diary />} />
+        <Route exact path='/nguoi-dung' element={<Users />} />
+        <Route exact path='/nguoi-dung/:id' element={<UserDetail />} />
         <Route exact path='/thong-tin' element={<Profile />} />
         <Route exact path='*' />
       </Route>

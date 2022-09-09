@@ -122,7 +122,6 @@ export const projectSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(addProject.fulfilled, (state, { payload }) => {
-      console.log(payload.project);
       state.projects.push(payload.project);
       showToast('success', 'Thêm dự án thành công!');
     });
@@ -132,7 +131,6 @@ export const projectSlice = createSlice({
     });
 
     builder.addCase(deleteProject.fulfilled, (state, { payload }) => {
-      console.log(payload.project);
       state.projects.filter((project) => project._id !== payload.project._id);
       state.detail = null;
     });

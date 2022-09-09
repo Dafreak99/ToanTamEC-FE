@@ -21,12 +21,14 @@ import Layout from '../components/Layout';
 import AddProject from '../components/modals/AddProject';
 import Spinner from '../components/Spinner';
 import { getProjects } from '../features/project/projectSlice';
+import { useProjects } from '../hooks/useProjects';
 
 function Projects() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { projects } = useSelector((state) => state.project);
   const { role } = useSelector((state) => state.user.auth);
+
+  const { data: projects, isLoading } = useProjects();
 
   const fetchData = async () => {
     await dispatch(getProjects());
@@ -53,21 +55,23 @@ function Projects() {
             </InputGroup>
           </div>
 
-          { role !== 3 ? (
+          {role !== 3 ? (
             <AddProject>
-            <Button
-              className='ml-auto'
-              leftIcon={<IoAdd color='#fff' />}
-              background='primary'
-              color='white'
-            >
-              Tạo dự án
-            </Button>
-          </AddProject>
-          ) : (<></>)}
+              <Button
+                className='ml-auto'
+                leftIcon={<IoAdd color='#fff' />}
+                background='primary'
+                color='white'
+              >
+                Tạo dự án
+              </Button>
+            </AddProject>
+          ) : (
+            <></>
+          )}
         </div>
 
-        {projects.length === 0 ? (
+        {isLoading ? (
           <Spinner />
         ) : (
           <>

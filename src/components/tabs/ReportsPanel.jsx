@@ -11,11 +11,11 @@ import {
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import report from '../../images/BM.png';
-import friends from '../../images/friends.svg';
+import construct from '../../images/under-construction.svg';
 import ReportReview from '../modals/ReportReview';
 
 function ReportsPanel() {
-  const [docs] = useState([1]);
+  const [docs] = useState([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
@@ -69,8 +69,8 @@ function ReportsPanel() {
           alignItems='center'
           flexDir='column'
         >
-          <img src={friends} alt='friend' className='h-56 mb-4' />
-          <p>Chưa có dữ liệu</p>
+          <img src={construct} alt='friend' className='h-96 mb-4' />
+          <Text fontSize='xl'>Đang xây dựng...</Text>
         </Flex>
       )}
     </div>
