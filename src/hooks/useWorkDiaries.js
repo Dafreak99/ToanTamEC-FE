@@ -115,6 +115,16 @@ export const useAddWorkDiary = (onSuccess, onError) => {
   );
 };
 
+export const useUpdateWorkDiary = (onSuccess, onError) => {
+  return useMutation(
+    'update-work-dairy',
+    ({ id, data }) => {
+      return axios.put(`/work-diary/${id}`, data);
+    },
+    { onSuccess, onError },
+  );
+};
+
 export const useCountActualWorkingDate = (currentDate, userId) => {
   const month = getMonth(new Date(currentDate)) + 1;
 

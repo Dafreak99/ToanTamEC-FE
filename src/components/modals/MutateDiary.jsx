@@ -39,7 +39,10 @@ import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { useProjects } from '../../hooks/useProjects';
 import { useWorkContents } from '../../hooks/useWorkContents';
-import { useAddWorkDiary } from '../../hooks/useWorkDiaries';
+import {
+  useAddWorkDiary,
+  useUpdateWorkDiary,
+} from '../../hooks/useWorkDiaries';
 import Datepicker from '../../partials/actions/Datepicker';
 import { axios } from '../../utils/axios';
 import ErrorMessage from '../../utils/ErrorMessage';
@@ -123,6 +126,7 @@ const MutateDiary = ({ children, editLog }) => {
 
   const { data: projects } = useProjects();
   const { mutate: addWorkDiary } = useAddWorkDiary(onSuccess, onError);
+  const { mutate: updateWorkDiary } = useUpdateWorkDiary(onSuccess, onError);
 
   useEffect(() => {
     if (editLog) {
@@ -261,16 +265,23 @@ const MutateDiary = ({ children, editLog }) => {
               ...workContent,
               docs: await Promise.all(
                 workContent.docs.map(async (doc) => {
-                  const formData = new FormData();
-                  formData.append('proof', doc.proof);
-                  formData.append('projectId', step1Content.project);
-                  const {
-                    data: { Location },
-                  } = await axios.post('/upload', formData);
+                  let proof = doc.proof;
+
+                  // file
+                  if (typeof proof === 'object') {
+                    const formData = new FormData();
+                    formData.append('proof', doc.proof);
+                    formData.append('projectId', step1Content.project);
+                    const {
+                      data: { Location },
+                    } = await axios.post('/upload', formData);
+
+                    proof = Location;
+                  }
 
                   return {
                     ...doc,
-                    proof: Location,
+                    proof,
                   };
                 }),
               ),
@@ -291,7 +302,7 @@ const MutateDiary = ({ children, editLog }) => {
         };
 
         if (editLog) {
-          // TODO: Call update here when API is ready
+          updateWorkDiary({ id: editLog._id, data: workDiaryLog });
         } else {
           addWorkDiary(workDiaryLog);
         }
