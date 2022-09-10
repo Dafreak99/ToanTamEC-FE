@@ -122,14 +122,14 @@ export const userSlice = createSlice({
     });
     builder.addCase(getUsers.rejected, (_, { payload }) => {
       console.log(payload);
-      showToast('error', 'Lỗi khi tải thành viên!');
+      // showToast('error', 'Lỗi khi tải thành viên!');
     });
     builder.addCase(getUser.fulfilled, (state, { payload }) => {
       state.detail = payload.user;
     });
     builder.addCase(getUser.rejected, (_, { payload }) => {
       console.log(payload);
-      showToast('error', 'Lỗi khi tải thành viên!');
+      // showToast('error', 'Lỗi khi tải thành viên!');
     });
     builder.addCase(createUser.rejected, (_, { payload }) => {
       showToast(
