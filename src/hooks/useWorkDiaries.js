@@ -35,31 +35,33 @@ export const useWorkDiaries = (endDate, userId) => {
     select: ({ data }) => {
       const accreditedDates = [];
       const iteratedDates = {};
+
       const logs = data.map((workDiary, i) => {
         const wDate = workDiary.workingDate;
         const [dateInW, dayMonth] = format(new Date(wDate), 'EEEEE-d/M', {
           locale: vi,
         }).split('-');
 
-        let missingDraft = false;
+        let hasOfficial = false;
         let excelDate = false;
         let status;
 
         workDiary.workDiaryDetail.workContents.forEach((workContent) => {
-          if (missingDraft) return;
+          if (hasOfficial) return;
+
           workContent.docs.forEach((doc) => {
-            if (doc.draft) {
-              missingDraft = true;
-              return;
+            if (!doc.draft) {
+              hasOfficial = true;
             }
           });
         });
 
         const limit = sub(new Date(), { days: 10 });
         excelDate = isBefore(new Date(wDate), limit);
-        if (missingDraft && excelDate) {
+
+        if (!hasOfficial && excelDate) {
           status = 'red';
-        } else if (missingDraft) {
+        } else if (!hasOfficial) {
           status = 'yellow';
         } else {
           status = 'green';
@@ -88,6 +90,7 @@ export const useWorkDiaries = (endDate, userId) => {
             };
           }
         }
+
         return {
           ...workDiary,
           status,
@@ -138,16 +141,16 @@ export const useCountActualWorkingDate = (currentDate, userId) => {
 
         data.forEach((workDiary, i) => {
           const wDate = workDiary.workingDate;
-          let missingDraft = false;
+          let hasOfficial = false;
           let excelDate = false;
           let status;
 
           workDiary.workDiaryDetail.workContents.forEach((workContent) => {
-            if (missingDraft) return;
+            if (hasOfficial) return;
+
             workContent.docs.forEach((doc) => {
-              if (doc.draft) {
-                missingDraft = true;
-                return;
+              if (!doc.draft) {
+                hasOfficial = true;
               }
             });
           });
@@ -155,9 +158,9 @@ export const useCountActualWorkingDate = (currentDate, userId) => {
           const limit = sub(new Date(), { days: 10 });
           excelDate = isBefore(new Date(wDate), limit);
 
-          if (missingDraft && excelDate) {
+          if (!hasOfficial && excelDate) {
             status = 'red';
-          } else if (missingDraft) {
+          } else if (!hasOfficial) {
             status = 'yellow';
           } else {
             status = 'green';
