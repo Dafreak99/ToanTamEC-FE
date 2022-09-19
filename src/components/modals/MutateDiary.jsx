@@ -495,7 +495,7 @@ const MutateDiary = ({ children, editLog }) => {
           </Box>
         )}
 
-        {workContents.length > 0 && WORK_CONTENT.length > 0 && (
+        {workContents.length > 0 && WORK_CONTENT?.length > 0 && (
           <Box maxH='400px' overflow='scroll' mb='2rem' px='0.5rem'>
             {workContents.map(({ name, docs }, index) => (
               <Box
@@ -548,7 +548,6 @@ const MutateDiary = ({ children, editLog }) => {
                           <FormLabel htmlFor='name' className=''>
                             Loại biểu mẫu *
                           </FormLabel>
-
                           <Select
                             maxW='md'
                             bg='#fff'
@@ -560,6 +559,7 @@ const MutateDiary = ({ children, editLog }) => {
                               <option
                                 value={`${formOption.name}-${formOption._id}`}
                                 className={formOption.name}
+                                selected={formOption.name === doc.name}
                               >
                                 {formOption.name}
                               </option>
