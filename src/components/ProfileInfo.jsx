@@ -56,7 +56,6 @@ const ProfileInfo = ({ data }) => {
             <div className='col col-span-3'>
               <Input
                 id='phoneNumber'
-                {...register('phoneNumber', { required: true })}
                 placeholder='Số điện thoại'
               />
               {errors?.phoneNumber && <ErrorMessage />}
@@ -71,7 +70,6 @@ const ProfileInfo = ({ data }) => {
                 id='email'
                 type='text'
                 placeholder='Email'
-                {...register('email', { required: true })}
               />
               {errors?.email && <ErrorMessage />}
             </div>
