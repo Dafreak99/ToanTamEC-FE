@@ -296,7 +296,7 @@ const MutateDiary = ({ children, editLog }) => {
           user: userId,
           shift:
             typeof step1Content.shift === 'object' &&
-            step1Content.shift.length === 2
+              step1Content.shift.length === 2
               ? 2
               : +step1Content.shift,
         };
@@ -471,8 +471,8 @@ const MutateDiary = ({ children, editLog }) => {
                   <option value={null} disabled selected>
                     Chọn công trình
                   </option>
-                  {projects?.map(({ _id, name }) => (
-                    <option value={_id}>{name}</option>
+                  {projects?.map(({ _id, code }) => (
+                    <option value={_id}>{code}</option>
                   ))}
                 </Select>
               )}
@@ -602,8 +602,8 @@ const MutateDiary = ({ children, editLog }) => {
                                   {typeof doc.proof === 'object'
                                     ? doc.proof?.name.slice(0, 20)
                                     : doc.proof.split('/')[
-                                        doc.proof.split('/').length - 1
-                                      ]}
+                                    doc.proof.split('/').length - 1
+                                    ]}
                                 </Text>
                               </Tooltip>
                             </Flex>
