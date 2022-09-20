@@ -12,25 +12,27 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { IoAdd } from 'react-icons/io5';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import AddAcount from '../components/modals/AddAccount';
-import Spinner from '../components/Spinner';
 import { getUsers } from '../features/user/userSlice';
+import { useDebounce } from '../hooks/useDebounce';
 
 const Users = () => {
   const navigate = useNavigate();
   const { systemUsers: users } = useSelector((state) => state.user);
-
+  const [keyword, setKeyword] = useState(false);
   const dispatch = useDispatch();
 
+  const debouncedKeyword = useDebounce(keyword, 500);
+
   useEffect(() => {
-    dispatch(getUsers());
-  }, []);
+    dispatch(getUsers(debouncedKeyword));
+  }, [debouncedKeyword]);
 
   return (
     <Layout>
@@ -45,7 +47,10 @@ const Users = () => {
                 children={<AiOutlineSearch color='gray.300' />}
                 fontSize='xl'
               />
-              <Input placeholder='Nhập từ khóa' />
+              <Input
+                placeholder='Nhập từ khóa'
+                onChange={(e) => setKeyword(e.target.value)}
+              />
             </InputGroup>
           </div>
 
@@ -61,61 +66,57 @@ const Users = () => {
           </AddAcount>
         </div>
 
-        {users.length === 0 ? (
-          <Spinner />
-        ) : (
-          <>
-            <TableContainer height='65vh'>
-              <Table size='sm' variant='striped'>
-                <Thead>
-                  <Tr textTransform='lowercase'>
-                    <Th className='border-none'>Họ tên</Th>
-                    <Th className='border-none'>Chức vụ</Th>
-                    <Th className='border-none'>Điện thoại</Th>
-                    <Th className='border-none'>Email</Th>
-                    <Th className='border-none'>Tên tài khoản</Th>
-                    <Th className='border-none'>Trạng thái</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {users.map(
-                    ({
-                      _id,
-                      username,
-                      fullName,
-                      phoneNumber,
-                      email,
-                      jobTitle,
-                      status,
-                    }) => (
-                      <Tr
-                        onClick={(e) => {
-                          if (e.target.id !== 'menu-button-userDiary') {
-                            navigate(`/nguoi-dung/${_id}`);
-                          }
-                        }}
-                        className='cursor-pointer'
-                      >
-                        <Td>{fullName}</Td>
-                        <Td>{jobTitle}</Td>
-                        <Td>{phoneNumber}</Td>
-                        <Td>{email}</Td>
-                        <Td>{username}</Td>
-                        <Td>
-                          <Badge
-                            colorScheme={status === 'active' ? 'green' : 'red'}
-                          >
-                            {status}
-                          </Badge>
-                        </Td>
-                      </Tr>
-                    ),
-                  )}
-                </Tbody>
-              </Table>
-            </TableContainer>
-          </>
-        )}
+        <>
+          <TableContainer height='65vh'>
+            <Table size='sm' variant='striped'>
+              <Thead>
+                <Tr textTransform='lowercase'>
+                  <Th className='border-none'>Họ tên</Th>
+                  <Th className='border-none'>Chức vụ</Th>
+                  <Th className='border-none'>Điện thoại</Th>
+                  <Th className='border-none'>Email</Th>
+                  <Th className='border-none'>Tên tài khoản</Th>
+                  <Th className='border-none'>Trạng thái</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {users.map(
+                  ({
+                    _id,
+                    username,
+                    fullName,
+                    phoneNumber,
+                    email,
+                    jobTitle,
+                    status,
+                  }) => (
+                    <Tr
+                      onClick={(e) => {
+                        if (e.target.id !== 'menu-button-userDiary') {
+                          navigate(`/nguoi-dung/${_id}`);
+                        }
+                      }}
+                      className='cursor-pointer'
+                    >
+                      <Td>{fullName}</Td>
+                      <Td>{jobTitle}</Td>
+                      <Td>{phoneNumber}</Td>
+                      <Td>{email}</Td>
+                      <Td>{username}</Td>
+                      <Td>
+                        <Badge
+                          colorScheme={status === 'active' ? 'green' : 'red'}
+                        >
+                          {status}
+                        </Badge>
+                      </Td>
+                    </Tr>
+                  ),
+                )}
+              </Tbody>
+            </Table>
+          </TableContainer>
+        </>
       </div>
     </Layout>
   );

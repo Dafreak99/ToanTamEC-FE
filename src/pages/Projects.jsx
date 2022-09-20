@@ -12,7 +12,7 @@ import {
   Tr,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
-import React from 'react';
+import React, { useState } from 'react';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { IoAdd } from 'react-icons/io5';
 import { useSelector } from 'react-redux';
@@ -20,13 +20,19 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import AddProject from '../components/modals/AddProject';
 import Spinner from '../components/Spinner';
+import { useDebounce } from '../hooks/useDebounce';
 import { useProjects } from '../hooks/useProjects';
 
 function Projects() {
   const navigate = useNavigate();
+  const [keyword, setKeyword] = useState(false);
+
   const { role } = useSelector((state) => state.user.auth);
 
-  const { data: projects, isLoading } = useProjects();
+  const debouncedKeyword = useDebounce(keyword, 500);
+
+  // react-query automatically triggered when keyword changed
+  const { data: projects, isLoading } = useProjects(debouncedKeyword);
 
   return (
     <Layout>
@@ -41,7 +47,10 @@ function Projects() {
                 children={<AiOutlineSearch color='gray.300' />}
                 fontSize='xl'
               />
-              <Input placeholder='Nhập từ khóa' />
+              <Input
+                placeholder='Nhập từ khóa'
+                onChange={(e) => setKeyword(e.target.value)}
+              />
             </InputGroup>
           </div>
 
