@@ -299,7 +299,7 @@ function InfoPanel({ detail }) {
             {format(new Date(startedAt), 'dd-MM-yyyy')}
           </p>
           <p className='mb-3'>
-            <strong>Căn chứ nghiệm thu: </strong>{' '}
+            <strong>Căn cứ nghiệm thu: </strong>{' '}
             {comment === '' ? 'Chưa có dữ liệu' : comment}
           </p>
         </Box>

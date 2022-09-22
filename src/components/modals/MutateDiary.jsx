@@ -296,7 +296,7 @@ const MutateDiary = ({ children, editLog }) => {
           user: userId,
           shift:
             typeof step1Content.shift === 'object' &&
-            step1Content.shift.length === 2
+              step1Content.shift.length === 2
               ? 2
               : +step1Content.shift,
         };
@@ -471,8 +471,8 @@ const MutateDiary = ({ children, editLog }) => {
                   <option value={null} disabled selected>
                     Chọn công trình
                   </option>
-                  {projects?.map(({ _id, name }) => (
-                    <option value={_id}>{name}</option>
+                  {projects?.map(({ _id, code }) => (
+                    <option value={_id}>{code}</option>
                   ))}
                 </Select>
               )}
@@ -495,7 +495,7 @@ const MutateDiary = ({ children, editLog }) => {
           </Box>
         )}
 
-        {workContents.length > 0 && WORK_CONTENT.length > 0 && (
+        {workContents.length > 0 && WORK_CONTENT?.length > 0 && (
           <Box maxH='400px' overflow='scroll' mb='2rem' px='0.5rem'>
             {workContents.map(({ name, docs }, index) => (
               <Box
@@ -548,7 +548,6 @@ const MutateDiary = ({ children, editLog }) => {
                           <FormLabel htmlFor='name' className=''>
                             Loại biểu mẫu *
                           </FormLabel>
-
                           <Select
                             maxW='md'
                             bg='#fff'
@@ -560,6 +559,7 @@ const MutateDiary = ({ children, editLog }) => {
                               <option
                                 value={`${formOption.name}-${formOption._id}`}
                                 className={formOption.name}
+                                selected={formOption.name === doc.name}
                               >
                                 {formOption.name}
                               </option>
@@ -602,8 +602,8 @@ const MutateDiary = ({ children, editLog }) => {
                                   {typeof doc.proof === 'object'
                                     ? doc.proof?.name.slice(0, 20)
                                     : doc.proof.split('/')[
-                                        doc.proof.split('/').length - 1
-                                      ]}
+                                    doc.proof.split('/').length - 1
+                                    ]}
                                 </Text>
                               </Tooltip>
                             </Flex>

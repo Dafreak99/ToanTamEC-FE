@@ -239,13 +239,11 @@ const Diary = ({ userId }) => {
                     <Td
                       className='sticky left-0 pl-0'
                       {...getClassNames(i)}
-                      display='flex'
-                      justifyContent='space-between'
                       minH='50px'
                     >
                       <Td
                         className='border-none'
-                        w='150px'
+                        minW='150px'
                         maxW='150px'
                         p='0'
                         pr='2'
@@ -254,7 +252,7 @@ const Diary = ({ userId }) => {
                       </Td>
                       <Td
                         className='border-none whitespace-pre-line text-left'
-                        w='350px'
+                        minW='350px'
                         maxW='350px'
                         p='0'
                         pr='2'
@@ -344,6 +342,14 @@ const Diary = ({ userId }) => {
                           </MutateDiary>
                         </Flex>
                       </Td>
+                      <Box
+                        position='absolute'
+                        right='0'
+                        top='0'
+                        height='100%'
+                        w='2px'
+                        bg='#fff'
+                      />
                     </Td>
 
                     {dates.map((date, ii) => (
@@ -364,14 +370,19 @@ const Diary = ({ userId }) => {
                 <Td
                   className='sticky left-0 pl-0'
                   {...getClassNames(2)}
-                  display='flex'
-                  justifyContent='center'
-                  alignItems='center'
                   minH='50px'
                 >
                   Ngày công thực tế trong tháng (
                   {format(new Date(startMonth), 'dd/MM')} -
                   {format(new Date(endMonth), 'dd/MM')}): {total}
+                  <Box
+                    position='absolute'
+                    right='0'
+                    top='0'
+                    height='100%'
+                    w='2px'
+                    bg='#fff'
+                  />
                 </Td>
 
                 {dates.map((date, i) => (

@@ -36,7 +36,6 @@ const Login = () => {
       const user = resultAction.payload;
       cookies.set('accessToken', user.token);
     } else {
-      console.log(resultAction);
       showToast('error', 'Lỗi', resultAction.payload.error);
     }
     setFormLoading(false);
