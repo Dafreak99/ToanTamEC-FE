@@ -67,8 +67,6 @@ function InfoPanel({ detail }) {
     _id: projectId,
   } = detail;
 
-  console.log('members', members);
-
   const delMember = async () => {
     await dispatch(deleteMember({ projectId: id, memberId: deleteId }));
 

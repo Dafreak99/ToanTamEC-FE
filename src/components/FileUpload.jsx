@@ -32,8 +32,6 @@ const FileUpload = ({ name, onChange, editProof }) => {
       }
     }
 
-    console.log(files, fls);
-
     const element = { ...e, uploadedFiles: fls };
     setFiles(fls);
 
