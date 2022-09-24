@@ -67,6 +67,8 @@ function InfoPanel({ detail }) {
     _id: projectId,
   } = detail;
 
+  console.log('members', members);
+
   const delMember = async () => {
     await dispatch(deleteMember({ projectId: id, memberId: deleteId }));
 
@@ -149,12 +151,12 @@ function InfoPanel({ detail }) {
             <Tbody>
               {members.map(
                 ({
-                  user: { fullName, username, phoneNumber, email, _id: userId },
+                  user: { username, phoneNumber, email, _id: userId },
                   role,
                   _id,
                 }) => (
                   <Tr className='cursor-pointer' key={_id}>
-                    <Td>{fullName}</Td>
+                    {/* <Td>{fullName}</Td> */}
                     <Td>{role}</Td>
                     <Td>
                       {phoneNumber === ''
