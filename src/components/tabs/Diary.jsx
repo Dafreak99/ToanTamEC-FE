@@ -34,11 +34,18 @@ import {
 } from '../../hooks/useWorkDiaries';
 import Datepicker from '../../partials/actions/Datepicker';
 import MutateDiary from '../modals/MutateDiary';
-import UploadOfficialProof from '../modals/UploadOfficialProof';
+import UploadedPreview from '../modals/UploadedPreview';
 
 const Diary = ({ userId }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isPreviewOpen,
+    onOpen: onPreviewOpen,
+    onClose: onPreviewClose,
+  } = useDisclosure();
   const [selectedInfo, setSelectedInfo] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+
   const [editLog, setEditLog] = useState(null);
 
   const { endDate, dates, startMonth, endMonth } = useSelector(
@@ -295,33 +302,20 @@ const Diary = ({ userId }) => {
                                               fontSize='1.2rem'
                                             />
                                           )}
-
                                           <Box
                                             as='p'
                                             textAlign='left'
                                             wordBreak='break-all'
                                           >
-                                            <a
-                                              href={proof}
-                                              target='_blank'
-                                              rel='noreferrer'
+                                            <Text
                                               className='underline'
-                                              onContextMenu={(e) => {
-                                                e.preventDefault();
-
-                                                onOpen();
-                                                setSelectedInfo({
-                                                  workContentId:
-                                                    workContent._id,
-                                                  workDiaryId,
-                                                  docId: _id,
-                                                  proof,
-                                                  draft,
-                                                });
+                                              onClick={() => {
+                                                onPreviewOpen();
+                                                setSelectedFiles(proof);
                                               }}
                                             >
                                               {name}
-                                            </a>
+                                            </Text>
                                           </Box>
                                         </ListItem>
                                       </Tooltip>
@@ -333,7 +327,6 @@ const Diary = ({ userId }) => {
                           </Box>
 
                           <MutateDiary {...{ edit: true, editLog }}>
-                            {/* Edit icon */}
                             <Icon
                               as={FaEdit}
                               mr='-2'
@@ -388,16 +381,13 @@ const Diary = ({ userId }) => {
                 {dates.map((date, i) => (
                   <>{renderCheckMarkForLastRow(i, date.dayMonth)}</>
                 ))}
-
-                {/* TODO: Render x x for last row */}
-
-                {}
               </Tr>
-
-              <UploadOfficialProof
-                {...{ isOpen, onClose, onOpen, selectedInfo, endDate }}
-              />
             </tbody>
+            <UploadedPreview
+              files={selectedFiles}
+              isOpen={isPreviewOpen}
+              onClose={onPreviewClose}
+            />
           </Table>
         </TableContainer>
       )}

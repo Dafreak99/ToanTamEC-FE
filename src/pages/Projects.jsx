@@ -79,7 +79,9 @@ function Projects() {
                 <Thead>
                   <Tr textTransform='lowercase'>
                     <Th className='border-none'>Mã dự án</Th>
-                    <Th className='border-none'>Tên dự án</Th>
+                    <Th className='border-none text-left px-4 py-2'>
+                      Tên dự án
+                    </Th>
                     <Th className='border-none'>Chỉnh sửa lần cuối</Th>
                     <Th className='border-none'>Người chỉnh sửa</Th>
                   </Tr>
@@ -91,7 +93,7 @@ function Projects() {
                       className='cursor-pointer'
                     >
                       <Td>{code}</Td>
-                      <Td>{name}</Td>
+                      <Td className='text-left'>{name}</Td>
                       <Td>{format(new Date(updatedAt), 'dd/MM/yyyy')}</Td>
                       <Td>{updatedBy?.username}</Td>
                     </Tr>
