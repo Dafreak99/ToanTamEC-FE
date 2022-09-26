@@ -17,32 +17,30 @@ function TotalsPanel() {
   };
 
   const processTableData = (tableData) => {
-    const formatted = {
-      headings: [],
-      content: {},
-    };
+    const headings = [];
+    let expandableContent = {};
 
-    formatted.headings.push(...tableData[0]);
+    headings.push(...tableData[0]);
 
     let currentContent;
     for (let i = 1; i < tableData.length; i++) {
       // content location
       if (tableData[i][0]?.value.match(/^[1-9]\//)) {
         currentContent = tableData[i][0];
-        formatted.content = {
-          ...formatted.content,
+        expandableContent = {
+          ...expandableContent,
           [currentContent.value]: [],
         };
       } else {
-        formatted.content[currentContent.value].push(tableData[i]);
+        expandableContent[currentContent.value].push(tableData[i]);
       }
     }
 
     // Calculate the last 3 rows of each location
-    const keys = Object.keys(formatted.content);
+    const keys = Object.keys(expandableContent);
 
     for (const key of keys) {
-      const length = formatted.content[key][0].length;
+      const length = expandableContent[key][0].length;
       const totalArr = [].fill(length);
       const implementedArr = [].fill(length);
       const restArr = [].fill(length);
@@ -56,7 +54,7 @@ function TotalsPanel() {
         let implemented = 0;
         let rest = 0;
 
-        for (const element of formatted.content[key]) {
+        for (const element of expandableContent[key]) {
           if (element?.[i] && !isEdited(element)) {
             // count implemented stuff
             if (element[i].status === 'passed') {
@@ -71,31 +69,29 @@ function TotalsPanel() {
         implementedArr[i] = { value: implemented };
         restArr[i] = { value: rest };
       }
-      formatted.content[key].push(totalArr, implementedArr, restArr);
+      expandableContent[key].push(totalArr, implementedArr, restArr);
     }
 
-    const { headings } = formatted;
-
-    const formattedHeadings = [];
+    const expandableHeadings = [];
     let isParent = false;
 
     headings.forEach((heading, index) => {
       if (heading.match(/^[MDCLXVI]{0,}\./)) {
-        formattedHeadings.push({
+        expandableHeadings.push({
           type: 'parent',
           value: heading,
-          content: [],
+          children: [],
           count: index,
         });
         isParent = true;
       } else if (isParent) {
-        formattedHeadings[formattedHeadings.length - 1].content.push({
+        expandableHeadings[expandableHeadings.length - 1].children.push({
           type: 'child',
           value: heading,
           count: index,
         });
       } else {
-        formattedHeadings.push({
+        expandableHeadings.push({
           type: 'child',
           value: heading,
           count: index,
@@ -106,8 +102,9 @@ function TotalsPanel() {
     const rows = tableData.map((row) => row[0]);
 
     setData({
-      ...formatted,
-      formattedHeadings,
+      headings,
+      expandableContent,
+      expandableHeadings,
       original: tableData,
       rows,
     });
@@ -235,10 +232,10 @@ function TotalsPanel() {
 
   const removeExpandableCol = (index) => {
     // 1. remove these cols in all rows
-    const { formattedHeadings, original } = data;
+    const { expandableHeadings, original } = data;
 
     const result = original.map((row) => {
-      row.splice(index, formattedHeadings[index].content.length + 1);
+      row.splice(index, expandableHeadings[index].content.length + 1);
       return row;
     });
 
@@ -256,11 +253,11 @@ function TotalsPanel() {
 
   const removeExpandableRow = (index) => {
     // 1. remove these cols in all rows
-    const { content, original, rows } = data;
+    const { expandableContent, original, rows } = data;
 
     const LOCATION = rows[index];
 
-    const locations = Object.entries(content);
+    const locations = Object.entries(expandableContent);
     let from = 1;
     let to = 1;
 
@@ -286,11 +283,11 @@ function TotalsPanel() {
   };
 
   const addLocation = (submittedData) => {
-    const { original, content } = data;
+    const { original, expandableContent } = data;
 
     const temp = Array.from({ length: original[0].length }, (_, i) => {
       if (i === 0) {
-        return `${Object.keys(content).length + 1}/ ${
+        return `${Object.keys(expandableContent).length + 1}/ ${
           submittedData.locationName
         }`;
       }

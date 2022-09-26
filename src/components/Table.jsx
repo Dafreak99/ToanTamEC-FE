@@ -61,7 +61,7 @@ function Table({
 
   const [toggles, setToggles] = useState(() => {
     const stateToggles = {};
-    for (let i = 1; i <= data.formattedHeadings.length; i++) {
+    for (let i = 1; i <= data.expandableHeadings.length; i++) {
       const propName = `toggle${i}`;
       stateToggles[propName] = true;
     }
@@ -72,7 +72,7 @@ function Table({
   const [rowToggles, setRowToggles] = useState(() => {
     const rToggles = {};
 
-    for (let i = 1; i <= Object.keys(data.content).length; i++) {
+    for (let i = 1; i <= Object.keys(data.expandableContent).length; i++) {
       const propName = `toggle${i}`;
       rToggles[propName] = true;
     }
@@ -162,7 +162,7 @@ function Table({
         bg={isLastThree ? '#EDF2F6' : '#EDF2F666'}
         opacity={edited ? '0.7' : '1'}
       >
-        {data.formattedHeadings.map((heading, i) => {
+        {data.expandableHeadings.map((heading, i) => {
           if (heading.type === 'child') {
             return (
               <Td
@@ -219,7 +219,7 @@ function Table({
 
               {toggles[`toggle${i + 1}`] && (
                 <>
-                  {heading.content.map((child) => {
+                  {heading.children.map((child) => {
                     return (
                       <Td
                         cursor='pointer'
@@ -462,7 +462,7 @@ function Table({
             onSubmit={onCellSubmit}
           />
           <tr className='h-80'>
-            {data.formattedHeadings.map((heading, index) => {
+            {data.expandableHeadings.map((heading, index) => {
               if (heading.type === 'child') {
                 if (index === 0) {
                   return (
@@ -517,7 +517,7 @@ function Table({
 
                   {toggles[`toggle${index + 1}`] && (
                     <>
-                      {heading.content.map((each) => {
+                      {heading.children.map((each) => {
                         return (
                           <RotatedTh
                             onClick={() => {
@@ -538,7 +538,7 @@ function Table({
           </tr>
 
           {/* Locations */}
-          {Object.entries(data.content).map((location, index) => {
+          {Object.entries(data.expandableContent).map((location, index) => {
             return (
               <>
                 <Box
