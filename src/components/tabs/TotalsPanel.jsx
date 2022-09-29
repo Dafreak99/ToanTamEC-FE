@@ -1,114 +1,40 @@
-import { Button, useToast } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import { Button } from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
 import { IoAdd } from 'react-icons/io5';
+import { useParams } from 'react-router-dom';
 import * as XLSX from 'xlsx';
+import { useAddTotalList, useTotalList } from '../../hooks/useTotalList';
 import note from '../../images/add-notes.svg';
+import { processTableData } from '../../utils/table';
+import { showToast } from '../../utils/toast';
 import Spinner from '../Spinner';
 import Table from '../Table';
 
 function TotalsPanel() {
-  const [data, setData] = useState(null);
+  const [tableData, setTableData] = useState(null);
   const [isLoading, setLoading] = useState(false);
+  const { id } = useParams();
 
-  const toast = useToast();
-
-  const isEdited = (row) => {
-    return row.some((col) => col?.edited);
+  const onSuccess = ({ data }) => {
+    setLoading(false);
+    showToast('success', 'Đã tải lên tổng kê');
+    setTableData(processTableData(JSON.parse(data.content)));
   };
 
-  const processTableData = (tableData) => {
-    const headings = [];
-    let expandableContent = {};
+  const onError = () => {
+    setLoading(false);
 
-    headings.push(...tableData[0]);
-
-    let currentContent;
-    for (let i = 1; i < tableData.length; i++) {
-      // content location
-      if (tableData[i][0]?.value.match(/^[1-9]\//)) {
-        currentContent = tableData[i][0];
-        expandableContent = {
-          ...expandableContent,
-          [currentContent.value]: [],
-        };
-      } else {
-        expandableContent[currentContent.value].push(tableData[i]);
-      }
-    }
-
-    // Calculate the last 3 rows of each location
-    const keys = Object.keys(expandableContent);
-
-    for (const key of keys) {
-      const length = expandableContent[key][0].length;
-      const totalArr = [].fill(length);
-      const implementedArr = [].fill(length);
-      const restArr = [].fill(length);
-
-      totalArr[0] = { value: 'Tổng' };
-      implementedArr[0] = { value: 'Đã thi công' };
-      restArr[0] = { value: 'Còn lại' };
-
-      for (let i = 1; i < length; i++) {
-        let total = 0;
-        let implemented = 0;
-        let rest = 0;
-
-        for (const element of expandableContent[key]) {
-          if (element?.[i] && !isEdited(element)) {
-            // count implemented stuff
-            if (element[i].status === 'passed') {
-              implemented += parseFloat(element[i].value);
-            }
-            total += parseFloat(element[i].value);
-          }
-          rest = total - implemented;
-        }
-
-        totalArr[i] = { value: total };
-        implementedArr[i] = { value: implemented };
-        restArr[i] = { value: rest };
-      }
-      expandableContent[key].push(totalArr, implementedArr, restArr);
-    }
-
-    const expandableHeadings = [];
-    let isParent = false;
-
-    headings.forEach((heading, index) => {
-      if (heading.match(/^[MDCLXVI]{0,}\./)) {
-        expandableHeadings.push({
-          type: 'parent',
-          value: heading,
-          children: [],
-          count: index,
-        });
-        isParent = true;
-      } else if (isParent) {
-        expandableHeadings[expandableHeadings.length - 1].children.push({
-          type: 'child',
-          value: heading,
-          count: index,
-        });
-      } else {
-        expandableHeadings.push({
-          type: 'child',
-          value: heading,
-          count: index,
-        });
-      }
-    });
-
-    const rows = tableData.map((row) => row[0]);
-
-    setData({
-      headings,
-      expandableContent,
-      expandableHeadings,
-      original: tableData,
-      rows,
-    });
+    showToast('error', 'Lỗi khi tải lên tổng kê');
   };
+
+  const { mutate } = useAddTotalList(onSuccess, onError);
+  const { data: totalList } = useTotalList(id);
+
+  useEffect(() => {
+    if (totalList?.content) {
+      setTableData(processTableData(JSON.parse(totalList.content)));
+    }
+  }, [totalList]);
 
   const onChange = (e) => {
     setLoading(true);
@@ -118,11 +44,7 @@ function TotalsPanel() {
     const extName = file.name.split('.').pop();
 
     if (extName !== 'xlsx') {
-      toast({
-        description: 'Vui lòng tải lên tập tin .xlsx',
-        status: 'error',
-        position: 'top-right',
-      });
+      showToast('success', 'Vui lòng tải lên tập tin .xlsx');
     }
 
     reader.onload = async (evt) => {
@@ -157,7 +79,11 @@ function TotalsPanel() {
         });
       });
 
-      processTableData(newData);
+      mutate({
+        project: id,
+        content: JSON.stringify(newData),
+      });
+
       setLoading(false);
     };
 
@@ -165,7 +91,7 @@ function TotalsPanel() {
   };
 
   const removeCol = (index) => {
-    const { original } = data;
+    const { original } = tableData;
     const result = original.map((row) => {
       row.splice(index, 1);
       return row;
@@ -173,16 +99,11 @@ function TotalsPanel() {
 
     processTableData(result);
 
-    toast({
-      status: 'success',
-      duration: 1000,
-      position: 'bottom-right',
-      title: 'Xoá thành công!',
-    });
+    showToast('success', 'Xoá thành công!');
   };
 
   const editCell = (rowIdx, colIdx, newData) => {
-    const { original } = data;
+    const { original } = tableData;
     const newRow = [...original[rowIdx]];
 
     const { quantity, assessment, reason, date } = newData;
@@ -218,21 +139,17 @@ function TotalsPanel() {
   };
 
   const removeRow = (index) => {
-    const { original } = data;
+    const { original } = tableData;
     original.splice(index, 1);
 
     processTableData(original);
-    toast({
-      status: 'success',
-      duration: 1000,
-      position: 'bottom-right',
-      title: 'Xoá thành công!',
-    });
+
+    showToast('success', 'Xoá thành công!');
   };
 
   const removeExpandableCol = (index) => {
     // 1. remove these cols in all rows
-    const { expandableHeadings, original } = data;
+    const { expandableHeadings, original } = tableData;
 
     const result = original.map((row) => {
       row.splice(index, expandableHeadings[index].content.length + 1);
@@ -241,19 +158,13 @@ function TotalsPanel() {
 
     processTableData(result);
 
-    toast({
-      status: 'success',
-      duration: 1000,
-      position: 'bottom-right',
-      title: 'Xoá thành công!',
-    });
-
+    showToast('success', 'Xoá thành công!');
     // 2. Update the roman number in heading => II. becomes I.
   };
 
   const removeExpandableRow = (index) => {
     // 1. remove these cols in all rows
-    const { expandableContent, original, rows } = data;
+    const { expandableContent, original, rows } = tableData;
 
     const LOCATION = rows[index];
 
@@ -274,16 +185,13 @@ function TotalsPanel() {
 
     processTableData(original);
 
-    toast({
-      status: 'success',
-      duration: 1000,
-      title: 'Xoá thành công!',
-    });
+    showToast('success', 'Xoá thành công!');
+
     // 2. Update the roman number in heading => II. becomes I.
   };
 
   const addLocation = (submittedData) => {
-    const { original, expandableContent } = data;
+    const { original, expandableContent } = tableData;
 
     const temp = Array.from({ length: original[0].length }, (_, i) => {
       if (i === 0) {
@@ -300,7 +208,7 @@ function TotalsPanel() {
   };
 
   const addMaterial = (submittedData) => {
-    const { original } = data;
+    const { original } = tableData;
 
     const newOriginal = original.map((row, i) => {
       if (i === 0) {
@@ -325,11 +233,11 @@ function TotalsPanel() {
 
   return (
     <>
-      {data ? (
+      {tableData ? (
         <>
           <Table
             {...{
-              data,
+              data: tableData,
               removeCol,
               removeRow,
               removeExpandableCol,
