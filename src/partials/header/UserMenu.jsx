@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import Cookies from 'universal-cookie';
+import Transition from '../../components/Transition';
 import { clearLogin } from '../../features/user/userSlice';
-import Transition from '../../utils/Transition';
 
 function UserMenu() {
   const [dropdownOpen, setDropdownOpen] = useState(false);

@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import Transition from '../../utils/Transition';
+import Transition from '../../components/Transition';
 
 function SearchModal({ id, searchId, modalOpen, setModalOpen }) {
   const modalContent = useRef(null);

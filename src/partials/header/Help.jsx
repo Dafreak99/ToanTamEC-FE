@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Transition from '../../utils/Transition';
+import Transition from '../../components/Transition';
 
 function Help() {
   const [dropdownOpen, setDropdownOpen] = useState(false);

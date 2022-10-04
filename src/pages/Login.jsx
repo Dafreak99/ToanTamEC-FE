@@ -11,10 +11,10 @@ import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import Cookies from 'universal-cookie';
+import ErrorMessage from '../components/ErrorMessage';
 import { login } from '../features/user/userSlice';
 import bg from '../images/bg.png';
 import logo from '../images/company-logo.svg';
-import ErrorMessage from '../utils/ErrorMessage';
 import { showToast } from '../utils/toast';
 
 const Login = () => {

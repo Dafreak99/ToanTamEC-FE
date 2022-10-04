@@ -26,7 +26,7 @@ export const processTableData = (tableData) => {
   const keys = Object.keys(expandableContent);
 
   for (const key of keys) {
-    const length = expandableContent[key][0].length;
+    const length = expandableContent[key][0]?.length || 0;
     const totalArr = [].fill(length);
     const implementedArr = [].fill(length);
     const restArr = [].fill(length);
@@ -60,6 +60,7 @@ export const processTableData = (tableData) => {
 
   const expandableHeadings = [];
   let isParent = false;
+  let countExpandableHeadings = 0;
 
   headings.forEach((heading, index) => {
     if (heading.match(/^[MDCLXVI]{0,}\./)) {
@@ -70,6 +71,7 @@ export const processTableData = (tableData) => {
         count: index,
       });
       isParent = true;
+      countExpandableHeadings++;
     } else if (isParent) {
       expandableHeadings[expandableHeadings.length - 1].children.push({
         type: 'child',
@@ -93,5 +95,6 @@ export const processTableData = (tableData) => {
     expandableHeadings,
     original: tableData,
     rows,
+    countExpandableHeadings,
   };
 };

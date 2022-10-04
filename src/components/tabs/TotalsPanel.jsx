@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { useAddTotalList, useTotalList } from '../../hooks/useTotalList';
 import note from '../../images/add-notes.svg';
+import { intToRoman } from '../../utils';
 import { processTableData } from '../../utils/table';
 import { showToast } from '../../utils/toast';
 import Spinner from '../Spinner';
@@ -15,10 +16,20 @@ function TotalsPanel() {
   const [isLoading, setLoading] = useState(false);
   const { id } = useParams();
 
-  const onSuccess = ({ data }) => {
+  /**
+   * @param {JSON String || JS Object}
+   * @desc: Accept the original table content, and process it to produce all necessary data for the TotalList
+   */
+  const handleTotalListData = (content) => {
+    if (typeof content === 'string') content = JSON.parse(content);
+    setTableData(processTableData(content));
+  };
+
+  const onSuccess = ({ data: { content } }) => {
     setLoading(false);
     showToast('success', 'Đã tải lên tổng kê');
-    setTableData(processTableData(JSON.parse(data.content)));
+
+    handleTotalListData(content);
   };
 
   const onError = () => {
@@ -32,7 +43,7 @@ function TotalsPanel() {
 
   useEffect(() => {
     if (totalList?.content) {
-      setTableData(processTableData(JSON.parse(totalList.content)));
+      handleTotalListData(totalList.content);
     }
   }, [totalList]);
 
@@ -97,8 +108,7 @@ function TotalsPanel() {
       return row;
     });
 
-    processTableData(result);
-
+    handleTotalListData(result);
     showToast('success', 'Xoá thành công!');
   };
 
@@ -135,59 +145,78 @@ function TotalsPanel() {
       }
     }
 
-    processTableData(newD);
+    handleTotalListData(newD);
   };
 
   const removeRow = (index) => {
     const { original } = tableData;
     original.splice(index, 1);
 
-    processTableData(original);
-
+    handleTotalListData(original);
     showToast('success', 'Xoá thành công!');
   };
 
-  const removeExpandableCol = (index) => {
-    // 1. remove these cols in all rows
+  const removeExpandableCol = (index, expandIndex) => {
+    // 1. Remove that specific col in all rows
     const { expandableHeadings, original } = tableData;
 
     const result = original.map((row) => {
-      row.splice(index, expandableHeadings[index].content.length + 1);
+      row.splice(index, expandableHeadings[expandIndex].children.length + 1);
       return row;
     });
 
-    processTableData(result);
-
-    showToast('success', 'Xoá thành công!');
     // 2. Update the roman number in heading => II. becomes I.
+    const count = 1;
+
+    result[0] = result[0].map((col) => {
+      const regrex = /^[MDCLXVI]{0,}\./;
+      if (col.match(regrex)) {
+        col = col.replace(regrex, `${intToRoman(count)}. `);
+      }
+
+      return col;
+    });
+
+    handleTotalListData(result);
+    showToast('success', 'Xoá thành công!');
   };
 
   const removeExpandableRow = (index) => {
     // 1. remove these cols in all rows
     const { expandableContent, original, rows } = tableData;
 
-    const LOCATION = rows[index];
+    const location = rows[index]?.value;
 
     const locations = Object.entries(expandableContent);
     let from = 1;
     let to = 1;
 
     for (const element of locations) {
-      if (element[0] === LOCATION) {
-        to += element[1].length;
+      if (element[0] === location) {
+        to += element[1].length - 3;
         break;
       } else {
-        from += element[1].length + 1;
-        to += element[1].length + 1;
+        from += element[1].length - 3 + 1;
+        to += element[1].length - 3 + 1;
       }
     }
     original.splice(from, to - from + 1);
 
-    processTableData(original);
+    // 2. Update the number in heading => 2/ becomes 1/
+    let count = 1;
+    const movedIdxsForward = original.map((row) => {
+      const regrex = /\d{0,4}\/ /g;
 
+      if (row[0]?.value?.match(regrex)) {
+        row[0].value = row[0].value.replace(regrex, `${count}/ `);
+        count++;
+      }
+
+      return row;
+    });
+
+    handleTotalListData(movedIdxsForward);
     showToast('success', 'Xoá thành công!');
-
-    // 2. Update the roman number in heading => II. becomes I.
   };
 
   const addLocation = (submittedData) => {
@@ -195,32 +224,79 @@ function TotalsPanel() {
 
     const temp = Array.from({ length: original[0].length }, (_, i) => {
       if (i === 0) {
-        return `${Object.keys(expandableContent).length + 1}/ ${
-          submittedData.locationName
-        }`;
+        return {
+          edited: false,
+          modifiedDate: new Date(),
+          status: 'blank',
+          value: `${Object.keys(expandableContent).length + 1}/ ${
+            submittedData.locationName
+          }`,
+        };
       }
       return null;
     });
 
     original.push(temp);
 
-    processTableData(original);
+    handleTotalListData(original);
   };
 
   const addMaterial = (submittedData) => {
-    const { original } = tableData;
+    const { original, countExpandableHeadings } = tableData;
 
     const newOriginal = original.map((row, i) => {
       if (i === 0) {
-        row.push(submittedData.materialName);
+        row.push(
+          `${intToRoman(countExpandableHeadings + 1)}. ${
+            submittedData.materialName
+          }`,
+        );
       } else {
         row.push(null);
       }
       return row;
     });
 
-    processTableData(newOriginal);
+    handleTotalListData(newOriginal);
   };
+
+  const addPillar = (pillarName, addExpandableRow) => {
+    const { expandableContent, original, rows } = tableData;
+
+    const index = rows.findIndex((row) => row?.value === addExpandableRow);
+    const to = index + expandableContent[addExpandableRow].length - 3 + 1;
+
+    const temp = Array.from({ length: original[0].length }, (_, i) => {
+      if (i === 0) {
+        return {
+          edited: false,
+          modifiedDate: new Date(),
+          status: 'blank',
+          value: pillarName,
+        };
+      }
+
+      return null;
+    });
+
+    const d = [...original.slice(0, to), temp, ...original.slice(to)];
+    handleTotalListData(d);
+  };
+
+  // const addMaterial = (submittedData) => {
+  //   const { original } = tableData;
+
+  //   const newOriginal = original.map((row, i) => {
+  //     if (i === 0) {
+  //       row.push(submittedData.materialName);
+  //     } else {
+  //       row.push(null);
+  //     }
+  //     return row;
+  //   });
+
+  //   handleTotalListData(newOriginal);
+  // };
 
   if (isLoading) {
     return (
@@ -244,6 +320,7 @@ function TotalsPanel() {
               removeExpandableRow,
               addLocation,
               addMaterial,
+              addPillar,
               editCell,
             }}
           />

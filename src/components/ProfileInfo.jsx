@@ -2,8 +2,8 @@ import { Box, Button, FormLabel, Input, Select } from '@chakra-ui/react';
 import React, { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
+import ErrorMessage from '../components/ErrorMessage';
 import { updateUser } from '../features/user/userSlice';
-import ErrorMessage from '../utils/ErrorMessage';
 
 const ProfileInfo = ({ data }) => {
   const {
@@ -54,10 +54,7 @@ const ProfileInfo = ({ data }) => {
               {/* TODO: Aware of edge cases */}
             </div>
             <div className='col col-span-3'>
-              <Input
-                id='phoneNumber'
-                placeholder='Số điện thoại'
-              />
+              <Input id='phoneNumber' placeholder='Số điện thoại' />
               {errors?.phoneNumber && <ErrorMessage />}
             </div>
           </div>
@@ -66,11 +63,7 @@ const ProfileInfo = ({ data }) => {
               <FormLabel htmlFor='email'>Email:</FormLabel>
             </div>
             <div className='col col-span-3'>
-              <Input
-                id='email'
-                type='text'
-                placeholder='Email'
-              />
+              <Input id='email' type='text' placeholder='Email' />
               {errors?.email && <ErrorMessage />}
             </div>
           </div>

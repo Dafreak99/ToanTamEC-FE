@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import ErrorMessage from '../../utils/ErrorMessage';
+import ErrorMessage from '../ErrorMessage';
 
 /**
  *

@@ -11,6 +11,7 @@ const getTotalList = ({ queryKey }) => {
 
 export const useTotalList = (keyword) => {
   return useQuery(['total-list', keyword], getTotalList, {
+    refetchOnWindowFocus: false,
     onError: () => {
       showToast('error', 'Lỗi khi tải tổng kê');
     },
@@ -24,6 +25,17 @@ export const useAddTotalList = (onSuccess, onError) => {
   return useMutation(
     'add-total-list',
     (data) => axios.post('/total-list', data),
+    {
+      onSuccess,
+      onError,
+    },
+  );
+};
+
+export const useUpdateTotalList = (onSuccess, onError) => {
+  return useMutation(
+    'add-total-list',
+    (data) => axios.put('/total-list', data),
     {
       onSuccess,
       onError,

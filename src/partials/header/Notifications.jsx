@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Transition from '../../utils/Transition';
+import Transition from '../../components/Transition';
 
 function Notifications() {
   const [dropdownOpen, setDropdownOpen] = useState(false);

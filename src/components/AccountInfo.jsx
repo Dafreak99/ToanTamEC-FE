@@ -22,7 +22,7 @@ import { FaTrash } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { deleteUser, updateUser } from '../features/user/userSlice';
-import ErrorMessage from '../utils/ErrorMessage';
+import ErrorMessage from './ErrorMessage';
 
 const AccountInfo = ({ data, status }) => {
   const {

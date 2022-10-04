@@ -18,7 +18,7 @@ import {
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import Datepicker from '../../partials/actions/Datepicker';
-import ErrorMessage from '../../utils/ErrorMessage';
+import ErrorMessage from '../ErrorMessage';
 
 /**
  *

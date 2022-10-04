@@ -20,6 +20,7 @@ import {
 } from 'react-icons/hi';
 import AddLocation from './modals/AddLocation';
 import AddMaterial from './modals/AddMaterial';
+import AddPillar from './modals/AddPillar';
 import TotalDetailsCellModal from './modals/TotalsDetailCellModal';
 
 function Table({
@@ -31,6 +32,7 @@ function Table({
   removeExpandableRow,
   addLocation,
   addMaterial,
+  addPillar,
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
@@ -53,7 +55,9 @@ function Table({
   const [modalHeading, setModalHeading] = useState('');
   const [modalType, setModalType] = useState('');
   const [deleteCol, setDeleteCol] = useState(null);
+  const [deleteExpandableCol, setDeleteExpandableCol] = useState(null);
   const [deleteRow, setDeleteRow] = useState(null);
+  const [addExpandableRow, setAddExpandableRow] = useState(null);
   const [selectedCell, setSelectedCell] = useState({
     col: null,
     row: null,
@@ -90,13 +94,13 @@ function Table({
     return row.some((col) => col?.edited);
   };
 
-  const setModal = (
+  const setModal = ({
     type,
     value,
     rowContent = null,
     colContent = null,
     isParent = 'child',
-  ) => {
+  }) => {
     setModalHeading(value);
     setModalType(isParent);
 
@@ -107,7 +111,6 @@ function Table({
     );
     const colIdx = headings.findIndex((col) => col === colContent);
 
-    console.log(colIdx, rowIdx);
     setSelectedCell({ col: colIdx, row: rowIdx });
 
     if (type === 'heading') {
@@ -154,7 +157,6 @@ function Table({
     );
   };
 
-  // TODO: Change edited value to orange
   const Tr = ({ d, isLastThree, edited }) => {
     return (
       <Box
@@ -173,23 +175,25 @@ function Table({
                   d?.[heading.count]?.edited,
                 )}
                 onClick={() => {
-                  if (!isLastThree && !edited && i !== 0) {
+                  if (!isLastThree && !edited) {
                     if (i === 0) {
-                      setModal('location', d[heading.count].value);
+                      setModal({
+                        type: 'location',
+                        value: d[heading.count].value,
+                      });
 
                       const { rows } = data;
-                      let index = rows.findIndex(
+                      const index = rows.findIndex(
                         (row) => row === d[heading.count],
                       );
                       setDeleteRow(index);
                     } else if (i === 1) {
-                      setModal(
-                        'cell',
-                        `${d[0].value} - ${heading.value}`,
-                        d[0].value,
-                        heading.value,
-                        'child',
-                      );
+                      setModal({
+                        type: 'cell',
+                        value: `${d[0].value} - ${heading.value}`,
+                        rowContent: d[0].value,
+                        colContent: heading.value,
+                      });
                     }
                   }
                 }}
@@ -210,7 +214,10 @@ function Table({
                 )}
                 onContextMenu={() => {
                   if (!isLastThree && d[heading.count] && !edited) {
-                    setModal('location', d[heading.count].value);
+                    setModal({
+                      type: 'location',
+                      value: d[heading.count].value,
+                    });
                   }
                 }}
               >
@@ -229,13 +236,12 @@ function Table({
                         )}
                         onClick={() => {
                           if (!isLastThree && d[child.count] && !edited) {
-                            setModal(
-                              'cell',
-                              `${d[0].value} - ${child.value}`,
-                              d[0].value,
-                              child.value,
-                              'child',
-                            );
+                            setModal({
+                              type: 'cell',
+                              value: `${d[0].value} - ${child.value}`,
+                              rowContent: d[0].value,
+                              colContent: child.value,
+                            });
                           }
                         }}
                       >
@@ -278,7 +284,7 @@ function Table({
           <Button
             isFullWidth
             onClick={() => {
-              removeExpandableCol(deleteCol);
+              removeExpandableCol(deleteCol, deleteExpandableCol);
               onHeadingModalClose();
             }}
           >
@@ -327,7 +333,7 @@ function Table({
           </AddLocation>
 
           <AddMaterial onSubmit={onSubmitMaterial}>
-            <Button isFullWidth>Thêm danh sách vật tư</Button>
+            <Button isFullWidth>Thêm DS vật tư</Button>
           </AddMaterial>
         </>
       );
@@ -391,11 +397,22 @@ function Table({
 
   const LocationModal = () => {
     const ParentBody = () => {
+      const handleAddPillar = ({ pillarName }) => {
+        addPillar(pillarName, addExpandableRow);
+        onLocationModalClose();
+      };
       return (
         <>
-          <Button isFullWidth variant='gray' mr='4' onClick={null}>
-            Thêm trụ
-          </Button>
+          <AddPillar
+            isFullWidth
+            variant='gray'
+            mr='4'
+            onSubmit={handleAddPillar}
+          >
+            <Button isFullWidth variant='gray' mr='4' onClick={null}>
+              Thêm trụ
+            </Button>
+          </AddPillar>
           <Button
             isFullWidth
             onClick={() => {
@@ -470,7 +487,11 @@ function Table({
                       className='min-w-36 md:min-w-56 text-white primary cursor-pointer'
                       onClick={() => {
                         onHeadingModalOpen();
-                        setModal('heading', heading.value, 'pivot');
+                        setModal({
+                          type: 'heading',
+                          value: heading.value,
+                          isParent: 'pivot',
+                        });
                         setDeleteCol(heading.count);
                       }}
                     >
@@ -481,7 +502,7 @@ function Table({
                 return (
                   <RotatedTh
                     onClick={() => {
-                      setModal('heading', heading.value);
+                      setModal({ type: 'heading', value: heading.value });
                       setDeleteCol(heading.count);
                     }}
                     className='text-white primary cursor-pointer'
@@ -503,8 +524,13 @@ function Table({
                       })
                     }
                     onContextMenu={() => {
-                      setModal('heading', heading.value, 'parent');
+                      setModal({
+                        type: 'heading',
+                        value: heading.value,
+                        isParent: 'parent',
+                      });
                       setDeleteCol(heading.count);
+                      setDeleteExpandableCol(index);
                     }}
                     icon={
                       toggles[`toggle${index + 1}`]
@@ -521,7 +547,7 @@ function Table({
                         return (
                           <RotatedTh
                             onClick={() => {
-                              setModal('heading', each.value);
+                              setModal({ type: 'heading', value: each.value });
                               setDeleteCol(each.count);
                             }}
                             className='cursor-pointer'
@@ -551,11 +577,18 @@ function Table({
                     });
                   }}
                   onContextMenu={() => {
+                    setAddExpandableRow(location[0]);
                     onLocationModalOpen();
-                    setModal('location', location[0], null, null, 'parent');
+                    setModal({
+                      type: 'location',
+                      value: location[0],
+                      isParent: 'parent',
+                    });
 
                     const { rows } = data;
-                    const idx = rows.findIndex((row) => row === location[0]);
+                    const idx = rows.findIndex(
+                      (row) => row.value === location[0],
+                    );
                     setDeleteRow(idx);
                   }}
                 >

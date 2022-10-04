@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import Transition from '../../utils/Transition';
+import React, { useEffect, useRef, useState } from 'react';
+import Transition from '../../components/Transition';
 
 function DateSelect() {
   const options = [
