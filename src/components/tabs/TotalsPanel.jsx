@@ -14,6 +14,7 @@ import Table from '../Table';
 function TotalsPanel() {
   const [tableData, setTableData] = useState(null);
   const [isLoading, setLoading] = useState(false);
+  const [copy, setCopy] = useState(null);
   const { id } = useParams();
 
   /**
@@ -43,9 +44,29 @@ function TotalsPanel() {
 
   useEffect(() => {
     if (totalList?.content) {
+      setCopy(totalList.content);
       handleTotalListData(totalList.content);
     }
   }, [totalList]);
+
+  const checkDataFormat = (data) => {
+    // Check data format
+    const criteria = ['số trụ', 'khoảng cách', 'cộng dồn'];
+    let invalid = false;
+    if (data[0].constructor !== Array) {
+      invalid = true;
+    }
+
+    for (let i = 0; i < 3; i++) {
+      if (criteria[i] !== data[0][i]?.toLowerCase()) {
+        console.log(data[0][i]?.toLowerCase());
+        invalid = true;
+        break;
+      }
+    }
+
+    return invalid;
+  };
 
   const onChange = (e) => {
     setLoading(true);
@@ -56,6 +77,8 @@ function TotalsPanel() {
 
     if (extName !== 'xlsx') {
       showToast('success', 'Vui lòng tải lên tập tin .xlsx');
+      setLoading(false);
+      return;
     }
 
     reader.onload = async (evt) => {
@@ -74,6 +97,12 @@ function TotalsPanel() {
         });
 
       console.log('original converted JSON format', parsed);
+
+      if (checkDataFormat(parsed)) {
+        showToast('error', 'Tệp tin không đúng với cấu trúc của tổng kê!');
+        setLoading(false);
+        return;
+      }
 
       const newData = parsed.map((row, index) => {
         if (index === 0) return row;
@@ -241,7 +270,7 @@ function TotalsPanel() {
     handleTotalListData(original);
   };
 
-  const addMaterial = (submittedData) => {
+  const addListMaterial = (submittedData) => {
     const { original, countExpandableHeadings } = tableData;
 
     const newOriginal = original.map((row, i) => {
@@ -283,20 +312,36 @@ function TotalsPanel() {
     handleTotalListData(d);
   };
 
-  // const addMaterial = (submittedData) => {
-  //   const { original } = tableData;
+  const addMaterial = (submittedData, heading) => {
+    const { original, headings } = tableData;
 
-  //   const newOriginal = original.map((row, i) => {
-  //     if (i === 0) {
-  //       row.push(submittedData.materialName);
-  //     } else {
-  //       row.push(null);
-  //     }
-  //     return row;
-  //   });
+    let meet = false;
+    const regrex = /^[MDCLXVI]{0,}\./;
+    let index = headings.length - 1;
 
-  //   handleTotalListData(newOriginal);
-  // };
+    for (let i = 0; i < headings.length; i++) {
+      if (meet && headings[i].match(regrex)) {
+        index = i - 1;
+        break;
+      }
+
+      if (headings[i] === heading) {
+        meet = true;
+      }
+    }
+
+    original[0] = [
+      ...original[0].slice(0, index + 1),
+      submittedData,
+      ...original[0].slice(index + 1),
+    ];
+
+    handleTotalListData(original);
+  };
+
+  const cancel = () => {
+    handleTotalListData(copy);
+  };
 
   if (isLoading) {
     return (
@@ -320,8 +365,10 @@ function TotalsPanel() {
               removeExpandableRow,
               addLocation,
               addMaterial,
+              addListMaterial,
               addPillar,
               editCell,
+              cancel,
             }}
           />
         </>

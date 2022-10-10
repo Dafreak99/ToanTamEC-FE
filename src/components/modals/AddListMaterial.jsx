@@ -20,8 +20,7 @@ import ErrorMessage from '../ErrorMessage';
  *
  * @children Pass in the button
  */
-
-const AddMaterial = ({ children, onSubmit: parentOnSubmit }) => {
+const AddListMaterial = ({ children, onSubmit: parentOnSubmit }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const initialRef = React.useRef();
@@ -66,16 +65,16 @@ const AddMaterial = ({ children, onSubmit: parentOnSubmit }) => {
       >
         <ModalOverlay />
         <ModalContent as='form' onSubmit={handleSubmit(onSubmit)}>
-          <ModalHeader textAlign='center'>Thêm vật tư</ModalHeader>
+          <ModalHeader textAlign='center'>Thêm danh sách vật tư</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl>
               <FormLabel>
-                Tên vật tư <span className='text-red-500'>*</span>
+                Tên danh sách vật tư <span className='text-red-500'>*</span>
               </FormLabel>
               <Input
                 ref={initialRef}
-                placeholder='Tên vật tư'
+                placeholder='Tên danh sách vật tư'
                 {...register('materialName', { required: true })}
               />
               {renderError('materialName')}
@@ -96,4 +95,4 @@ const AddMaterial = ({ children, onSubmit: parentOnSubmit }) => {
   );
 };
 
-export default AddMaterial;
+export default AddListMaterial;

@@ -18,6 +18,7 @@ import {
   HiOutlineChevronRight,
   HiOutlineChevronUp,
 } from 'react-icons/hi';
+import AddListMaterial from './modals/AddListMaterial';
 import AddLocation from './modals/AddLocation';
 import AddMaterial from './modals/AddMaterial';
 import AddPillar from './modals/AddPillar';
@@ -31,8 +32,10 @@ function Table({
   removeExpandableCol,
   removeExpandableRow,
   addLocation,
+  addListMaterial,
   addMaterial,
   addPillar,
+  cancel,
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
@@ -58,10 +61,12 @@ function Table({
   const [deleteExpandableCol, setDeleteExpandableCol] = useState(null);
   const [deleteRow, setDeleteRow] = useState(null);
   const [addExpandableRow, setAddExpandableRow] = useState(null);
+  const [addCol, setAddCol] = useState(null);
   const [selectedCell, setSelectedCell] = useState({
     col: null,
     row: null,
   });
+  const [isChanged, setIsChanged] = useState(false);
 
   const [toggles, setToggles] = useState(() => {
     const stateToggles = {};
@@ -122,7 +127,14 @@ function Table({
     }
   };
 
+  const handleCancelContent = () => {
+    cancel();
+    setIsChanged(false);
+  };
+
   const onCellSubmit = (formData) => {
+    setIsChanged(true);
+
     // edit cell value
     editCell(selectedCell.row, selectedCell.col, formData);
   };
@@ -267,25 +279,27 @@ function Table({
   };
 
   const HeadingModal = () => {
+    const handleAddMaterial = ({ materialName }) => {
+      setIsChanged(true);
+      addMaterial(materialName, addCol);
+      onHeadingModalClose();
+    };
+
     const ParentBody = () => {
       return (
         <>
-          <Button
-            isFullWidth
-            variant='gray'
-            mr='4'
-            onClick={() => {
-              onHeadingModalClose();
-              onOpen();
-            }}
-          >
-            Thêm vật tư
-          </Button>
+          <AddMaterial onSubmit={handleAddMaterial}>
+            <Button isFullWidth variant='gray' mr='4'>
+              Thêm vật tư
+            </Button>
+          </AddMaterial>
+
           <Button
             isFullWidth
             onClick={() => {
               removeExpandableCol(deleteCol, deleteExpandableCol);
               onHeadingModalClose();
+              setIsChanged(true);
             }}
           >
             Xoá
@@ -310,13 +324,17 @@ function Table({
 
     const PivotBody = () => {
       const onSubmitLocation = (formData) => {
+        setIsChanged(true);
+
         onHeadingModalClose();
         addLocation(formData);
       };
 
-      const onSubmitMaterial = (formData) => {
+      const onSubmitListMaterial = (formData) => {
+        setIsChanged(true);
+
         onHeadingModalClose();
-        addMaterial(formData);
+        addListMaterial(formData);
       };
 
       return (
@@ -332,9 +350,9 @@ function Table({
             </Button>
           </AddLocation>
 
-          <AddMaterial onSubmit={onSubmitMaterial}>
+          <AddListMaterial onSubmit={onSubmitListMaterial}>
             <Button isFullWidth>Thêm DS vật tư</Button>
-          </AddMaterial>
+          </AddListMaterial>
         </>
       );
     };
@@ -398,6 +416,8 @@ function Table({
   const LocationModal = () => {
     const ParentBody = () => {
       const handleAddPillar = ({ pillarName }) => {
+        setIsChanged(true);
+
         addPillar(pillarName, addExpandableRow);
         onLocationModalClose();
       };
@@ -418,6 +438,7 @@ function Table({
             onClick={() => {
               removeExpandableRow(deleteRow);
               onLocationModalClose();
+              setIsChanged(true);
             }}
           >
             Xoá
@@ -430,6 +451,8 @@ function Table({
         <Button
           isFullWidth
           onClick={() => {
+            setIsChanged(true);
+
             removeRow(deleteRow);
             onLocationModalClose();
           }}
@@ -460,12 +483,27 @@ function Table({
 
   return (
     <>
-      <p className='font-bold text-md mt-2'>
-        Tổng kê Lorem ipsum dolor sit amet, consectetur adipiscing elit
-      </p>
-      <p className='text-xs mb-3'>
-        Cập nhật lần cuối vào 12:05:16 ngày 12/5/2022.
-      </p>
+      <Flex justifyContent='space-between'>
+        <Box>
+          <p className='font-bold text-md mt-2'>
+            Tổng kê Lorem ipsum dolor sit amet, consectetur adipiscing elit
+          </p>
+          <p className='text-xs mb-3'>
+            Cập nhật lần cuối vào 12:05:16 ngày 12/5/2022.
+          </p>
+        </Box>
+        <Flex>
+          {isChanged && (
+            <>
+              <Button onClick={handleCancelContent} mr='0.5rem'>
+                Huỷ
+              </Button>
+              <Button variant='primary'>Lưu </Button>
+            </>
+          )}
+        </Flex>
+      </Flex>
+
       <div style={{ overflowX: 'auto' }} className='table-wrapper'>
         {/* First Row */}
 
@@ -531,6 +569,7 @@ function Table({
                       });
                       setDeleteCol(heading.count);
                       setDeleteExpandableCol(index);
+                      setAddCol(heading.value);
                     }}
                     icon={
                       toggles[`toggle${index + 1}`]

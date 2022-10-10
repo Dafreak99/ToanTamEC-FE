@@ -9,6 +9,7 @@ export const processTableData = (tableData) => {
   headings.push(...tableData[0]);
 
   let currentContent;
+  let addUp = 0;
   for (let i = 1; i < tableData.length; i++) {
     // content location
     if (tableData[i][0]?.value.match(/^[1-9]\//)) {
@@ -17,7 +18,20 @@ export const processTableData = (tableData) => {
         ...expandableContent,
         [currentContent.value]: [],
       };
+
+      addUp = 0;
     } else {
+      if (!tableData[i][1].edited) {
+        addUp += parseFloat(tableData[i][1].value);
+
+        tableData[i][2] = {
+          edited: false,
+          modifiedDate: Date.now(),
+          status: 'blank',
+          value: addUp,
+        };
+      }
+
       expandableContent[currentContent.value].push(tableData[i]);
     }
   }
@@ -39,6 +53,15 @@ export const processTableData = (tableData) => {
       let total = 0;
       let implemented = 0;
       let rest = 0;
+
+      // Cộng dồn
+      if (i === 2) {
+        totalArr[2] = { value: 0 };
+        implementedArr[2] = { value: 0 };
+        restArr[2] = { value: 0 };
+        // eslint-disable-next-line no-continue
+        continue;
+      }
 
       for (const element of expandableContent[key]) {
         if (element?.[i] && !isEdited(element)) {
