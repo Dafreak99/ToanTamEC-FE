@@ -22,22 +22,28 @@ import AddListMaterial from './modals/AddListMaterial';
 import AddLocation from './modals/AddLocation';
 import AddMaterial from './modals/AddMaterial';
 import AddPillar from './modals/AddPillar';
+import Rename from './modals/Rename';
 import TotalDetailsCellModal from './modals/TotalsDetailCellModal';
 
 function Table({
   data,
-  removeCol,
-  editCell,
-  removeRow,
-  removeExpandableCol,
-  removeExpandableRow,
   addLocation,
   addListMaterial,
   addMaterial,
   addPillar,
+  removeCol,
+  removeRow,
+  removeExpandableCol,
+  removeExpandableRow,
+  editCell,
   cancel,
 }) {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isDetailCellModalOpen,
+    onOpen: onDetailCellModalOpen,
+    onClose: onDetailCellModalClose,
+  } = useDisclosure();
+
   const {
     isOpen: isCellModalOpen,
     onOpen: onCellModalOpen,
@@ -49,24 +55,30 @@ function Table({
     onOpen: onHeadingModalOpen,
     onClose: onHeadingModalClose,
   } = useDisclosure();
+
   const {
     isOpen: isLocationModalOpen,
     onOpen: onLocationModalOpen,
     onClose: onLocationModalClose,
   } = useDisclosure();
 
-  const [modalHeading, setModalHeading] = useState('');
   const [modalType, setModalType] = useState('');
-  const [deleteCol, setDeleteCol] = useState(null);
   const [deleteExpandableCol, setDeleteExpandableCol] = useState(null);
-  const [deleteRow, setDeleteRow] = useState(null);
   const [addExpandableRow, setAddExpandableRow] = useState(null);
   const [addCol, setAddCol] = useState(null);
-  const [selectedCell, setSelectedCell] = useState({
-    col: null,
-    row: null,
-  });
   const [isChanged, setIsChanged] = useState(false);
+
+  const [clickedCell, setClickedCell] = useState({
+    type: '',
+    col: {
+      index: null,
+      val: null,
+    },
+    row: {
+      index: null,
+      val: null,
+    },
+  });
 
   const [toggles, setToggles] = useState(() => {
     const stateToggles = {};
@@ -99,28 +111,31 @@ function Table({
     return row.some((col) => col?.edited);
   };
 
-  const setModal = ({
-    type,
-    value,
-    rowContent = null,
-    colContent = null,
-    isParent = 'child',
-  }) => {
-    setModalHeading(value);
-    setModalType(isParent);
+  const setModal = ({ type, rowContent = null, colContent = null }) => {
+    setModalType(/expandable/g.test(type));
 
-    const { headings, rows, original } = data;
+    const { rows, headings, original } = data;
 
     const rowIdx = rows.findIndex(
       (row, idx) => row.value === rowContent && !isEdited(original[idx]),
     );
     const colIdx = headings.findIndex((col) => col === colContent);
 
-    setSelectedCell({ col: colIdx, row: rowIdx });
+    setClickedCell({
+      type,
+      col: {
+        index: rowIdx,
+        val: colContent,
+      },
+      row: {
+        index: colIdx,
+        val: rowContent,
+      },
+    });
 
-    if (type === 'heading') {
+    if (type === 'col' || type === 'expandable-col' || type === 'pivot') {
       onHeadingModalOpen();
-    } else if (type === 'location') {
+    } else if (type === 'row' || type === 'expandable-row') {
       onLocationModalOpen();
     } else if (type === 'cell') {
       onCellModalOpen();
@@ -136,7 +151,7 @@ function Table({
     setIsChanged(true);
 
     // edit cell value
-    editCell(selectedCell.row, selectedCell.col, formData);
+    editCell(clickedCell.row.index, clickedCell.col.index, formData);
   };
 
   const renderColor = (status, edited) => {
@@ -190,19 +205,13 @@ function Table({
                   if (!isLastThree && !edited) {
                     if (i === 0) {
                       setModal({
-                        type: 'location',
-                        value: d[heading.count].value,
+                        type: 'row',
+                        colContent: d[heading.count].value,
+                        rowContent: d[heading.count].value,
                       });
-
-                      const { rows } = data;
-                      const index = rows.findIndex(
-                        (row) => row === d[heading.count],
-                      );
-                      setDeleteRow(index);
                     } else if (i === 1) {
                       setModal({
                         type: 'cell',
-                        value: `${d[0].value} - ${heading.value}`,
                         rowContent: d[0].value,
                         colContent: heading.value,
                       });
@@ -224,17 +233,7 @@ function Table({
                   d?.[heading.count]?.status,
                   d?.[heading.count]?.edited,
                 )}
-                onContextMenu={() => {
-                  if (!isLastThree && d[heading.count] && !edited) {
-                    setModal({
-                      type: 'location',
-                      value: d[heading.count].value,
-                    });
-                  }
-                }}
-              >
-                {d?.[heading.count]?.value}
-              </Td>
+              />
 
               {toggles[`toggle${i + 1}`] && (
                 <>
@@ -250,7 +249,6 @@ function Table({
                           if (!isLastThree && d[child.count] && !edited) {
                             setModal({
                               type: 'cell',
-                              value: `${d[0].value} - ${child.value}`,
                               rowContent: d[0].value,
                               colContent: child.value,
                             });
@@ -285,43 +283,11 @@ function Table({
       onHeadingModalClose();
     };
 
-    const ParentBody = () => {
-      return (
-        <>
-          <AddMaterial onSubmit={handleAddMaterial}>
-            <Button isFullWidth variant='gray' mr='4'>
-              Thêm vật tư
-            </Button>
-          </AddMaterial>
+    const handleRename = ({ name }) => {};
 
-          <Button
-            isFullWidth
-            onClick={() => {
-              removeExpandableCol(deleteCol, deleteExpandableCol);
-              onHeadingModalClose();
-              setIsChanged(true);
-            }}
-          >
-            Xoá
-          </Button>
-        </>
-      );
-    };
-
-    const ChildBody = () => {
-      return (
-        <Button
-          isFullWidth
-          onClick={() => {
-            removeCol(deleteCol);
-            onHeadingModalClose();
-          }}
-        >
-          Xoá
-        </Button>
-      );
-    };
-
+    /**
+     * Heading > Pivot (SỐ TRỤ)
+     * */
     const PivotBody = () => {
       const onSubmitLocation = (formData) => {
         setIsChanged(true);
@@ -357,7 +323,54 @@ function Table({
       );
     };
 
-    const renderBody = () => {
+    /**
+     * Heading > Parent (I. CHI TIẾT ĐƯỜNG DÂY...)
+     * */
+    const ParentBody = () => {
+      return (
+        <>
+          <AddMaterial onSubmit={handleAddMaterial}>
+            <Button isFullWidth variant='gray' mr='4'>
+              Thêm vật tư
+            </Button>
+          </AddMaterial>
+          <Rename onSubmit={handleRename}>
+            <Button mr='4' isFullWidth>
+              Đổi tên
+            </Button>
+          </Rename>
+          <Button
+            isFullWidth
+            onClick={() => {
+              removeExpandableCol(clickedCell.col.index, deleteExpandableCol);
+              onHeadingModalClose();
+              setIsChanged(true);
+            }}
+          >
+            Xoá
+          </Button>
+        </>
+      );
+    };
+
+    /**
+     * Heading > Child (MÓNG TRỤ M12-BA (BV 01))
+     * */
+    const ChildBody = () => {
+      return (
+        <Button
+          isFullWidth
+          onClick={() => {
+            removeCol(clickedCell.col.index);
+            onHeadingModalClose();
+          }}
+        >
+          Xoá
+        </Button>
+      );
+    };
+
+    const RenderBody = () => {
       if (modalType === 'parent') {
         return <ParentBody />;
       }
@@ -376,36 +389,10 @@ function Table({
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader fontSize='sm'>{modalHeading}</ModalHeader>
+          <ModalHeader fontSize='sm'>{clickedCell.col.val}</ModalHeader>
           <ModalBody p='1rem 2rem'>
             <Flex justifyContent='space-between' alignItems='center'>
-              {renderBody()}
-            </Flex>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    );
-  };
-
-  const CellModal = () => {
-    return (
-      <Modal isOpen={isCellModalOpen} onClose={onCellModalClose} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader fontSize='sm'>{modalHeading}</ModalHeader>
-          <ModalBody p='1rem 2rem'>
-            <Flex justifyContent='center' alignItems='center'>
-              <Button
-                isFullWidth
-                variant='gray'
-                mr='4'
-                onClick={() => {
-                  onOpen();
-                  onCellModalClose();
-                }}
-              >
-                Chi tiết
-              </Button>
+              <RenderBody />
             </Flex>
           </ModalBody>
         </ModalContent>
@@ -414,6 +401,9 @@ function Table({
   };
 
   const LocationModal = () => {
+    /**
+     * Ex: 1/ ĐDTT nhánh Kênh Ngay 1
+     * */
     const ParentBody = () => {
       const handleAddPillar = ({ pillarName }) => {
         setIsChanged(true);
@@ -436,7 +426,7 @@ function Table({
           <Button
             isFullWidth
             onClick={() => {
-              removeExpandableRow(deleteRow);
+              removeExpandableRow(clickedCell.row.index);
               onLocationModalClose();
               setIsChanged(true);
             }}
@@ -446,6 +436,10 @@ function Table({
         </>
       );
     };
+
+    /**
+     * Ex: 1/ ĐDTT nhánh Kênh Ngay 1 > 474VC/175/9/2/12
+     * */
     const ChildBody = () => {
       return (
         <Button
@@ -453,7 +447,7 @@ function Table({
           onClick={() => {
             setIsChanged(true);
 
-            removeRow(deleteRow);
+            removeRow(clickedCell.row.index);
             onLocationModalClose();
           }}
         >
@@ -470,10 +464,38 @@ function Table({
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader fontSize='sm'>{modalHeading}</ModalHeader>
+          <ModalHeader fontSize='sm'>{clickedCell.col.val}</ModalHeader>
           <ModalBody p='1rem 2rem'>
-            <Flex justifyItems='center' alignItems='center'>
+            <Flex justifyItems='center' alignItems='center' flexWrap='nowrap'>
               {modalType === 'parent' ? <ParentBody /> : <ChildBody />}
+            </Flex>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    );
+  };
+
+  const CellModal = () => {
+    const { row, col } = clickedCell;
+    const cellHeading = `${row.val} - ${col.val}`;
+    return (
+      <Modal isOpen={isCellModalOpen} onClose={onCellModalClose} isCentered>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader fontSize='sm'>{cellHeading}</ModalHeader>
+          <ModalBody p='1rem 2rem'>
+            <Flex justifyContent='center' alignItems='center'>
+              <Button
+                isFullWidth
+                variant='gray'
+                mr='4'
+                onClick={() => {
+                  onDetailCellModalOpen();
+                  onCellModalClose();
+                }}
+              >
+                Chi tiết
+              </Button>
             </Flex>
           </ModalBody>
         </ModalContent>
@@ -498,22 +520,21 @@ function Table({
               <Button onClick={handleCancelContent} mr='0.5rem'>
                 Huỷ
               </Button>
-              <Button variant='primary'>Lưu </Button>
+              <Button variant='primary'>Lưu</Button>
             </>
           )}
         </Flex>
       </Flex>
 
       <div style={{ overflowX: 'auto' }} className='table-wrapper'>
-        {/* First Row */}
-
         <table className='big-table'>
           <CellModal />
           <HeadingModal />
           <LocationModal />
 
           <TotalDetailsCellModal
-            {...{ isOpen, onClose }}
+            isOpen={isDetailCellModalOpen}
+            onClose={onDetailCellModalClose}
             onSubmit={onCellSubmit}
           />
           <tr className='h-80'>
@@ -524,13 +545,12 @@ function Table({
                     <th
                       className='min-w-36 md:min-w-56 text-white primary cursor-pointer'
                       onClick={() => {
-                        onHeadingModalOpen();
                         setModal({
-                          type: 'heading',
-                          value: heading.value,
+                          type: 'pivot',
                           isParent: 'pivot',
+                          colContent: heading.value,
+                          rowContent: heading.value,
                         });
-                        setDeleteCol(heading.count);
                       }}
                     >
                       {heading.value}
@@ -540,8 +560,11 @@ function Table({
                 return (
                   <RotatedTh
                     onClick={() => {
-                      setModal({ type: 'heading', value: heading.value });
-                      setDeleteCol(heading.count);
+                      setModal({
+                        type: 'col',
+                        colContent: heading.value,
+                        rowContent: heading.value,
+                      });
                     }}
                     className='text-white primary cursor-pointer'
                     type={heading.type}
@@ -563,11 +586,10 @@ function Table({
                     }
                     onContextMenu={() => {
                       setModal({
-                        type: 'heading',
-                        value: heading.value,
-                        isParent: 'parent',
+                        type: 'expandable-col',
+                        colContent: heading.value,
+                        rowContent: heading.value,
                       });
-                      setDeleteCol(heading.count);
                       setDeleteExpandableCol(index);
                       setAddCol(heading.value);
                     }}
@@ -586,8 +608,11 @@ function Table({
                         return (
                           <RotatedTh
                             onClick={() => {
-                              setModal({ type: 'heading', value: each.value });
-                              setDeleteCol(each.count);
+                              setModal({
+                                type: 'col',
+                                colContent: each.value,
+                                rowContent: each.value,
+                              });
                             }}
                             className='cursor-pointer'
                           >
@@ -619,16 +644,10 @@ function Table({
                     setAddExpandableRow(location[0]);
                     onLocationModalOpen();
                     setModal({
-                      type: 'location',
-                      value: location[0],
-                      isParent: 'parent',
+                      type: 'expandable-row',
+                      colContent: location[0],
+                      rowContent: location[0],
                     });
-
-                    const { rows } = data;
-                    const idx = rows.findIndex(
-                      (row) => row.value === location[0],
-                    );
-                    setDeleteRow(idx);
                   }}
                 >
                   <Flex
